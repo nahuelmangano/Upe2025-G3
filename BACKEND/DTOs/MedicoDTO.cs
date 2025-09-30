@@ -15,9 +15,5 @@ namespace DTOs
         public int UsuarioId { get; set; }
 
         public string? UsuarioNombre { get; set; }
-
-        public int FirmaDigitalId { get; set; }
-
-        public string? FirmaHash{ get; set; }
     }
 }

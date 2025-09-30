@@ -19,5 +19,7 @@ public partial class FirmaDigital
 
     public bool? Valido { get; set; }
 
-    public virtual ICollection<Medico> Medicos { get; set; } = new List<Medico>();
+    public int MedicoId { get; set; }
+
+    public virtual Medico Medico { get; set; } = null!;
 }

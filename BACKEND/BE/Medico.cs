@@ -13,11 +13,9 @@ public partial class Medico
 
     public int UsuarioId { get; set; }
 
-    public int FirmaDigitalId { get; set; }
-
     public virtual ICollection<Evolucion> Evolucions { get; set; } = new List<Evolucion>();
 
-    public virtual FirmaDigital FirmaDigital { get; set; } = null!;
+    public virtual ICollection<FirmaDigital> FirmaDigitals { get; set; } = new List<FirmaDigital>();
 
     public virtual ICollection<Plantilla> Plantillas { get; set; } = new List<Plantilla>();
 

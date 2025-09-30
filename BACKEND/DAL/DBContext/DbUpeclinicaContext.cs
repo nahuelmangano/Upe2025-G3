@@ -241,6 +241,12 @@ public partial class DbUpeclinicaContext : DbContext
             entity.Property(e => e.Algoritmo).HasMaxLength(100);
             entity.Property(e => e.FechaFirma).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.HashDocumento).HasMaxLength(512);
+            entity.Property(e => e.MedicoId).HasColumnName("medicoId");
+
+            entity.HasOne(d => d.Medico).WithMany(p => p.FirmaDigitals)
+                .HasForeignKey(d => d.MedicoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_medicoId");
         });
 
         modelBuilder.Entity<Medico>(entity =>
@@ -253,11 +259,6 @@ public partial class DbUpeclinicaContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Matricula).HasMaxLength(100);
-
-            entity.HasOne(d => d.FirmaDigital).WithMany(p => p.Medicos)
-                .HasForeignKey(d => d.FirmaDigitalId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Medico_FirmaDigital");
 
             entity.HasOne(d => d.Usuario).WithOne(p => p.Medico)
                 .HasForeignKey<Medico>(d => d.UsuarioId)
@@ -407,6 +408,8 @@ public partial class DbUpeclinicaContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__RolPermi__A80C5474817E0151");
 
             entity.ToTable("RolPermiso");
+
+            entity.Property(e => e.Id).HasColumnName("id");
 
             entity.HasOne(d => d.Permiso).WithMany(p => p.RolPermisos)
                 .HasForeignKey(d => d.PermisoId)

@@ -21,5 +21,9 @@ namespace DTOs
         public string? HashDocumento { get; set; }
 
         public int? Valido { get; set; }
+
+        public int MedicoId { get; set; }
+
+        public string? MedicoNombre { get; set; }
     }
 }

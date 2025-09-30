@@ -205,6 +205,10 @@ namespace Utility
             #region FirmaDigital
             CreateMap<FirmaDigital, FirmaDigitalDTO>()
                 .ForMember(destino =>
+                destino.MedicoNombre,
+                opt => opt.MapFrom(origen => origen.Medico.Usuario.Nombre)
+                )
+                .ForMember(destino =>
                 destino.FechaFirma,
                 opt => opt.MapFrom(origen => origen.FechaFirma.ToString("dd/MM/yyyy"))
                 )
@@ -213,8 +217,8 @@ namespace Utility
                 opt => opt.MapFrom(origen => origen.Valido == true ? 1 : 0))
                 .ReverseMap()
                 .ForMember(destino =>
-                destino.Medicos,
-                opt => opt.Ignore()
+                    destino.Medico,
+                    opt => opt.Ignore()
                 )
                 .ForMember(destino =>
                 destino.Valido,
@@ -228,10 +232,6 @@ namespace Utility
                destino.UsuarioNombre,
                opt => opt.MapFrom(origen => origen.Usuario.Nombre)
                )
-               .ForMember(destino =>
-               destino.FirmaHash,
-               opt => opt.MapFrom(origen => origen.FirmaDigital.HashDocumento)
-               )
                .ReverseMap()
                .ForMember(destino =>
                destino.FechaVencimientoMatricula,
@@ -242,7 +242,7 @@ namespace Utility
                opt => opt.Ignore()
                )
                .ForMember(destino =>
-               destino.FirmaDigital,
+               destino.FirmaDigitals,
                opt => opt.Ignore()
                )
                .ForMember(destino =>
