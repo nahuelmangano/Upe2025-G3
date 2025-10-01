@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace BLL.Servicios
 {
-    internal class MedicoService : IMedicoService
+    public class MedicoService : IMedicoService
     {
         private readonly IGenericRepository<Medico> _medicoRepositorio;
         private readonly IMapper _mapper;

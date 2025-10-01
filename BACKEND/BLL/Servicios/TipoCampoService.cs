@@ -15,10 +15,10 @@ namespace BLL.Servicios
 {
     public class TipoCampoService : ITipoCampoService
     {
-        private readonly IGenericRepository<TipoCampoDTO> _tipoCampoRepositorio;
+        private readonly IGenericRepository<TipoCampo> _tipoCampoRepositorio;
         private readonly IMapper _mapper;
 
-        public TipoCampoService(IGenericRepository<TipoCampoDTO> tipoCampoRepositorio, IMapper mapper)
+        public TipoCampoService(IGenericRepository<TipoCampo> tipoCampoRepositorio, IMapper mapper)
         {
             _tipoCampoRepositorio = tipoCampoRepositorio;
             _mapper = mapper;

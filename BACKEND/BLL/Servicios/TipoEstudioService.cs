@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BE;
+using BLL.Servicios.Contrato;
 using DAL.Repositorios.Contrato;
 using DTOs;
 using System;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BLL.Servicios
 {
-    public class TipoEstudioService
+    public class TipoEstudioService : ITipoEstudioService
     {
         private readonly IGenericRepository<TipoEstudio> _tipoEstudioRepositorio;
         private readonly IMapper _mapper;

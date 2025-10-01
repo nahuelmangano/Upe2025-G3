@@ -13,12 +13,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BLL.Servicios
 {
-    public class SexoService
+    public class SexoService : ISexoService
     {
-        private readonly IGenericRepository<SexoDTO> _sexoRepositorio;
+        private readonly IGenericRepository<Sexo> _sexoRepositorio;
         private readonly IMapper _mapper;
 
-        public SexoService(IGenericRepository<SexoDTO> sexoRepositorio, IMapper mapper)
+        public SexoService(IGenericRepository<Sexo> sexoRepositorio, IMapper mapper)
         {
             _sexoRepositorio = sexoRepositorio;
             _mapper = mapper;

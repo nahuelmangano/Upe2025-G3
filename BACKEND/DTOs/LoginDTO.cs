@@ -8,7 +8,7 @@ namespace DTOs
 {
     public class LoginDTO
     {
-        public string? Correo { get; set; }
-        public string? Clave { get; set; }
+        public string? Mail { get; set; }
+        public string? PasswordHash { get; set; }
     }
 }

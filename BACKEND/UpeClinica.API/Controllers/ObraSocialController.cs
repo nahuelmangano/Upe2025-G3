@@ -1,0 +1,43 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+using BLL.Servicios.Contrato;
+using DTOs;
+using UpeClinica.API.Utilidad;
+
+namespace UpeClinica.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ObraSocialController : ControllerBase
+    {
+        private readonly IObraSocialService _obraSocialServicio;
+
+        public ObraSocialController(IObraSocialService obraSocialServicio)
+        {
+            _obraSocialServicio = obraSocialServicio;
+        }
+
+        [HttpGet]
+        [Route("Lista")]
+        public async Task<IActionResult> Lista()
+        {
+            var rsp = new Response<List<ObraSocialDTO>>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _obraSocialServicio.Lista();
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
+
+        // Puede ser que se deba crear,editar, dar de baja.
+    }
+}

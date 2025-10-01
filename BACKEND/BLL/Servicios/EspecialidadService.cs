@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BLL.Servicios
 {
-    internal class EspecialidadService : IEspecialidadService
+    public class EspecialidadService : IEspecialidadService
     {
         private readonly IGenericRepository<Especialidad> _especialidadRepositorio;
         private readonly IMapper _mapper;
@@ -35,5 +35,8 @@ namespace BLL.Servicios
                 throw;
             }
         }
+
+        // ahora que lo pienso mjor tambien hay que crud
+
     }
 }

@@ -96,25 +96,5 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Eliminar(int id)
-        {
-            try
-            {
-                var evolucionEncontrada = await _evolucionRepositorio.Obtener(
-                    evolucion => evolucion.Id == id
-                );
-
-                if (evolucionEncontrada == null)
-                    throw new TaskCanceledException("La evolucion no existe");
-
-                bool respuesta = await _evolucionRepositorio.Eliminar(evolucionEncontrada);
-
-                return respuesta;
-            }
-            catch
-            {
-                throw;
-            }
-        }
     }
 }

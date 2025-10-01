@@ -14,7 +14,5 @@ namespace BLL.Servicios.Contrato
         Task<EvolucionDTO> Crear(EvolucionDTO modelo);
 
         Task<bool> Editar(EvolucionDTO modelo);
-
-        Task<bool> Eliminar(int id);
     }
 }

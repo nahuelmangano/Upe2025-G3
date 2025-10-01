@@ -60,7 +60,11 @@ namespace DAL.Repositorios
                 throw;
             }
         }
-
+        /// <summary>
+        /// Esta la elimina posta, deberia cambiar el estado
+        /// </summary>
+        /// <param name="modelo"></param>
+        /// <returns></returns>
         public async Task<bool> Eliminar(TModelo modelo)
         {
             try

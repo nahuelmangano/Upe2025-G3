@@ -349,6 +349,7 @@ public partial class DbUpeclinicaContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Nombre).HasMaxLength(200);
+            entity.Property(e => e.Descripcion).HasMaxLength(200);
         });
 
         modelBuilder.Entity<PlanSalud>(entity =>
