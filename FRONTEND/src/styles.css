@@ -26,3 +26,36 @@ a{text-decoration:none;color:inherit} small{color:#6b7280}
 .table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px;border-bottom:1px solid var(--line);text-align:left}.table th{font-weight:700}
 input,select,textarea{padding:10px;border-radius:10px;border:1px solid #ddd}
 .btn{background:var(--primary);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
+
+/*#MODAL nuevo paciente */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(17,24,39,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:24px;
+}
+.modal-card{
+  width:100%;
+  max-width:720px;
+  background:#fff;
+  border-radius:16px;
+  border:1px solid var(--line);
+  box-shadow:0 20px 40px rgba(31,41,55,.18);
+  padding:24px;
+}
+.modal-card form label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:14px;
+  color:#374151;
+}
+.modal-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap:12px;
+}

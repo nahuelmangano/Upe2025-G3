@@ -10,7 +10,7 @@ export class ApiService{
   constructor(private http: HttpClient){}
   getResumenPaciente(pacienteId:number):Observable<any>{
     if(environment.useMock) return of(MOCK_RESUMEN);
-    // return this.http.get(`${this.base}/pacientes/${pacienteId}/resumen`);
+    return this.http.get(`${this.base}/pacientes/${pacienteId}/resumen`);
     return of(MOCK_RESUMEN);
   }
 }

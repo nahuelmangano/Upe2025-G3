@@ -1,1 +1,1 @@
-export const environment={production:false,apiBaseUrl:'/api',useMock:true};
+export const environment={production:false,apiBaseUrl:'http://localhost:5259/api',useMock:false};
