@@ -36,5 +36,75 @@ namespace BLL.Servicios
                 throw;
             }
         }
+
+        public async Task<PermisoDTO>Crear(PermisoDTO modelo)
+        {
+            var permisoCreado = await _permisoRepositorio.Crear(_mapper.Map<Permiso>(modelo));
+            if(permisoCreado.Id == 0)
+            {
+                throw new TaskCanceledException("No se pudo crear el permiso");
+            }
+
+            return _mapper.Map<PermisoDTO>(permisoCreado);
+        }
+
+        
+        public async Task<bool> Editar(PermisoDTO modelo)
+        {
+            try
+            {
+                var permisoModelo = _mapper.Map<Permiso>(modelo);
+                var permisoEncontrado = await _permisoRepositorio.Obtener(p =>
+                    p.Id == permisoModelo.Id
+                );
+
+                if (permisoEncontrado == null)
+                {
+                    throw new TaskCanceledException("El permiso no existe");
+                }
+                    
+
+                permisoEncontrado.Nombre = permisoModelo.Nombre;
+                permisoEncontrado.Descripcion = permisoModelo.Descripcion;
+
+                bool respuesta = await _permisoRepositorio.Editar(permisoEncontrado);
+
+                if (!respuesta)
+                    throw new TaskCanceledException("No se pudo editar");
+
+                return respuesta;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> Eliminar(int id)
+        {
+            try
+            {
+                var permisoEncontrado = await _permisoRepositorio.Obtener(p =>
+                    p.Id == id
+                );
+
+                if (permisoEncontrado == null)
+                {
+                    throw new TaskCanceledException("El permiso no existe");
+                }
+                bool respuesta = await _permisoRepositorio.Eliminar(permisoEncontrado);
+
+                if(!respuesta)
+                {
+                    throw new TaskCanceledException("No se pudo eliminar el permiso");
+                }
+
+                return respuesta;
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }
