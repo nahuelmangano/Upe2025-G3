@@ -36,5 +36,76 @@ namespace BLL.Servicios
                 throw;
             }
         }
+        public async Task<ObraSocialDTO> Crear(ObraSocialDTO modelo)
+        {
+            try
+            {
+                var obraSocialCreada = await _obraSocialRepositorio.Crear(_mapper.Map<ObraSocial>(modelo));
+
+                if (obraSocialCreada.Id == 0)
+                    throw new TaskCanceledException("No se pudo crear la obra social");
+
+                var query = await _obraSocialRepositorio.Consultar(obraSocial =>
+                    obraSocial.Id == obraSocialCreada.Id);
+
+                obraSocialCreada = query.First();
+
+                return _mapper.Map<ObraSocialDTO>(obraSocialCreada);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        public async Task<bool> Editar(ObraSocialDTO modelo)
+        {
+            try
+            {
+                var obraSocialModelo = _mapper.Map<ObraSocial>(modelo);
+                var obraSocialEncontrada = await _obraSocialRepositorio.Obtener(obraSocial =>
+                    obraSocial.Id == obraSocialModelo.Id
+                );
+
+                if (obraSocialEncontrada == null)
+                    throw new TaskCanceledException("La obra social no existe");
+
+                obraSocialEncontrada.Nombre = obraSocialModelo.Nombre;
+
+                bool respuesta = await _obraSocialRepositorio.Editar(obraSocialEncontrada);
+
+                if (!respuesta)
+                    throw new TaskCanceledException("No se pudo editar");
+
+                return respuesta;
+
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        public async Task<bool> Eliminar(int id)
+        {
+            try
+            {
+                var obraSocialEncontrada = await _obraSocialRepositorio.Obtener(ObraSocial =>
+                ObraSocial.Id == id);
+
+                if (obraSocialEncontrada == null)
+                    throw new TaskCanceledException("No existe la obra social :<");
+
+                bool respuesta = await _obraSocialRepositorio.Eliminar(obraSocialEncontrada);
+
+                if (!respuesta)
+                    throw new TaskCanceledException("No se pudo eliminar");
+
+                return respuesta;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
     }
 }
