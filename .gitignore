@@ -1,4 +1,64 @@
+##############################
+# BACKEND (.NET / C#)
+##############################
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Bb]ackup/
+[Bb]ackups/
+
+# Archivos temporales de VS/VSCode
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 .vs/
+
+##############################
+# Archivos de entorno (BACKEND / raíz)
+##############################
+.env
+.env.*
+BACKEND/.env
+BACKEND/.env.*
+# Logs
+*.log
+
+# Configuración local
+appsettings.*.json
+launchSettings.json
+
+##############################
+# FRONTEND (Angular / Node)
+##############################
+FRONTEND/dist
+FRONTEND/out-tsc
+FRONTEND/tmp
+FRONTEND/node_modules
+FRONTEND/.angular/cache
+
+# Logs y lockfiles
+FRONTEND/*.log
+FRONTEND/npm-debug.log*
+FRONTEND/yarn-debug.log*
+FRONTEND/yarn-error.log*
+FRONTEND/pnpm-lock.yaml
+FRONTEND/package-lock.json
+
+# Archivos de entorno
+FRONTEND/.env
+FRONTEND/.env.local
+FRONTEND/.env.*.local
+
+##############################
+# Editores / SO
+##############################
+.vscode/
+.idea/
+*.sw?
+.DS_Store
+Thumbs.db
 # Ignorar carpetas de compilaciion
 **/bin/
 **/obj/
