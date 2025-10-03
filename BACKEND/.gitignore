@@ -1,0 +1,5 @@
+.vs/
+# Ignorar carpetas de compilaciion
+**/bin/
+**/obj/
+.env
