@@ -29,33 +29,12 @@ namespace BLL.Servicios
             {
                 var queryMedicos = await _medicoRepositorio.Consultar();
                 var listaMedicos = queryMedicos
-                    .Include(usuario => usuario.Usuario);
-
-                return _mapper.Map<List<MedicoDTO>>(queryMedicos.ToList());
-            }
-            catch 
-            {
-                throw;
-            }
-        }
-
-        public async Task<MedicoDTO> Crear(MedicoDTO modelo)
-        {
-            try
-            {
-                var medicoCreado = await _medicoRepositorio.Crear(_mapper.Map<Medico>(modelo));
-
-                if (medicoCreado.Id == 0)
-                    throw new TaskCanceledException("No se pudo crear el medico");
-
-                var query = await _medicoRepositorio.Consultar(medico =>
-                    medico.Id == medicoCreado.Id);
-
-                medicoCreado = query
                     .Include(usuario => usuario.Usuario)
-                    .First();
+                    .Include(usuario => usuario.Usuario.Estado)
+                    .Include(usuario => usuario.Usuario.Rol)
+                    .ToList();
 
-                return _mapper.Map<MedicoDTO>(medicoCreado);
+                return _mapper.Map<List<MedicoDTO>>(queryMedicos);
             }
             catch
             {

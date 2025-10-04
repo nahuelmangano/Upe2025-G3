@@ -38,26 +38,6 @@ namespace UpeClinica.API.Controllers
             return Ok(rsp);
         }
 
-        [HttpPost]
-        [Route("Crear")]
-        public async Task<IActionResult> Crear([FromBody] MedicoDTO medico)
-        {
-            var rsp = new Response<MedicoDTO>();
-
-            try
-            {
-                rsp.Estado = true;
-                rsp.Valor = await _medicoServicio.Crear(medico);
-            }
-            catch (Exception ex)
-            {
-                rsp.Estado = false;
-                rsp.Mensaje = ex.Message;
-            }
-
-            return Ok(rsp);
-        }
-
         [HttpPut]
         [Route("Editar")]
         public async Task<IActionResult> Editar([FromBody] MedicoDTO medico)

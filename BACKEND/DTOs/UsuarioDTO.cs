@@ -24,6 +24,10 @@ namespace DTOs
 
         public int RolId { get; set; }
 
-        public string? RolNombre { get;set; }
+        public string? RolNombre { get; set; }
+
+        public string? Matricula { get; set; }
+
+        public DateTime? FechaVencimientoMatricula { get; set; }
     }
 }
