@@ -233,6 +233,22 @@ namespace Utility
                destino.UsuarioNombre,
                opt => opt.MapFrom(origen => origen.Usuario.Nombre)
                )
+               .ForMember(destino =>
+               destino.UsuarioApellido,
+               opt => opt.MapFrom(origen => origen.Usuario.Apellido)
+               )
+               .ForMember(destino =>
+               destino.UsuarioMail,
+               opt => opt.MapFrom(origen => origen.Usuario.Mail)
+               )
+               .ForMember(destino =>
+               destino.UsuarioEstadoNombre,
+               opt => opt.MapFrom(origen => origen.Usuario.Estado.Nombre)
+               )
+               .ForMember(destino =>
+               destino.RolNombre,
+               opt => opt.MapFrom(origen => origen.Usuario.Rol.Nombre)
+               )
                .ReverseMap()
                .ForMember(destino =>
                destino.FechaVencimientoMatricula,
@@ -250,6 +266,7 @@ namespace Utility
                destino.Plantillas,
                opt => opt.Ignore()
                )
+               // no ignorar cuando es un campo obligatorio
                .ForMember(destino =>
                destino.Usuario,
                opt => opt.Ignore()
@@ -470,7 +487,16 @@ namespace Utility
                 .ForMember(destino =>
                 destino.EstadoNombre,
                 opt => opt.MapFrom(origen => origen.Estado.Nombre)
+                )
+                .ForMember(destino =>
+                destino.Matricula,
+                opt => opt.MapFrom(origen => origen.Medico.Matricula)
+                )
+                .ForMember(destino =>
+                destino.FechaVencimientoMatricula,
+                opt => opt.MapFrom(origen => origen.Medico.FechaVencimientoMatricula)
                 );
+
 
             CreateMap<Usuario, SesionDTO>()
                 .ForMember(destino =>

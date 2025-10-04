@@ -12,8 +12,18 @@ namespace DTOs
 
         public string Matricula { get; set; } = null!;
 
+        public DateTime FechaVencimientoMatricula { get; set; }
+
         public int UsuarioId { get; set; }
 
         public string? UsuarioNombre { get; set; }
+
+        public string? UsuarioApellido { get; set; }
+
+        public string? UsuarioMail { get; set; }
+
+        public string? UsuarioEstadoNombre { get; set; }
+
+        public string? RolNombre { get; set; }
     }
 }
