@@ -11,6 +11,8 @@ export interface Paciente {
   telefono?: string;
   ciudad?: string;
   estado?: 'Activo' | 'Inactivo';
+  dni?: string;
+  fechaNac?: string; // ISO 8601
 }
 
 interface PacienteApi {
@@ -60,9 +62,13 @@ export interface PacienteCreate {
   domicilioPais?: string;
   domicilioCodigoPostal?: string;
 }
+
+export interface PacienteUpdate extends PacienteCreate {
+  id: number;
+}
 const MOCK_PACIENTES: Paciente[] = [
-  { id: 1, nombre: 'Juan Gomez', email: 'gomi@gmail.com', telefono: '112222222', ciudad: 'Temperley', estado: 'Activo' },
-  { id: 2, nombre: 'Ana Perez', email: 'ana.perez@example.com', telefono: '116543210', ciudad: 'Lanus', estado: 'Activo' },
+  { id: 1, nombre: 'Juan Gomez', email: 'gomi@gmail.com', telefono: '112222222', ciudad: 'Temperley', estado: 'Activo', dni: '12.345.678', fechaNac: '1990-06-15T00:00:00Z' },
+  { id: 2, nombre: 'Ana Perez', email: 'ana.perez@example.com', telefono: '116543210', ciudad: 'Lanus', estado: 'Activo', dni: '20.111.333', fechaNac: '1985-02-10T00:00:00Z' },
   { id: 3, nombre: 'Carlos Diaz', email: 'carlos.diaz@example.com', telefono: '114567890', ciudad: 'Adrogue', estado: 'Inactivo' },
   { id: 4, nombre: 'Lucia Romero', email: 'lucia.romero@example.com', telefono: '113334455', ciudad: 'Lomas', estado: 'Activo' },
   { id: 5, nombre: 'Martin Suarez', email: 'martin.suarez@example.com', telefono: '117778889', ciudad: 'Banfield', estado: 'Activo' },
@@ -111,6 +117,49 @@ export class PacientesService {
       .pipe(map(res => this.mapItem(res.valor)));
   }
 
+  update(input: PacienteUpdate): Observable<Paciente> {
+    if (environment.useMock) {
+      const idx = MOCK_PACIENTES.findIndex(p => p.id === input.id);
+      const updated: Paciente = {
+        id: input.id,
+        nombre: `${input.nombre ?? ''} ${input.apellido ?? ''}`.trim() || (MOCK_PACIENTES[idx]?.nombre ?? 'Sin nombre'),
+        email: input.email ?? MOCK_PACIENTES[idx]?.email,
+        telefono: input.telefono1 ?? input.telefono2 ?? MOCK_PACIENTES[idx]?.telefono,
+        ciudad: input.domicilioCiudad ?? MOCK_PACIENTES[idx]?.ciudad,
+        estado: MOCK_PACIENTES[idx]?.estado ?? 'Activo'
+      };
+      if (idx >= 0) {
+        MOCK_PACIENTES[idx] = updated;
+      } else {
+        MOCK_PACIENTES.unshift(updated);
+      }
+      return of(updated);
+    }
+    return this.http
+      .put<ApiResponse<boolean>>(`${this.baseUrl}/Editar`, { ...input })
+      .pipe(map(() => ({
+        id: input.id,
+        nombre: `${input.nombre ?? ''} ${input.apellido ?? ''}`.trim(),
+        email: input.email,
+        telefono: input.telefono1 ?? input.telefono2,
+        ciudad: input.domicilioCiudad,
+        estado: 'Activo'
+      })));
+  }
+
+  eliminar(id: number): Observable<boolean> {
+    if (environment.useMock) {
+      const idx = MOCK_PACIENTES.findIndex(p => p.id === id);
+      if (idx >= 0) {
+        MOCK_PACIENTES.splice(idx, 1);
+      }
+      return of(true);
+    }
+    return this.http
+      .put<ApiResponse<boolean>>(`${this.baseUrl}/Eliminar/${id}`, {})
+      .pipe(map(res => !!res?.estado));
+  }
+
   private mapResponse(res: ApiResponse<PacienteApi[]>): Paciente[] {
     if (!res?.estado) {
       return [];
@@ -128,9 +177,9 @@ export class PacientesService {
       email: item.email ?? '',
       telefono: item.telefono1 ?? item.telefono2 ?? '',
       ciudad: item.domicilioCiudad ?? '',
-      estado: (item.estadoNombre as 'Activo' | 'Inactivo') ?? 'Activo'
+      estado: (item.estadoNombre as 'Activo' | 'Inactivo') ?? 'Activo',
+      dni: item.dni,
+      fechaNac: item.fechaNac
     };
   }
 }
-
-

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { PacientesService, Paciente, PacienteCreate } from '../services/pacientes.service';
+import { PacientesService, Paciente, PacienteCreate, PacienteUpdate } from '../services/pacientes.service';
 import { DomicilioService, DomicilioInput } from '../services/domicilio.service';
 
 @Component({
@@ -42,7 +42,15 @@ import { DomicilioService, DomicilioInput } from '../services/domicilio.service'
                 <td>{{ p.ciudad }}</td>
                 <td>{{ p.estado }}</td>
                 <td>
-                  <a (click)="verResumen(p)" style="cursor:pointer;color:var(--primary)">Resumen</a>
+                  <div style="display:flex;gap:10px;align-items:center">
+                    <a (click)="openEdit(p)" title="Editar" style="cursor:pointer;color:#4b5563">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </a>
+                    <a (click)="confirmDelete(p)" title="Eliminar" style="cursor:pointer;color:#d63031">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </a>
+                    <a (click)="verResumen(p)" style="cursor:pointer;color:var(--primary)">Resumen</a>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -69,7 +77,7 @@ import { DomicilioService, DomicilioInput } from '../services/domicilio.service'
     <div *ngIf="modalOpen" class="modal-backdrop">
       <div class="modal-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <h3 class="h3" style="margin:0">Nuevo Paciente</h3>
+          <h3 class="h3" style="margin:0">{{ editId ? 'Editar Paciente' : 'Nuevo Paciente' }}</h3>
           <button class="btn-outline" type="button" (click)="closeModal()">x</button>
         </div>
 
@@ -169,6 +177,20 @@ import { DomicilioService, DomicilioInput } from '../services/domicilio.service'
         </form>
       </div>
     </div>
+    
+    <div *ngIf="deleteOpen" class="modal-backdrop">
+      <div class="modal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 class="h3" style="margin:0">Eliminar Paciente</h3>
+          <button class="btn-outline" type="button" (click)="cancelDelete()">x</button>
+        </div>
+        <p style="margin:0 0 16px 0">¿Esta seguro que desea eliminar al paciente {{ toDelete?.nombre }}?</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn-outline" type="button" (click)="cancelDelete()">Cancelar</button>
+          <button class="btn" type="button" (click)="doDelete()">Eliminar</button>
+        </div>
+      </div>
+    </div>
   `
 })
 export class PacientesComponent implements OnInit {
@@ -185,6 +207,7 @@ export class PacientesComponent implements OnInit {
   form: PacienteCreate = {};
   domicilio: DomicilioInput = {};
   fechaNacLocal = '';
+  editId: number | null = null;
 
   constructor(
     private api: PacientesService,
@@ -216,6 +239,7 @@ export class PacientesComponent implements OnInit {
     this.form = { sexoId: undefined };
     this.domicilio = {};
     this.fechaNacLocal = '';
+    this.editId = null;
   }
 
   closeModal(): void {
@@ -234,7 +258,7 @@ export class PacientesComponent implements OnInit {
         domicilioId = await firstValueFrom(this.domicilios.crear(this.domicilio));
       }
 
-      const payload: PacienteCreate = {
+      const basePayload: PacienteCreate = {
         ...this.form,
         fechaNac: this.fechaNacLocal ? new Date(this.fechaNacLocal).toISOString() : undefined,
         domicilioId,
@@ -248,8 +272,14 @@ export class PacientesComponent implements OnInit {
         domicilioCodigoPostal: this.domicilio.codigoPostal
       };
 
-      const nuevo = await firstValueFrom(this.api.create(payload));
-      this.data = [nuevo, ...this.data];
+      if (this.editId !== null) {
+        const payload: PacienteUpdate = { id: this.editId, ...basePayload };
+        const updated = await firstValueFrom(this.api.update(payload));
+        this.data = this.data.map(p => (p.id === updated.id ? updated : p));
+      } else {
+        const nuevo = await firstValueFrom(this.api.create(basePayload));
+        this.data = [nuevo, ...this.data];
+      }
       this.q = '';
       this.page = 0;
       this.closeModal();
@@ -304,5 +334,53 @@ export class PacientesComponent implements OnInit {
   verResumen(p: Paciente): void {
     this.router.navigate(['/pacientes', p.id, 'resumen']);
   }
-}
 
+  openEdit(p: Paciente): void {
+    this.modalOpen = true;
+    this.modalError = '';
+    this.editId = p.id;
+    // Prefill with available info from list
+    const parts = (p.nombre || '').trim().split(/\s+/);
+    const apellidoAuto = parts.length > 1 ? parts.pop()! : '';
+    const nombreAuto = parts.join(' ');
+    this.form = {
+      nombre: nombreAuto || p.nombre,
+      apellido: apellidoAuto,
+      email: p.email,
+      telefono1: p.telefono,
+      sexoId: undefined,
+      nacionalidad: undefined,
+      ocupacion: undefined,
+      grupoSanguineo: undefined
+    };
+    this.domicilio = {};
+    this.fechaNacLocal = '';
+  }
+
+  // Delete confirmation modal state
+  deleteOpen = false;
+  toDelete: Paciente | null = null;
+
+  confirmDelete(p: Paciente): void {
+    this.toDelete = p;
+    this.deleteOpen = true;
+  }
+
+  async doDelete(): Promise<void> {
+    if (!this.toDelete) { return; }
+    try {
+      await firstValueFrom(this.api.eliminar(this.toDelete.id));
+      this.data = this.data.filter(x => x.id !== this.toDelete!.id);
+      this.toDelete = null;
+      this.deleteOpen = false;
+    } catch {
+      // In case of error, just keep the modal open; optionally show a message later
+      this.deleteOpen = false;
+    }
+  }
+
+  cancelDelete(): void {
+    this.deleteOpen = false;
+    this.toDelete = null;
+  }
+}
