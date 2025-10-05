@@ -42,7 +42,7 @@ namespace BLL.Servicios
                 if (id <= 0)
                     throw new ArgumentException("El ID debe ser mayor que cero", nameof(id));
 
-                var especialidad = await _especialidadRepositorio.ObtenerPorId(id);
+                var especialidad = await _especialidadRepositorio.Obtener(x => x.Id == id);
                 if (especialidad == null)
                     return null;
 
@@ -88,16 +88,19 @@ namespace BLL.Servicios
                 if (string.IsNullOrWhiteSpace(especialidad.Nombre))
                     throw new ArgumentException("El nombre de la especialidad es requerido", nameof(especialidad));
 
-                var especialidadExistente = await _especialidadRepositorio.ObtenerPorId(id);
+                var especialidadExistente = await _especialidadRepositorio.Obtener(x => x.Id == id);
                 if (especialidadExistente == null)
                     return null;
 
                 var especialidadEntity = _mapper.Map<Especialidad>(especialidad);
                 especialidadEntity.Id = id;
                 
-                var especialidadActualizada = await _especialidadRepositorio.Editar(especialidadEntity);
+                var actualizada = await _especialidadRepositorio.Editar(especialidadEntity);
                 
-                return _mapper.Map<EspecialidadDTO>(especialidadActualizada);
+                if (actualizada)
+                    return _mapper.Map<EspecialidadDTO>(especialidadEntity);
+                else
+                    throw new Exception("No se pudo actualizar la especialidad");
             }
             catch (Exception ex)
             {
@@ -112,11 +115,11 @@ namespace BLL.Servicios
                 if (id <= 0)
                     throw new ArgumentException("El ID debe ser mayor que cero", nameof(id));
 
-                var especialidadExistente = await _especialidadRepositorio.ObtenerPorId(id);
+                var especialidadExistente = await _especialidadRepositorio.Obtener(x => x.Id == id);
                 if (especialidadExistente == null)
                     return false;
 
-                return await _especialidadRepositorio.Eliminar(id);
+                return await _especialidadRepositorio.Eliminar(especialidadExistente);
             }
             catch (Exception ex)
             {
