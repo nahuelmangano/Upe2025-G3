@@ -10,7 +10,6 @@ namespace BLL.Servicios.Contrato
     public interface IMedicoService
     {
         Task<List<MedicoDTO>> Lista();
-        Task<MedicoDTO> Crear(MedicoDTO modelo);
         Task<bool> Editar(MedicoDTO modelo);
         Task<bool> Eliminar(int id);
     }

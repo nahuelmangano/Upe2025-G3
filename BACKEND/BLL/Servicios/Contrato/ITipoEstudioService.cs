@@ -10,5 +10,8 @@ namespace BLL.Servicios.Contrato
     public interface ITipoEstudioService
     {
         Task<List<TipoEstudioDTO>> Lista();
+        Task<TipoEstudioDTO> Crear(TipoEstudioDTO modelo);
+        Task<bool>Editar(TipoEstudioDTO modelo);
+        Task<bool> Eliminar(int id);
     }
 }
