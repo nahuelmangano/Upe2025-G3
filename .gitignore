@@ -1,4 +1,115 @@
+##############################
+# BACKEND (.NET / C#)
+##############################
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Bb]ackup/
+[Bb]ackups/
+
+# Archivos temporales de Visual Studio / VSCode
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 .vs/
-# Ignorar carpetas de compilaciion
+
+# Archivos de compilación / binarios (.NET)
 **/bin/
 **/obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.mdb
+
+##############################
+# Archivos de entorno y configuración
+##############################
+.env
+.env.*
+BACKEND/.env
+BACKEND/.env.*
+
+# Archivos de configuración local
+appsettings.*.json
+launchSettings.json
+
+# Logs
+*.log
+*.logs
+*.nlog
+*.trace
+*.dmp
+
+##############################
+# FRONTEND (Angular / Node)
+##############################
+FRONTEND/dist/
+FRONTEND/out-tsc/
+FRONTEND/tmp/
+FRONTEND/.angular/cache/
+FRONTEND/node_modules/
+
+# Logs
+FRONTEND/*.log
+FRONTEND/npm-debug.log*
+FRONTEND/yarn-debug.log*
+FRONTEND/yarn-error.log*
+FRONTEND/pnpm-debug.log*
+FRONTEND/pnpm-lock.yaml
+FRONTEND/package-lock.json
+
+# Archivos de entorno del frontend
+FRONTEND/.env
+FRONTEND/.env.local
+FRONTEND/.env.*.local
+
+# Archivos de construcción Angular
+FRONTEND/.angular/
+FRONTEND/.angular/cache/
+FRONTEND/.cache/
+
+##############################
+# Editores / SO
+##############################
+.vscode/
+.idea/
+*.sw?
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+##############################
+# Archivos temporales / varios
+##############################
+*.tmp
+*.temp
+*.bak
+*.old
+*.orig
+
+# Residuos de merge o conflictos
+*.rej
+*.orig.*
+
+# Archivos de lock temporales
+*.lock
+
+##############################
+# Repositorios anidados / otros
+##############################
+.git/
+.gitignore~
+!.gitignore
+
+##############################
+# Ignorar carpetas de compilación recursivas
+##############################
+**/bin/
+**/obj/
+**/TestResults/
+**/PublishProfiles/
+**/GeneratedFiles/
