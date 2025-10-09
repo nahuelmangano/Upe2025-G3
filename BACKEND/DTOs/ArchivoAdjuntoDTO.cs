@@ -21,5 +21,7 @@ namespace DTOs
         public int EstudioId { get; set; }
 
         public string? EstudioTipoNombre { get; set; }
+
+        public int Activo { get; set; }
     }
 }

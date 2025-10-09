@@ -84,7 +84,7 @@ namespace BLL.Servicios
                 throw;
             }
         }
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -94,7 +94,9 @@ namespace BLL.Servicios
                 if (obraSocialEncontrada == null)
                     throw new TaskCanceledException("No existe la obra social :<");
 
-                bool respuesta = await _obraSocialRepositorio.Eliminar(obraSocialEncontrada);
+                obraSocialEncontrada.Activo = false;
+
+                bool respuesta = await _obraSocialRepositorio.Editar(obraSocialEncontrada);
 
                 if (!respuesta)
                     throw new TaskCanceledException("No se pudo eliminar");

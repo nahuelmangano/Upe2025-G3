@@ -19,6 +19,8 @@ public partial class Campo
 
     public int PlantillaId { get; set; }
 
+    public bool Activo { get; set; }
+
     public virtual ICollection<CampoValor> CampoValors { get; set; } = new List<CampoValor>();
 
     public virtual Plantilla Plantilla { get; set; } = null!;

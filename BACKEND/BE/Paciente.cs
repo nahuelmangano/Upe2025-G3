@@ -31,6 +31,8 @@ public partial class Paciente
 
     public int? SexoId { get; set; }
 
+    public bool Activo { get; set; }
+
     public virtual Domicilio? Domicilio { get; set; }
 
     public virtual ICollection<Evolucion> Evolucions { get; set; } = new List<Evolucion>();

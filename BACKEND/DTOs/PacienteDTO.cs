@@ -37,5 +37,7 @@ namespace DTOs
         public int? SexoId { get; set; }
 
         public string? SexoNombre { get; set; }
+
+        public int Activo { get; set; }
     }
 }

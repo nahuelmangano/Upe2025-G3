@@ -94,7 +94,7 @@ namespace BLL.Servicios
             throw new NotImplementedException();
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -102,10 +102,12 @@ namespace BLL.Servicios
                     archivo => archivo.Id == id
                 );
 
+                archivoEncontrado.Activo = false;
+
                 if (archivoEncontrado == null)
                     throw new TaskCanceledException("El archivo no existe");
             
-                bool respuesta = await _archivoAdjuntoRepositorio.Eliminar(archivoEncontrado);
+                bool respuesta = await _archivoAdjuntoRepositorio.Editar(archivoEncontrado);
 
                 return respuesta;
             }

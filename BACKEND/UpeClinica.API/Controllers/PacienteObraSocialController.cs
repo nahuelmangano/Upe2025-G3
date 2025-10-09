@@ -77,5 +77,25 @@ namespace UpeClinica.API.Controllers
 
             return Ok(rsp);
         }
+
+        [HttpPut]
+        [Route("Eliminar")]
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            var rsp = new Response<bool>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _pacienteObraSocialServicio.Desactivar(id);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
     }
 }

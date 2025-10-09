@@ -12,8 +12,7 @@ namespace BLL.Servicios.Contrato
         Task<List<ObraSocialDTO>> Lista();
         Task<ObraSocialDTO> Crear(ObraSocialDTO modelo);
         Task<bool> Editar(ObraSocialDTO modelo);
-        Task<bool> Eliminar(int id);
+        Task<bool> Desactivar(int id);
     }
-
 
 }

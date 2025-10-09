@@ -15,6 +15,6 @@ namespace BLL.Servicios.Contrato
 
         Task<bool> Editar(FirmaDigitalDTO modelo);
 
-        Task<bool> Eliminar(int id); 
+        Task<bool> Desactivar(int id); 
     }
 }

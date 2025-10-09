@@ -17,7 +17,7 @@ public partial class Usuario
 
     public string PasswordHash { get; set; } = null!;
 
-    public DateTime? UltimoAcceso { get; set; }
+    public DateTime UltimoAcceso { get; set; }
 
     public int EstadoId { get; set; }
 

@@ -100,7 +100,7 @@ namespace BLL.Servicios
         }
 
         //aun no se sabe si seria mejor agregar un estadoId
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -110,8 +110,10 @@ namespace BLL.Servicios
 
                 if(campoEncontrado == null )
                     throw new TaskCanceledException("El campo no existe");
+
+                campoEncontrado.Activo = false;
             
-                bool respuesta = await _campoRepositorio.Eliminar( campoEncontrado );
+                bool respuesta = await _campoRepositorio.Editar( campoEncontrado );
 
                 return respuesta;
             }

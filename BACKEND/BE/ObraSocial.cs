@@ -9,6 +9,8 @@ public partial class ObraSocial
 
     public string Nombre { get; set; } = null!;
 
+    public bool Activo { get; set; }
+
     public virtual ICollection<PacienteObraSocial> PacienteObraSocials { get; set; } = new List<PacienteObraSocial>();
 
     public virtual ICollection<PlanSalud> PlanSaluds { get; set; } = new List<PlanSalud>();

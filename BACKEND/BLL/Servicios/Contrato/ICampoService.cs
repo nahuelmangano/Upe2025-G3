@@ -15,6 +15,6 @@ namespace BLL.Servicios.Contrato
 
         Task<bool> Editar(CampoDTO modelo);
 
-        Task<bool> Eliminar(int id);
+        Task<bool> Desactivar(int id);
     }
 }

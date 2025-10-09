@@ -77,17 +77,21 @@ namespace BLL.Servicios
                 if (usuarioCreado.Id == 0)
                     throw new TaskCanceledException("No se pudo crear el Usuario");
 
-                // si ingreso datos del medico
-                if (!string.IsNullOrEmpty(modelo.Matricula) && modelo.FechaVencimientoMatricula.HasValue)
+                if(modelo.RolId == 2)
                 {
-                    var medico = new Medico
+                    // si ingreso datos del medico
+                    if (!string.IsNullOrEmpty(modelo.Matricula) && !string.IsNullOrEmpty(modelo.FechaVencimientoMatricula))
                     {
-                        Matricula = modelo.Matricula,
-                        FechaVencimientoMatricula = modelo.FechaVencimientoMatricula.Value,
-                        UsuarioId = usuarioCreado.Id
-                    };
-                    // crear el medico con los datos agregados
-                    await _medicoRepositorio.Crear(medico);
+                        var medico = new Medico
+                        {
+                            Matricula = modelo.Matricula,
+                            // deberia de ingresar año/mes/dia
+                            FechaVencimientoMatricula = DateOnly.Parse(modelo.FechaVencimientoMatricula),
+                            UsuarioId = usuarioCreado.Id
+                        };
+
+                        await _medicoRepositorio.Crear(medico);
+                    }
                 }
 
                 var query = await _usuarioRepositorio.Consultar(usuario =>
@@ -139,7 +143,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -147,14 +151,17 @@ namespace BLL.Servicios
                 usuario.Id == id);
 
                 if (usuarioEncontrado == null)
-                    throw new TaskCanceledException("No existe el Usuario");
+                    throw new TaskCanceledException("No existe el usuario");
 
-                bool respuesta = await _usuarioRepositorio.Eliminar(usuarioEncontrado);
+                usuarioEncontrado.EstadoId = 3;
+
+                bool respuesta = await _usuarioRepositorio.Editar(usuarioEncontrado);
 
                 if (!respuesta)
-                    throw new TaskCanceledException("No se pudo eliminar");
+                    throw new TaskCanceledException("No se pudo editar");
 
                 return respuesta;
+
             }
             catch
             {

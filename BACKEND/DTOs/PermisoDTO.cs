@@ -13,5 +13,7 @@ namespace DTOs
         public string Nombre { get; set; } = null!;
 
         public string Descripcion { get; set; }
+
+        public int Activo { get; set; }
     }
 }

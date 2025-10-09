@@ -86,28 +86,5 @@ namespace BLL.Servicios
                 throw;
             }
         }
-
-        public async Task<bool> Eliminar(int id)
-        {
-            try
-            {
-                var problemaEncontrado = await _problemaRepositorio.Obtener(problema =>
-                problema.Id == id);
-
-                if (problemaEncontrado == null)
-                    throw new TaskCanceledException("No existe el problema");
-
-                bool respuesta = await _problemaRepositorio.Eliminar(problemaEncontrado);
-
-                if (!respuesta)
-                    throw new TaskCanceledException("No se pudo eliminar");
-
-                return respuesta;
-            }
-            catch
-            {
-                throw;
-            }
-        }
     }
 }

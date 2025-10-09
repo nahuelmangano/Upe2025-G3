@@ -102,7 +102,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -112,7 +112,9 @@ namespace BLL.Servicios
                 if (pacienteEncontrado == null)
                     throw new TaskCanceledException("No existe el paciente :<");
 
-                bool respuesta = await _pacienteRepositorio.Eliminar(pacienteEncontrado);
+                pacienteEncontrado.Activo = false;
+
+                bool respuesta = await _pacienteRepositorio.Editar(pacienteEncontrado);
 
                 if (!respuesta)
                     throw new TaskCanceledException("No se pudo eliminar");

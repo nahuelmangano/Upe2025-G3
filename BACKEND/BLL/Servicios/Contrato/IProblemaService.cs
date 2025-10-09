@@ -12,6 +12,5 @@ namespace BLL.Servicios.Contrato
         Task<List<ProblemaDTO>> Lista();
         Task<ProblemaDTO> Crear(ProblemaDTO modelo);
         Task<bool> Editar(ProblemaDTO modelo);
-        Task<bool> Eliminar(int id);
     }
 }

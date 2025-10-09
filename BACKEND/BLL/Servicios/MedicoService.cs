@@ -15,11 +15,13 @@ namespace BLL.Servicios
     public class MedicoService : IMedicoService
     {
         private readonly IGenericRepository<Medico> _medicoRepositorio;
+        private readonly IGenericRepository<Usuario> _usuarioRepositorio;
         private readonly IMapper _mapper;
 
-        public MedicoService(IGenericRepository<Medico> medicoRepositorio, IMapper mapper)
+        public MedicoService(IGenericRepository<Medico> medicoRepositorio, IGenericRepository<Usuario> usuarioRepositorio, IMapper mapper)
         {
             _medicoRepositorio = medicoRepositorio;
+            _usuarioRepositorio = usuarioRepositorio;
             _mapper = mapper;
         }
 
@@ -71,17 +73,31 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
-                var medicoEncontrado = await _medicoRepositorio.Obtener(medico =>
-                medico.Id == id);
+                var medicoEncontrado = await _medicoRepositorio
+                    .Obtener(
+                        medico =>
+                        medico.Id == id
+                    );
 
                 if (medicoEncontrado == null)
                     throw new TaskCanceledException("No existe el medico");
 
-                bool respuesta = await _medicoRepositorio.Eliminar(medicoEncontrado);
+                var usuarioEncontrado = await _usuarioRepositorio
+                    .Obtener(
+                        u => 
+                        u.Id == medicoEncontrado.UsuarioId
+                    );
+                
+                if (usuarioEncontrado == null)
+                    throw new TaskCanceledException("No existe el medico");
+
+                usuarioEncontrado.EstadoId = 3;
+
+                bool respuesta = await _medicoRepositorio.Editar(medicoEncontrado);
 
                 if (!respuesta)
                     throw new TaskCanceledException("No se pudo eliminar");

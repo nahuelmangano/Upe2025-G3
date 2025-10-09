@@ -80,7 +80,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -92,7 +92,10 @@ namespace BLL.Servicios
                 {
                     throw new TaskCanceledException("El permiso no existe");
                 }
-                bool respuesta = await _permisoRepositorio.Eliminar(permisoEncontrado);
+
+                permisoEncontrado.Activo = false;
+
+                bool respuesta = await _permisoRepositorio.Editar(permisoEncontrado);
 
                 if(!respuesta)
                 {

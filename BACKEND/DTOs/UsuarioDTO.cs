@@ -28,6 +28,6 @@ namespace DTOs
 
         public string? Matricula { get; set; }
 
-        public DateTime? FechaVencimientoMatricula { get; set; }
+        public string? FechaVencimientoMatricula { get; set; }
     }
 }

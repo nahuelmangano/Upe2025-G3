@@ -17,6 +17,6 @@ namespace BLL.Servicios.Contrato
 
         Task<Stream> Descargar(int id);
 
-        Task<bool> Eliminar(int id); // para un furo, aun no hay un estado
+        Task<bool> Desactivar(int id); 
     }
 }

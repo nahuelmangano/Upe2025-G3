@@ -12,6 +12,6 @@ namespace BLL.Servicios.Contrato
         Task<List<TipoEstudioDTO>> Lista();
         Task<TipoEstudioDTO> Crear(TipoEstudioDTO modelo);
         Task<bool>Editar(TipoEstudioDTO modelo);
-        Task<bool> Eliminar(int id);
+        Task<bool> Desactivar(int id);
     }
 }

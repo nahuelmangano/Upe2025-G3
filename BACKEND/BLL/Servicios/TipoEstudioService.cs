@@ -78,7 +78,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool>Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -88,7 +88,10 @@ namespace BLL.Servicios
                 {
                     throw new TaskCanceledException("El tipo de estudio no existe");
                 }
-                bool respuesta = await _tipoEstudioRepositorio.Eliminar(tipoEstudioEncontrado);
+
+                tipoEstudioEncontrado.Activo = false; 
+
+                bool respuesta = await _tipoEstudioRepositorio.Editar(tipoEstudioEncontrado);
 
                 if (!respuesta)
                 {

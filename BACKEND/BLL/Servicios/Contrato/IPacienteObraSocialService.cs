@@ -15,6 +15,6 @@ namespace BLL.Servicios.Contrato
 
         Task<bool> Editar(PacienteObraSocialDTO modelo);
 
-        //Task<bool> Eliminar(int id); no se si tiene logica eliminarlo
+        Task<bool> Desactivar(int id); 
     }
 }

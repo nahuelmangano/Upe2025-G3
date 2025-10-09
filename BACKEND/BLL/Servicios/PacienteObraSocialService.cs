@@ -85,12 +85,37 @@ namespace BLL.Servicios
                 if (pacienteObraSocial == null)
                     throw new TaskCanceledException("Los valores no existen");
 
-                pacienteObraSocial.Estado = pacienteObraSocialModelo.Estado;
+                pacienteObraSocial.Activo = pacienteObraSocialModelo.Activo;
                 pacienteObraSocial.PacienteId = pacienteObraSocialModelo.PacienteId;
                 pacienteObraSocial.ObraSocialId = pacienteObraSocialModelo.ObraSocialId;
                 pacienteObraSocial.NumeroAfiliado = pacienteObraSocialModelo.NumeroAfiliado;
 
                 bool respuesta = await _pacienteObraSocialRepositorio.Editar(pacienteObraSocial);
+
+                return respuesta;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> Desactivar(int id)
+        {
+            try
+            {
+                var pacienteObraEncontrado = await _pacienteObraSocialRepositorio.Obtener(pacienteObra =>
+                pacienteObra.Id == id);
+
+                if (pacienteObraEncontrado == null)
+                    throw new TaskCanceledException("No existe el paciente-obrasocial :<");
+
+                pacienteObraEncontrado.Activo = false;
+
+                bool respuesta = await _pacienteObraSocialRepositorio.Editar(pacienteObraEncontrado);
+
+                if (!respuesta)
+                    throw new TaskCanceledException("No se pudo eliminar");
 
                 return respuesta;
             }

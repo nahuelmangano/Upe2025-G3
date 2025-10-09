@@ -9,7 +9,7 @@ public partial class PacienteObraSocial
 
     public DateTime? VigenteDesde { get; set; }
 
-    public bool? Estado { get; set; }
+    public bool Activo { get; set; }
 
     public int PacienteId { get; set; }
 

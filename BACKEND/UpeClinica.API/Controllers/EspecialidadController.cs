@@ -52,7 +52,8 @@ namespace UpeClinica.API.Controllers
         /// </summary>
         /// <param name="id">ID de la especialidad</param>
         /// <returns>Especialidad encontrada</returns>
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route("ObtenerPorId/{id:int}")]
         public async Task<IActionResult> ObtenerPorId(int id)
         {
             var respuesta = new Response<EspecialidadDTO>();
@@ -96,6 +97,7 @@ namespace UpeClinica.API.Controllers
         /// <param name="especialidad">Datos de la especialidad a crear</param>
         /// <returns>Especialidad creada</returns>
         [HttpPost]
+        [Route("Crear")]
         public async Task<IActionResult> Crear([FromBody] EspecialidadDTO especialidad)
         {
             var respuesta = new Response<EspecialidadDTO>();
@@ -138,7 +140,8 @@ namespace UpeClinica.API.Controllers
         /// <param name="id">ID de la especialidad a actualizar</param>
         /// <param name="especialidad">Nuevos datos de la especialidad</param>
         /// <returns>Especialidad actualizada</returns>
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Route("EditarPorId/{id:int}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] EspecialidadDTO especialidad)
         {
             var respuesta = new Response<EspecialidadDTO>();
@@ -188,7 +191,8 @@ namespace UpeClinica.API.Controllers
         /// </summary>
         /// <param name="id">ID de la especialidad a eliminar</param>
         /// <returns>Resultado de la operación</returns>
-        [HttpDelete("{id}")]
+        [HttpPut]
+        [Route("Eliminar/{id:int}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var respuesta = new Response<bool>();
@@ -196,7 +200,7 @@ namespace UpeClinica.API.Controllers
             try
             {
                 _logger.LogInformation("Eliminando especialidad con ID: {Id}", id);
-                var eliminada = await _especialidadServicio.EliminarAsync(id);
+                var eliminada = await _especialidadServicio.DesactivarAsync(id);
                 
                 if (!eliminada)
                 {
@@ -208,7 +212,7 @@ namespace UpeClinica.API.Controllers
 
                 respuesta.Estado = true;
                 respuesta.Valor = true;
-                respuesta.Mensaje = "Especialidad eliminada correctamente";
+                respuesta.Mensaje = "Especialidad desactivada correctamente";
                 return Ok(respuesta);
             }
             catch (ArgumentException ex)

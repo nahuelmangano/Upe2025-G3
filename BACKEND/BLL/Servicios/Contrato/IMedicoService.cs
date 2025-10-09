@@ -11,6 +11,6 @@ namespace BLL.Servicios.Contrato
     {
         Task<List<MedicoDTO>> Lista();
         Task<bool> Editar(MedicoDTO modelo);
-        Task<bool> Eliminar(int id);
+        Task<bool> Desactivar(int id);
     }
 }

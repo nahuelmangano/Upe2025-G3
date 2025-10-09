@@ -108,7 +108,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> EliminarAsync(int id)
+        public async Task<bool> DesactivarAsync(int id)
         {
             try
             {
@@ -116,10 +116,13 @@ namespace BLL.Servicios
                     throw new ArgumentException("El ID debe ser mayor que cero", nameof(id));
 
                 var especialidadExistente = await _especialidadRepositorio.Obtener(x => x.Id == id);
+                
                 if (especialidadExistente == null)
                     return false;
 
-                return await _especialidadRepositorio.Eliminar(especialidadExistente);
+                especialidadExistente.Activo = false;
+
+                return await _especialidadRepositorio.Editar(especialidadExistente);
             }
             catch (Exception ex)
             {

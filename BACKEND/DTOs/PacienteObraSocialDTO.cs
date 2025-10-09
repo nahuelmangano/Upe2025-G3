@@ -12,7 +12,7 @@ namespace DTOs
 
         public DateTime? VigenteDesde { get; set; }
 
-        public int? Estado { get; set; }
+        public int Activo { get; set; }
 
         public int PacienteId { get; set; }
 

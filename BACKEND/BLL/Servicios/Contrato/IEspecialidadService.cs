@@ -13,6 +13,6 @@ namespace BLL.Servicios.Contrato
         Task<EspecialidadDTO> ObtenerPorIdAsync(int id);
         Task<EspecialidadDTO> CrearAsync(EspecialidadDTO especialidad);
         Task<EspecialidadDTO> ActualizarAsync(int id, EspecialidadDTO especialidad);
-        Task<bool> EliminarAsync(int id);
+        Task<bool> DesactivarAsync(int id);
     }
 }

@@ -17,5 +17,7 @@ public partial class ArchivoAdjunto
 
     public int EstudioId { get; set; }
 
+    public bool Activo { get; set; }
+
     public virtual Estudio Estudio { get; set; } = null!;
 }

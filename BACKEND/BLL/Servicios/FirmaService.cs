@@ -91,7 +91,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<bool> Desactivar(int id)
         {
             try
             {
@@ -102,7 +102,9 @@ namespace BLL.Servicios
                 if (firmaEncontrada == null)
                     throw new TaskCanceledException("La firma no existe");
 
-                bool respuesta = await _firmaRepositorio.Eliminar(firmaEncontrada);
+                firmaEncontrada.Valido = false;
+
+                bool respuesta = await _firmaRepositorio.Editar(firmaEncontrada);
 
                 return respuesta;
             }

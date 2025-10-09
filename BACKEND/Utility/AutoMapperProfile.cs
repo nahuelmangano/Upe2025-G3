@@ -24,11 +24,19 @@ namespace Utility
                 .ForMember(destino =>
                 destino.FechaSubida,
                 opt => opt.MapFrom(origen => origen.FechaSubida.ToString("dd/MM/yyyy"))
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
                 );
             CreateMap<ArchivoAdjuntoDTO, ArchivoAdjunto>()
                 .ForMember(destino =>
                     destino.Estudio,
                     opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
             #endregion ArchivoAdjunto
 
@@ -42,6 +50,10 @@ namespace Utility
                     destino.PlantillaNombre,
                     opt => opt.MapFrom(origen => origen.Plantilla.Nombre)
                 )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
+                )
                 .ReverseMap() // dto a modelo
                 .ForMember(destino =>
                     destino.Plantilla,
@@ -54,6 +66,10 @@ namespace Utility
                 .ForMember(destino =>
                     destino.CampoValors,
                     opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
 
             #endregion Campo
@@ -90,10 +106,18 @@ namespace Utility
 
             #region Especialidad
             CreateMap<Especialidad, EspecialidadDTO>()
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
+                )
                 .ReverseMap()
                 .ForMember(destino =>
                 destino.Medicos,
                 opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
             #endregion Especialidad
 
@@ -279,6 +303,10 @@ namespace Utility
 
             #region ObraSocial
             CreateMap<ObraSocial, ObraSocialDTO>()
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
+                )
                 .ReverseMap()
                 .ForMember(destino =>
                 destino.PacienteObraSocials,
@@ -287,6 +315,10 @@ namespace Utility
                 .ForMember(destino =>
                 destino.PlanSaluds,
                 opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
             #endregion ObraSocial
 
@@ -304,6 +336,10 @@ namespace Utility
                 destino.SexoNombre,
                 opt => opt.MapFrom(origen => origen.Sexo.Nombre)
                 )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
+                )
                 .ReverseMap()
                 .ForMember(destino =>
                 destino.Domicilio,
@@ -320,6 +356,10 @@ namespace Utility
                 .ForMember(destino =>
                 destino.Sexo,
                 opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
             #endregion Paciente
 
@@ -330,8 +370,8 @@ namespace Utility
                 opt => opt.MapFrom(origen => origen.VigenteDesde.Value.ToString("dd/MM/yyyy"))
                 )
                 .ForMember(destino =>
-                destino.Estado,
-                opt => opt.MapFrom(origen => origen.Estado == true ? 1 : 0)
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
                 )
                 .ForMember(destino =>
                 destino.PacienteNombre,
@@ -343,8 +383,8 @@ namespace Utility
                 )
                 .ReverseMap()
                 .ForMember(destino =>
-                destino.Estado,
-                opt => opt.MapFrom(origen => origen.Estado == 1 ? true : false)
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 )
                 .ForMember(destino =>
                 destino.ObraSocial,
@@ -471,10 +511,18 @@ namespace Utility
 
             #region TipoEstudio
             CreateMap<TipoEstudio, TipoEstudioDTO>()
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
+                )
                 .ReverseMap()
                 .ForMember(destino =>
                 destino.Estudios,
                 opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
             #endregion TipoEstudio
 
@@ -494,7 +542,7 @@ namespace Utility
                 )
                 .ForMember(destino =>
                 destino.FechaVencimientoMatricula,
-                opt => opt.MapFrom(origen => origen.Medico.FechaVencimientoMatricula)
+                opt => opt.MapFrom(origen => origen.Medico.FechaVencimientoMatricula.ToString("dd/MM/yyyy"))
                 );
 
 

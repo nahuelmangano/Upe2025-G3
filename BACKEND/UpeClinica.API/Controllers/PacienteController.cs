@@ -92,7 +92,7 @@ namespace UpeClinica.API.Controllers
             try
             {
                 rsp.Estado = true;
-                rsp.Valor = await _pacienteServicio.Eliminar(id);
+                rsp.Valor = await _pacienteServicio.Desactivar(id);
             }
             catch (Exception ex)
             {

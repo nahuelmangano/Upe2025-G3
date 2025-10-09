@@ -25,5 +25,7 @@ namespace DTOs
         public int PlantillaId { get; set; }
 
         public string? PlantillaNombre { get; set; }
+
+        public int Activo { get; set; }
     }
 }
