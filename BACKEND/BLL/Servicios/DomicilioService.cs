@@ -36,5 +36,26 @@ namespace BLL.Servicios
                 throw;
             }
         }
+        public async Task<DomicilioDTO> Crear(DomicilioDTO modelo)
+        {
+            try
+            {
+                var domicilioCreado = await _domicilioRepositorio.Crear(_mapper.Map<Domicilio>(modelo));
+
+                if (domicilioCreado.Id == 0)
+                    throw new TaskCanceledException("No se pudo crear el domicilio");
+
+                var query = await _domicilioRepositorio.Consultar(domicilio =>
+                    domicilio.Id == domicilioCreado.Id);
+
+                domicilioCreado = query.First();
+
+                return _mapper.Map<DomicilioDTO>(domicilioCreado);
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

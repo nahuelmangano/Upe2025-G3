@@ -1,0 +1,61 @@
+
+:root{--primary:#4c3aff;--sidebar:#30266e;--sidebar-active:#5848ea;--bg:#f3f4fa;--card:#ffffff;--muted:#6b7280;--line:#e6e6ee;--pill:#f1f0ff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:#111}
+a{text-decoration:none;color:inherit} small{color:#6b7280}
+.app-shell{display:grid;grid-template-columns:280px 1fr;grid-template-rows:64px 1fr;min-height:100vh}
+.topbar{grid-column:1/3;background:var(--card);display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;font-size:28px}.user{display:flex;align-items:center;gap:10px;color:#444}.avatar{width:34px;height:34px;border-radius:50%;background:#ddd;display:inline-block}
+.sidebar{background:var(--sidebar);color:#fff;padding:14px 12px;display:flex;flex-direction:column;gap:14px}
+.side-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px}
+.side-photo{width:100%;height:120px;border-radius:10px;background:#d8d6ff;display:flex;align-items:center;justify-content:center;color:#1f1f1f;font-weight:600}
+.side-grid{margin-top:10px;font-size:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;color:#e8e8ff}
+.btn-row{display:flex;gap:10px;margin:10px 0}
+.btn-outline{border:1px solid #cfc7ff;color:#cfc7ff;background:transparent;padding:8px 12px;border-radius:10px;cursor:pointer}
+.menu{display:flex;flex-direction:column;margin-top:6px}
+.menu a{padding:10px 12px;border-radius:10px;color:#e8e8ff}
+.menu a.active{background:var(--sidebar-active);color:#fff}
+.content{padding:18px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.h3{margin:0 0 10px 0;font-size:20px}
+.row{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.badge{display:inline-block;padding:4px 10px;border-radius:8px;border:1px solid #9ca3af;background:#f7f7fb;font-size:12px;color:#111}
+.badge-danger{color:#d63031;border-color:#d63031;background:transparent}
+.evo{padding:12px;border-radius:10px;background:var(--pill);margin:12px 0}.evo .head{display:flex;justify-content:space-between;font-weight:600}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px;border-bottom:1px solid var(--line);text-align:left}.table th{font-weight:700}
+input,select,textarea{padding:10px;border-radius:10px;border:1px solid #ddd}
+.btn{background:var(--primary);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
+
+/*#MODAL nuevo paciente */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(17,24,39,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:24px;
+}
+.modal-card{
+  width:100%;
+  max-width:720px;
+  background:#fff;
+  border-radius:16px;
+  border:1px solid var(--line);
+  box-shadow:0 20px 40px rgba(31,41,55,.18);
+  padding:24px;
+}
+.modal-card form label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:14px;
+  color:#374151;
+}
+.modal-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap:12px;
+}

@@ -38,5 +38,25 @@ namespace UpeClinica.API.Controllers
         }
 
         // tambien se deberia crear cuando se crea el paciente
+        [HttpPost]
+        [Route("Crear")]
+        public async Task<IActionResult> Crear([FromBody] DomicilioDTO domicilio)
+        {
+            var rsp = new Response<DomicilioDTO>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _domicilioServicio.Crear(domicilio);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
+
     }
 }

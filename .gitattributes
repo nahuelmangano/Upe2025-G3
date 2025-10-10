@@ -1,0 +1,7 @@
+* text=auto
+*.dll binary
+*.pdb binary
+*.exe binary
+**/bin/** merge=ours
+**/obj/** merge=ours
+FRONTEND/node_modules/** merge=ours
