@@ -8,6 +8,9 @@
     "moduleResolution": "node",
     "target": "ES2022",
     "module": "ES2022",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"]
   }

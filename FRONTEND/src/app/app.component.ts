@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { PacientesService } from './services/pacientes.service';
+import { PacientesService } from './services-old/pacientes.service';
 import { filter } from 'rxjs/operators';
 
 @Component({

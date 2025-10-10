@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { EvolucionesService } from '../services/evoluciones.service';
-import { TemplatesService } from '../../services/templates.service';
+import { TemplatesService } from '../../services-old/templates.service';
 import { ProblemasService, Problema } from '../services/problemas.service';
 
 @Component({
