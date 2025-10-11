@@ -29,7 +29,15 @@ namespace BLL.Servicios
             {
                 var queryEvoluciones = await _evolucionRepositorio.Consultar(
                     evolucion => evolucion.PacienteId == pacienteId);
-                return _mapper.Map<List<EvolucionDTO>>(queryEvoluciones.ToList());
+
+                var lista = await queryEvoluciones
+                    .Include(e => e.Problema)
+                    .Include(e => e.EstadoProblema)
+                    .Include(e => e.Medico)
+                        .ThenInclude(m => m.Usuario)
+                    .ToListAsync();
+
+                return _mapper.Map<List<EvolucionDTO>>(lista);
             }
             catch
             {

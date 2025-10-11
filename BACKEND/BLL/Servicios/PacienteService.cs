@@ -9,17 +9,22 @@ using DAL.Repositorios.Contrato;
 using DTOs;
 using BE;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace BLL.Servicios
 {
     public class PacienteService : IPacienteService
     {
         private readonly IGenericRepository<Paciente> _pacienteRepositorio;
+        private readonly IGenericRepository<Evolucion> _evolucionRepositorio;
         private readonly IMapper _mapper;
 
-        public PacienteService(IGenericRepository<Paciente> pacienteRepositorio, IMapper mapper)
+        public PacienteService(IGenericRepository<Paciente> pacienteRepositorio,
+            IGenericRepository<Evolucion> evolucionRepositorio,
+            IMapper mapper)
         {
             _pacienteRepositorio = pacienteRepositorio;
+            _evolucionRepositorio = evolucionRepositorio;
             _mapper = mapper;
         }
 
@@ -118,6 +123,71 @@ namespace BLL.Servicios
                     throw new TaskCanceledException("No se pudo eliminar");
 
                 return respuesta;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<ResumenPacienteDTO> ObtenerResumen(int pacienteId)
+        {
+            try
+            {
+                var query = await _evolucionRepositorio.Consultar(e => e.PacienteId == pacienteId);
+                var evoluciones = await query
+                    .Include(e => e.Problema)
+                    .Include(e => e.EstadoProblema)
+                    .OrderByDescending(e => e.FechaConsulta)
+                    .ToListAsync();
+
+                if (!evoluciones.Any())
+                {
+                    return new ResumenPacienteDTO();
+                }
+
+                var resumen = new ResumenPacienteDTO
+                {
+                    Evoluciones = evoluciones
+                        .Select(e => new ResumenEvolucionDTO
+                        {
+                            Fecha = e.FechaConsulta.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                            Hora = e.FechaConsulta.ToString("HH:mm 'hs'", CultureInfo.InvariantCulture),
+                            Titulo = e.Problema?.Titulo ?? e.DiagnosticoInicial,
+                            Descripcion = string.IsNullOrWhiteSpace(e.Descripcion) ? e.DiagnosticoInicial : e.Descripcion
+                        })
+                        .ToList(),
+                    Problemas = evoluciones
+                        .Where(e => e.Problema != null)
+                        .GroupBy(e => e.ProblemaId)
+                        .Select(g =>
+                        {
+                            var evolucionReciente = g.OrderByDescending(ev => ev.FechaConsulta).First();
+                            var problema = evolucionReciente.Problema!;
+                            var estadoNombre = evolucionReciente.EstadoProblema?.Nombre;
+
+                            bool activoSegunEstado = estadoNombre != null &&
+                                estadoNombre.Equals("Activo", StringComparison.OrdinalIgnoreCase);
+
+                            bool activoSegunFechas = !problema.FechaFin.HasValue || problema.FechaFin >= DateTime.Today;
+
+                            var descripcionProblema = string.IsNullOrWhiteSpace(problema.Descripcion)
+                                ? problema.Titulo ?? string.Empty
+                                : problema.Descripcion;
+
+                            return new ResumenProblemaDTO
+                            {
+                                Titulo = descripcionProblema ?? string.Empty,
+                                Tipo = problema.Titulo ?? string.Empty,
+                                Activo = activoSegunEstado || activoSegunFechas
+                            };
+                        })
+                        .OrderByDescending(p => p.Activo)
+                        .ThenBy(p => p.Titulo)
+                        .ToList()
+                };
+
+                return resumen;
             }
             catch
             {

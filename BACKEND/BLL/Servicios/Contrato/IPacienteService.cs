@@ -13,5 +13,6 @@ namespace BLL.Servicios.Contrato
         Task<PacienteDTO> Crear(PacienteDTO modelo);
         Task<bool> Editar(PacienteDTO modelo);
         Task<bool> Eliminar(int id);
+        Task<ResumenPacienteDTO> ObtenerResumen(int pacienteId);
     }
 }

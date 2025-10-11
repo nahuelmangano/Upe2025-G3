@@ -26,7 +26,6 @@ import { EvolucionesService, Evolucion, EvolucionInput } from '../services/evolu
             <thead>
               <tr>
                 <th>Problema</th>
-                <th>Paciente</th>
                 <th>Diagnostico Inicial</th>
                 <th>Diagnostico Final</th>
                 <th>Medico</th>
@@ -37,7 +36,6 @@ import { EvolucionesService, Evolucion, EvolucionInput } from '../services/evolu
             <tbody>
               <tr *ngFor="let e of pageItems()">
                 <td>{{ e.problema }}</td>
-                <td>{{ e.paciente }}</td>
                 <td>{{ e.diagnosticoInicial }}</td>
                 <td>{{ e.diagnosticoFinal }}</td>
                 <td>{{ e.medico }}</td>
@@ -153,7 +151,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
 
   filtradas(): Evolucion[] {
     const term = this.q.toLowerCase();
-    return this.data.filter(e => `${e.problema} ${e.paciente} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado}`.toLowerCase().includes(term));
+    return this.data.filter(e => `${e.problema} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado}`.toLowerCase().includes(term));
   }
   pagesCount(): number { return Math.max(1, Math.ceil(this.filtradas().length / this.pageSize)); }
   pageItems(): Evolucion[] { const s = this.page * this.pageSize; return this.filtradas().slice(s, s + this.pageSize); }

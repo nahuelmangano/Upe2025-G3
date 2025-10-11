@@ -38,7 +38,27 @@ namespace UpeClinica.API.Controllers
             return Ok(rsp);
         }
 
-        
+        [HttpGet]
+        [Route("Resumen/{pacienteId:int}")]
+        public async Task<IActionResult> Resumen(int pacienteId)
+        {
+            var rsp = new Response<ResumenPacienteDTO>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _pacienteServicio.ObtenerResumen(pacienteId);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
+
+
         [HttpPost]
         [Route("Crear")]
         public async Task<IActionResult> Crear([FromBody] PacienteDTO paciente)

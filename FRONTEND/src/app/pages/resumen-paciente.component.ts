@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ApiService } from '../services/api.service';
+import { ApiService, ResumenPaciente } from '../services/api.service';
 
 @Component({
   standalone: true,
@@ -30,7 +30,7 @@ import { ApiService } from '../services/api.service';
   </div>`
 })
 export class ResumenPacienteComponent implements OnInit, OnDestroy {
-  resumen: any;
+  resumen?: ResumenPaciente;
   sub?: Subscription;
   constructor(private api: ApiService, private route: ActivatedRoute) {}
 
