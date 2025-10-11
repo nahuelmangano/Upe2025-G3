@@ -1,0 +1,29 @@
+<mat-toolbar class="panel" color="primary">
+  <mat-toolbar-row>
+    <span class="color-primario mr titulo">SALUD - UPE</span>
+    <button mat-icon-button (click)="sidenav.toggle()">
+      <mat-icon class="barra">menu</mat-icon>
+    </button>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<mat-sidenav-container class="test">
+  <mat-sidenav #sidenav opened="true" class="contenedor-marco" mode="side">
+    <mat-nav-list>
+
+      <mat-list-item>
+        <a routerLink="/pages/usuario" class="marco">
+          <mat-icon class="icono-usuario" style="margin-right: 16px;">group</mat-icon>
+          <span class="text-usuario">Usuarios</span>
+        </a>
+      </mat-list-item>
+
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div style="height: 90vh;">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

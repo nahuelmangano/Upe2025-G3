@@ -22,11 +22,11 @@ export const routes: Routes = [
 
   { path: 'login', component: LoginComponent },
 
-  // {
-  //   path: 'pages',
-  //   loadChildren: () =>
-  //     import('./components/layout/layout-routing-module').then(m => m.LayoutRoutingModule)
-  // },
+  {
+    path: 'pages',
+    loadChildren: () =>
+      import('./components/layout/layout-routing-module').then(m => m.LayoutRoutingModule)
+  },
 
   // Redirección para rutas inválidas
   { path: '**', redirectTo: 'login', pathMatch: 'full' }

@@ -1,0 +1,86 @@
+<h1 class="page-title color-primario">Usuarios</h1>
+
+<mat-card class="main-card">
+    <mat-card-title class="card-title">
+        <div class="title-content">
+            <button mat-raised-button color="primary" (click)="nuevoUsuario()">
+                <mat-icon mat-list-icon>add</mat-icon> Nuevo Usuario
+            </button>
+        </div>
+    </mat-card-title>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-content class="dashboard-card-content">
+        <mat-form-field appearance="fill" class="search-field">
+            <mat-label>Buscar</mat-label>
+            <input matInput (keyup)="aplicarFiltroTabla($event)" #input>
+        </mat-form-field>
+
+        <div class="mat-elevation-z2">
+            <table mat-table [dataSource]="dataListaUsuarios" class="data-table">
+
+                <ng-container matColumnDef="nombre">
+                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                    <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="apellido">
+                    <th mat-header-cell *matHeaderCellDef> Apellido </th>
+                    <td mat-cell *matCellDef="let element"> {{element.apellido}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="mail">
+                    <th mat-header-cell *matHeaderCellDef> Mail </th>
+                    <td mat-cell *matCellDef="let element"> {{element.mail}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="rolNombre">
+                    <th mat-header-cell *matHeaderCellDef> Rol </th>
+                    <td mat-cell *matCellDef="let element"> {{element.rolNombre}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="estado">
+                    <th mat-header-cell *matHeaderCellDef> Estado </th>
+                    <td mat-cell *matCellDef="let element"> {{element.estadoId == 1 ? 'Activo' : 'No activo'}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="matricula">
+                    <th mat-header-cell *matHeaderCellDef> Matricula </th>
+                    <td mat-cell *matCellDef="let element"> {{element.matricula}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="vencimientoMatricula">
+                    <th mat-header-cell *matHeaderCellDef> Vencimiento Matricula </th>
+                    <td mat-cell *matCellDef="let element"> {{element.fechaVencimientoMatricula}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef class="actions-column"></th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="actions-container">
+                            <button mat-icon-button color="primary" class="action-button" (click)="editarUsuario(element)">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                            <button mat-icon-button color="warn" class="action-button" (click)="eliminarUsuario(element)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="columnasTabla"></tr>
+                <tr mat-row *matRowDef="let row; columns: columnasTabla;"></tr>
+                <tr class="mat-row no-data-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="7">
+                        No hay datos que coincidan con el filtro "{{input.value}}"
+                    </td>
+                </tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+
+        </div>
+
+    </mat-card-content>
+</mat-card>

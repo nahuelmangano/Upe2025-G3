@@ -1,0 +1,50 @@
+
+.titulo {
+    font-size: 25px;
+}
+
+.mr {
+    margin-right: 20px;
+}
+
+.color-primario {
+    color: #352D77;
+    font-weight: bold;
+}
+
+.test {
+    border-radius: none !important;
+}
+
+.barra {
+    font-size: 30px;
+    color: #352D77;
+    display: inline-block;
+    transform: translate(-1px, -3px);
+}
+
+.marco {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    width: 100%;
+}
+
+.icono-usuario,
+.text-usuario {
+    color: white;
+}
+
+.panel {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(4px);
+}
+
+mat-sidenav.contenedor-marco {
+    width: 200px;
+    background-color: #352D77;
+  border-radius: 0 !important;
+}
