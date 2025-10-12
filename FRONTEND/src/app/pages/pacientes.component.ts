@@ -5,6 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { PacientesService, Paciente, PacienteCreate, PacienteUpdate } from '../services/pacientes.service';
 import { DomicilioService, DomicilioInput } from '../services/domicilio.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   standalone: true,
@@ -49,7 +50,7 @@ import { DomicilioService, DomicilioInput } from '../services/domicilio.service'
                     <a (click)="confirmDelete(p)" title="Eliminar" style="cursor:pointer;color:#d63031">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                     </a>
-                    <a (click)="verResumen(p)" style="cursor:pointer;color:var(--primary)">Resumen</a>
+                    <a *ngIf="canViewResumen" (click)="verResumen(p)" style="cursor:pointer;color:var(--primary)">Resumen</a>
                   </div>
                 </td>
               </tr>
@@ -200,6 +201,7 @@ export class PacientesComponent implements OnInit {
   pageSize = 5;
   loading = false;
   error = '';
+  canViewResumen = true;
 
   modalOpen = false;
   saving = false;
@@ -212,8 +214,11 @@ export class PacientesComponent implements OnInit {
   constructor(
     private api: PacientesService,
     private domicilios: DomicilioService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private auth: AuthService
+  ) {
+    this.canViewResumen = !this.auth.isRecepcionista();
+  }
 
   ngOnInit(): void { this.load(); }
 
@@ -332,6 +337,7 @@ export class PacientesComponent implements OnInit {
   }
 
   verResumen(p: Paciente): void {
+    if (!this.canViewResumen) { return; }
     this.router.navigate(['/pacientes', p.id, 'resumen']);
   }
 
