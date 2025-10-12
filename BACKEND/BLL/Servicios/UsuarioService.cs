@@ -72,6 +72,7 @@ namespace BLL.Servicios
             try
             {
                 var usuarioEntidad = _mapper.Map<Usuario>(modelo);
+                usuarioEntidad.EstadoId = 1;
                 var usuarioCreado = await _usuarioRepositorio.Crear(usuarioEntidad);
 
                 if (usuarioCreado.Id == 0)

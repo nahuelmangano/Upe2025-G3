@@ -4,7 +4,7 @@ export interface Usuario {
     apellido: string,
     mail: string,
     passwordHash: string,
-    estadoId: number,
+    estadoId?: number | null,
     estadoNombre?: string | null,
     rolId: number,
     rolNombre?: string | null,

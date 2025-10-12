@@ -11,9 +11,9 @@ export class RolService {
   private http = inject(HttpClient);
   private apiUrl = inject(API_URL);
 
-  private urlApi = this.apiUrl + 'Rol/';
+  private urlApi = this.apiUrl + 'Catalogo/';
 
     lista(): Observable<ResponseApi> {
-    return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
+    return this.http.get<ResponseApi>(`${this.urlApi}Rol`);
   }
 }

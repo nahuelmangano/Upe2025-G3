@@ -18,7 +18,7 @@ namespace DTOs
 
         public string PasswordHash { get; set; } = null!;
 
-        public int EstadoId { get; set; }
+        public int? EstadoId { get; set; }
 
         public string? EstadoNombre { get; set; }
 

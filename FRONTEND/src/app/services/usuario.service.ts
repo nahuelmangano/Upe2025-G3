@@ -25,7 +25,7 @@ export class UsuarioService {
   }
 
   crear(request: Usuario): Observable<ResponseApi> {
-    return this.http.post<ResponseApi>(`${this.urlApi}Guardar`, request);
+    return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
   }
 
   editar(request: Usuario): Observable<ResponseApi> {
@@ -33,6 +33,6 @@ export class UsuarioService {
   }
 
   eliminar(id: number): Observable<ResponseApi> {
-    return this.http.delete<ResponseApi>(`${this.urlApi}Eliminar/${id}`);
+    return this.http.put<ResponseApi>(`${this.urlApi}Eliminar/${id}`, {});
   }
 }

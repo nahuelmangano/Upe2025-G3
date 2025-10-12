@@ -6,25 +6,44 @@
 
       <mat-grid-tile>
         <mat-form-field appearance="outline">
-          <mat-label>Nombre Completo</mat-label>
-          <input matInput autocomplete="off" formControlName="nombreCompleto">
+          <mat-label>Nombre</mat-label>
+          <input matInput autocomplete="off" formControlName="nombre">
           <mat-icon matSuffix>account-box</mat-icon>
         </mat-form-field>
       </mat-grid-tile>
 
       <mat-grid-tile>
         <mat-form-field appearance="outline">
-          <mat-label>Correo</mat-label>
-          <input matInput autocomplete="off" formControlName="correo">
+          <mat-label>Apellido</mat-label>
+          <input matInput autocomplete="off" formControlName="apellido">
+          <mat-icon matSuffix>account-box</mat-icon>
+        </mat-form-field>
+      </mat-grid-tile>
+
+      <mat-grid-tile>
+        <mat-form-field appearance="outline">
+          <mat-label>Mail</mat-label>
+          <input matInput autocomplete="off" formControlName="mail">
           <mat-icon matSuffix>mail</mat-icon>
         </mat-form-field>
       </mat-grid-tile>
 
       <mat-grid-tile>
         <mat-form-field appearance="outline">
-          <mat-label>Rol</mat-label>
-          <mat-select formControlName="idRol">
-            <mat-option *ngFor="let item of listaRoles" [value]="item.idRol">
+          <mat-label>Constraseña</mat-label>
+          <input [type]="ocultarPassword ? 'password' : 'text'" matInput formControlName="passwordHash" />
+
+          <button mat-icon-button matSuffix (click)="ocultarPassword = !ocultarPassword" type="button">
+            <mat-icon matSuffix>{{ocultarPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+      </mat-grid-tile>
+
+      <mat-grid-tile *ngIf="datosUsuario != null">
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estadoId">
+            <mat-option *ngFor="let item of listaEstadosUsuarios" [value]="item.id">
               {{item.nombre}}
             </mat-option>
           </mat-select>
@@ -33,22 +52,28 @@
 
       <mat-grid-tile>
         <mat-form-field appearance="outline">
-          <mat-label>Constraseña</mat-label>
-          <input [type]="ocultarPassword ? 'password' : 'text'" matInput formControlName="clave"/>
-
-          <button mat-icon-button matSuffix (click)="ocultarPassword = !ocultarPassword" type="button">
-            <mat-icon matSuffix>{{ocultarPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-          </button>
+          <mat-label>Rol</mat-label>
+          <mat-select formControlName="rolId">
+            <mat-option *ngFor="let item of listaRoles" [value]="item.id">
+              {{item.nombre}}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
       </mat-grid-tile>
 
-      <mat-grid-tile>
+      <mat-grid-tile *ngIf="mostrarCamposMedico">
         <mat-form-field appearance="outline">
-          <mat-label>Estado</mat-label>
-          <mat-select formControlName="esActivo">
-            <mat-option value="1">Activo</mat-option>
-            <mat-option value="0">No Activo</mat-option>
-          </mat-select>
+          <mat-label>Matricula</mat-label>
+          <input matInput autocomplete="off" formControlName="matricula">
+          <mat-icon matSuffix>account-box</mat-icon>
+        </mat-form-field>
+      </mat-grid-tile>
+
+      <mat-grid-tile *ngIf="mostrarCamposMedico">
+        <mat-form-field appearance="outline">
+          <mat-label>fechaVencimientoMatricula</mat-label>
+          <input matInput autocomplete="off" formControlName="fechaVencimientoMatricula" type="date">
+          <mat-icon matSuffix>calendar_today</mat-icon>
         </mat-form-field>
       </mat-grid-tile>
 
@@ -58,7 +83,6 @@
 
 <mat-dialog-actions align="end">
   <button mat-raised-button mat-dialog-close color="warn">Volver</button>
-  <button mat-raised-button color="primary"
-    [disabled]="formularioUsuario.invalid"
-    (click)="guardarEditarUsuario()">{{botonAccion}}</button>  
+  <button mat-raised-button color="primary" [disabled]="formularioUsuario.invalid"
+    (click)="guardarEditarUsuario()">{{botonAccion}}</button>
 </mat-dialog-actions>

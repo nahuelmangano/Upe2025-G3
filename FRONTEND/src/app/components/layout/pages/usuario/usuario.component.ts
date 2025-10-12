@@ -4,7 +4,9 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalUsuarioComponent } from '../../modals/modal-usuario/modal-usuario.component';
 import { Usuario } from 'src/app/interfaces/usuario';
+import { EstadoUsuario } from 'src/app/interfaces/estado-usuario';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { EstadoUsuarioService } from 'src/app/services/estado-usuario.service';
 import { UtilidadService } from 'src/app/reutilizable/utilidad.service';
 import { SharedModule } from 'src/app/reutilizable/shared/shared-module';
 import Swal from 'sweetalert2';
@@ -18,33 +20,58 @@ import Swal from 'sweetalert2';
 })
 export class UsuarioComponent implements OnInit, AfterViewInit {
 
-  columnasTabla: string[] = ['nombre', 'apellido', 'mail', 'rolNombre', 'estado', 'matricula', 'vencimientoMatricula' ,'acciones'];
+  columnasTabla: string[] = ['nombre', 'apellido', 'mail', 'rolNombre', 'estado', 'matricula', 'vencimientoMatricula', 'acciones'];
   dataInicio: Usuario[] = [];
+  dataEstadosUsuarios: EstadoUsuario[] = [];
   dataListaUsuarios = new MatTableDataSource(this.dataInicio);
   @ViewChild(MatPaginator) paginacionTabla!: MatPaginator;
 
   constructor(
     private dialog: MatDialog,
     private _usuarioServicio: UsuarioService,
+    private _estadoUsuarioServicio: EstadoUsuarioService,
     private _utilidadServicio: UtilidadService
   ) { }
 
-  obtenerUsuarios() {
-    this._usuarioServicio.lista().subscribe({
+  cargarEstadosUsuarios() {
+    this._estadoUsuarioServicio.lista().subscribe({
       next: (data) => {
         if (data.estado) {
-          this.dataListaUsuarios.data = data.valor;
+          this.dataEstadosUsuarios = data.valor;
         } else {
           this._utilidadServicio.mostrarAlerta("No se encontraron registros", "Opps!");
         }
       },
       error: () => {
-        this._utilidadServicio.mostrarAlerta("No se pudo cargar la lista de roles", "Opps!");
+        this._utilidadServicio.mostrarAlerta("No se pudo cargar la lista de estados", "Opps!");
+      }
+    });
+  }
+
+  obtenerUsuarios() {
+    this._usuarioServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          const usuariosConEstado = (data.valor as Usuario[]).map(usuario => {
+            const estado = this.dataEstadosUsuarios.find(estadoUsuario => estadoUsuario.id === usuario.estadoId);
+            return {
+              ...usuario,
+              estadoNombre: estado ? estado.nombre : ''
+            } as Usuario;
+          });
+          this.dataListaUsuarios.data = usuariosConEstado;
+        } else {
+          this._utilidadServicio.mostrarAlerta("No se encontraron registros", "Opps!");
+        }
+      },
+      error: () => {
+        this._utilidadServicio.mostrarAlerta("No se pudo cargar la lista de usuarios", "Opps!");
       }
     });
   }
 
   ngOnInit(): void {
+    this.cargarEstadosUsuarios();
     this.obtenerUsuarios();
   }
 
@@ -80,31 +107,31 @@ export class UsuarioComponent implements OnInit, AfterViewInit {
 
   eliminarUsuario(usuario: Usuario) {
     Swal.fire({
-      title: '¿Desea eliminar el usuario?',
+      title: '¿Desea desactivar el usuario?',
       text: usuario.nombre,
       icon: 'warning',
       confirmButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: 'Sí, desactivar',
       showCancelButton: true,
       cancelButtonColor: '#d33',
       cancelButtonText: 'No, volver'
     })
-    .then((resultado) => {
-      if (resultado.isConfirmed) {
-        this._usuarioServicio.eliminar(usuario.id).subscribe({
-          next: (data) => {
-            if (data.estado) {
-              this._utilidadServicio.mostrarAlerta("El usuario fue eliminado", "Listo!");
-              this.obtenerUsuarios();
-            } else {
-              this._utilidadServicio.mostrarAlerta("No se pudo eliminar el usuario", "Error");
+      .then((resultado) => {
+        if (resultado.isConfirmed) {
+          this._usuarioServicio.eliminar(usuario.id).subscribe({
+            next: (data) => {
+              if (data.estado) {
+                this._utilidadServicio.mostrarAlerta("El usuario fue desactivado", "Listo!");
+                this.obtenerUsuarios();
+              } else {
+                this._utilidadServicio.mostrarAlerta("No se pudo desactivar el usuario", "Error");
+              }
+            },
+            error: () => {
+              this._utilidadServicio.mostrarAlerta("No se pudo desactivar el usuario", "Error");
             }
-          },
-          error: () => {
-            this._utilidadServicio.mostrarAlerta("No se pudo eliminar el usuario", "Error");
-          }
-        });
-      }
-    })
+          });
+        }
+      })
   }
 }
