@@ -18,41 +18,42 @@
         </mat-form-field>
 
         <div class="mat-elevation-z2">
+            <div class="table-container">
             <table mat-table [dataSource]="dataListaUsuarios" class="data-table">
 
                 <ng-container matColumnDef="nombre">
-                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
-                    <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-nombre"> Nombre </th>
+                    <td mat-cell *matCellDef="let element" class="col-nombre"> {{element.nombre}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="apellido">
-                    <th mat-header-cell *matHeaderCellDef> Apellido </th>
-                    <td mat-cell *matCellDef="let element"> {{element.apellido}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-apellido"> Apellido </th>
+                    <td mat-cell *matCellDef="let element" class="col-apellido"> {{element.apellido}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="mail">
-                    <th mat-header-cell *matHeaderCellDef> Mail </th>
-                    <td mat-cell *matCellDef="let element"> {{element.mail}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-mail"> Mail </th>
+                    <td mat-cell *matCellDef="let element" class="col-mail"> {{element.mail}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="rolNombre">
-                    <th mat-header-cell *matHeaderCellDef> Rol </th>
-                    <td mat-cell *matCellDef="let element"> {{element.rolNombre}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-rol"> Rol </th>
+                    <td mat-cell *matCellDef="let element" class="col-rol"> {{element.rolNombre}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="estado">
-                    <th mat-header-cell *matHeaderCellDef> Estado </th>
-                    <td mat-cell *matCellDef="let element"> {{element.estadoNombre}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-estado"> Estado </th>
+                    <td mat-cell *matCellDef="let element" class="col-estado"> {{element.estadoNombre}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="matricula">
-                    <th mat-header-cell *matHeaderCellDef> Matricula </th>
-                    <td mat-cell *matCellDef="let element"> {{element.matricula}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-matricula"> Matricula </th>
+                    <td mat-cell *matCellDef="let element" class="col-matricula"> {{element.matricula}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="vencimientoMatricula">
-                    <th mat-header-cell *matHeaderCellDef> Vencimiento Matricula </th>
-                    <td mat-cell *matCellDef="let element"> {{element.fechaVencimientoMatricula}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="col-vencimiento"> Vencimiento Matricula </th>
+                    <td mat-cell *matCellDef="let element" class="col-vencimiento"> {{element.fechaVencimientoMatricula}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="acciones">
@@ -79,6 +80,7 @@
                     </td>
                 </tr>
             </table>
+            </div>
 
             <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
 
