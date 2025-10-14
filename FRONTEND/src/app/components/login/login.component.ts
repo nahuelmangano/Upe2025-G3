@@ -43,7 +43,7 @@ export class LoginComponent {
         if (data.estado) {
           this._utilidadServicio.guardarSesionUsuario(data.valor);
           this._utilidadServicio.mostrarAlerta("OK", 'Opps!')
-          // this.router.navigate(['pages']); luego para el dashboard
+          this.router.navigate(['pages']);
         }
         else {
           this._utilidadServicio.mostrarAlerta("No se encontraron coincidencias", 'Opps!')
