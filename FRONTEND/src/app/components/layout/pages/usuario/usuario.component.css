@@ -54,8 +54,16 @@
 }
 
 
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
 .data-table {
   width: 100%;
+  min-width: 720px;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -113,6 +121,7 @@
   font-style: italic;
 }
 
+
 @media (max-width: 768px) {
   .page-title {
     margin: 20px 0 0 20px;
@@ -129,5 +138,21 @@
   
   .dashboard-card-content {
     padding: 15px;
+  }
+
+
+  .actions-column {
+    width: 64px;
+  }
+
+  :host ::ng-deep .mat-mdc-cell {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .card-title .title-content {
+    display: flex;
+    justify-content: stretch;
   }
 }
