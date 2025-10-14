@@ -28,9 +28,9 @@ obj/
 # Archivos de entorno y configuración
 ##############################
 .env
-.env.*
+
 BACKEND/.env
-BACKEND/.env.*
+
 
 # Archivos de configuración local
 appsettings.*.json
