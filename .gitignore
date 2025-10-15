@@ -37,6 +37,7 @@ appsettings.*.json
 launchSettings.json
 FRONTEND/package.local.json
 FRONTEND/package.backup.json
+test
 
 # Logs
 *.log
