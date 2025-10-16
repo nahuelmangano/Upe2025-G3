@@ -1,5 +1,28 @@
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Bb]ackup/
+[Bb]ackups/
+
+# Archivos temporales de Visual Studio / VSCode
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 .vs/
-# Ignorar carpetas de compilaciion
+
+# Archivos de compilación / binarios (.NET)
 **/bin/
 **/obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.mdb
+
+# Archivos de configuración local
+appsettings.*.json
+launchSettings.json
+
 .env

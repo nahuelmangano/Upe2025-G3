@@ -1,14 +1,14 @@
 <mat-toolbar class="panel" color="primary">
   <mat-toolbar-row>
     <span class="color-primario mr titulo">SALUD - UPE</span>
-    <button mat-icon-button (click)="sidenav.toggle()">
+    <button mat-icon-button (click)="toggleSidenav()">
       <mat-icon class="barra">menu</mat-icon>
     </button>
   </mat-toolbar-row>
 </mat-toolbar>
 
 <mat-sidenav-container class="test">
-  <mat-sidenav #sidenav opened="true" class="contenedor-marco" mode="side">
+  <mat-sidenav #sidenav [opened]="isExpanded" class="contenedor-marco" [mode]="isDesktop ? 'side' : 'over'" [fixedInViewport]="!isDesktop" [fixedTopGap]="isDesktop ? 64 : 56">
     <mat-nav-list>
 
       <mat-list-item>
