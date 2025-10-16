@@ -1,18 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MOCK_RESUMEN } from '../mock/mock-data';
+import { API_URL } from '../app.config';
 
 @Injectable({providedIn:'root'})
 export class ApiService{
-  private base = environment.apiBaseUrl;
-  constructor(private http: HttpClient){}
+  constructor(private http: HttpClient, @Inject(API_URL) private apiUrl: string){}
   getResumenPaciente(pacienteId:number):Observable<any>{
-    if(environment.useMock) return of(MOCK_RESUMEN);
     // El backend aún no expone este endpoint. Fallback al mock.
-    return this.http.get(`${this.base}/pacientes/${pacienteId}/resumen`).pipe(
+    return this.http.get(`${this.apiUrl}pacientes/${pacienteId}/resumen`).pipe(
       catchError(() => of(MOCK_RESUMEN))
     );
   }

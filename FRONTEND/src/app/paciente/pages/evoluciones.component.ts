@@ -161,7 +161,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   prev(): void { if (this.page>0) this.page--; }
   next(): void { if ((this.page+1) < this.pagesCount()) this.page++; }
 
-  openModal(): void { this.router.navigate(['/pacientes', this.pacienteId, 'evoluciones', 'nueva']); }
+  openModal(): void { this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'evoluciones', 'nueva']); }
   openEdit(e: Evolucion): void { this.modalOpen = true; this.modalError=''; this.editId=e.id; this.fecha = e.fecha ? e.fecha.substring(0,10) : ''; this.form={ diagnosticoInicial: e.diagnosticoInicial, diagnosticoDefinitivo: e.diagnosticoFinal, descripcion: '' }; }
   closeModal(): void { if(!this.saving) this.modalOpen = false; }
 

@@ -117,7 +117,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       problemaId: this.selectedProblema?.id
     };
     await firstValueFrom(this.evo.create(payload));
-    this.router.navigate(['/pacientes', this.pacienteId, 'evoluciones']);
+    this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'evoluciones']);
   }
-  nuevoProblema(){ this.router.navigate(['/pacientes', this.pacienteId, 'problemas', 'nuevo']); }
+  nuevoProblema(){ this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'problemas', 'nuevo']); }
 }
