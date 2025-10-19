@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [SharedModule],
   templateUrl: './usuario.component.html',
-  styleUrl: './usuario.component.css'
+  styleUrls: ['./usuario.component.css']
 })
 export class UsuarioComponent implements OnInit, AfterViewInit {
 

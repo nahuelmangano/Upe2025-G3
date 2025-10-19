@@ -1,1 +1,120 @@
-<p>plantilla works!</p>
+<div class="container" [formGroup]="formulario">
+  <h2 class="titulo">Creador de Plantillas</h2>
+
+  <div class="top-bar">
+    <mat-form-field appearance="outline" class="nombre-plantilla">
+      <mat-label>Nombre de Plantilla</mat-label>
+      <input
+        matInput
+        placeholder="Ingrese un nombre"
+        formControlName="nombrePlantilla"
+      />
+    </mat-form-field>
+
+    <div class="botones-acciones">
+      <button mat-flat-button color="primary" (click)="agregarSeccion()">
+        <mat-icon>add</mat-icon> Agregar Sección
+      </button>
+      <button mat-stroked-button color="warn" (click)="deshacer()">
+        <mat-icon>undo</mat-icon> Deshacer
+      </button>
+    </div>
+  </div>
+
+  <div formArrayName="secciones" class="zona-drag">
+    <div *ngIf="secciones.length === 0" class="zona-titulo">
+      <mat-icon></mat-icon>
+      <span>Agregue un diseño</span>
+    </div>
+
+    <mat-card
+      *ngFor="let seccion of secciones.controls; let i = index"
+      [formGroupName]="i"
+      class="seccion-card"
+    >
+      <div class="seccion-header">
+        <mat-form-field appearance="outline" class="titulo-seccion">
+          <mat-label>Título de Sección</mat-label>
+          <input matInput formControlName="titulo" />
+        </mat-form-field>
+
+        <div class="acciones-seccion">
+          <button mat-icon-button color="primary" (click)="agregarCampo(i)">
+            <mat-icon>add</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="eliminarSeccion(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div
+        cdkDropList
+        [cdkDropListData]="seccion.get('campos').controls"
+        (cdkDropListDropped)="drop($event, i)"
+        class="campo-lista"
+      >
+        <div
+          *ngFor="let campo of seccion.get('campos').controls; let j = index"
+          [formGroup]="campo"
+          cdkDrag
+          class="campo-item"
+        >
+          <div class="campo-drag">
+            <mat-icon class="drag-icon" cdkDragHandle>drag_indicator</mat-icon>
+
+            <mat-form-field appearance="outline" class="campo-etiqueta">
+              <mat-label>Etiqueta</mat-label>
+              <input matInput formControlName="etiqueta" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="campo-tipo">
+              <mat-label>Tipo de Campo</mat-label>
+              <mat-select formControlName="tipoCampoId">
+                <mat-option
+                  *ngFor="let tipo of tiposCampos"
+                  [value]="tipo.id"
+                >
+                  {{ tipo.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-icon-button color="warn" (click)="eliminarCampo(i, j)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+
+  <div class="botones-finales">
+    <button mat-stroked-button (click)="previsualizar()">
+      <mat-icon>visibility</mat-icon> Previsualizar
+    </button>
+    <button mat-flat-button color="primary" (click)="guardar()">
+      <mat-icon>save</mat-icon> Guardar
+    </button>
+  </div>
+  <ng-template #previsualizacionDialog let-data>
+  <h2 mat-dialog-title>Previsualización</h2>
+  <mat-dialog-content>
+    <p><strong>Nombre de Plantilla:</strong> {{ formulario.value.nombrePlantilla }}</p>
+
+    <div *ngFor="let seccion of formulario.value.secciones; let i = index">
+      <h4>Sección {{ i + 1 }}: {{ seccion.titulo }}</h4>
+      <ul>
+        <li *ngFor="let campo of seccion.campos">
+          {{ campo.etiqueta }} ({{ obtenerNombreTipo(campo.tipoCampoId) }})
+        </li>
+      </ul>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close color="primary">Cerrar</button>
+  </mat-dialog-actions>
+</ng-template>
+</div>
+
