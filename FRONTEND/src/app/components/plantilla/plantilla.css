@@ -1,14 +1,55 @@
-.container {
-  max-width: 900px;
-  margin: 2rem auto;
+.container-flex {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  gap: 2.5rem;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+  background-color: #f6f8fb;
+  min-height: 100vh;
+  max-width: 1380px;
+  margin: 0 auto;
 }
 
 .titulo {
   font-weight: 600;
+  font-size: 1.6rem;
   text-align: center;
+  color: #2a3560;
+  margin-bottom: 1.2rem;
+}
+
+.panel-central {
+  flex: 2;
+  min-width: 480px;
+  background-color: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 4px 24px rgba(28, 40, 91, 0.07);
+  padding: 32px;
+}
+
+.panel-lateral {
+  flex: 0 0 320px;
+  min-width: 220px;
+  max-width: 320px;
+  width: 320px;
+  background-color: #f2f5fa;
+  border-radius: 18px;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.panel-lateral section h4 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #283b69;
+  font-size: 1.05rem;
+}
+
+.espaciado-superior {
+  margin-top: 2rem;
 }
 
 .top-bar {
@@ -16,6 +57,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  margin-bottom: 1.6rem;
 }
 
 .nombre-plantilla {
@@ -26,59 +68,257 @@
   margin-left: 0.5rem;
 }
 
-.zona-titulo {
+.zona-instruccion {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  color: #888;
-  padding: 2rem;
-  border: 2px dashed #ccc;
-  border-radius: 12px;
+  justify-content: center;
+  color: #95a1b6;
+  background: #ebf1fa;
+  border: 2px dashed #cfd8e3;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 26px;
+  margin-bottom: 2rem;
+}
+
+.zona-instruccion mat-icon {
+  margin-right: 0.8rem;
+  color: #8699c0;
 }
 
 .seccion-card {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background-color: #f8fbff;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px #dde5fa33;
+  border: 1px solid #e5e9f2;
+  margin-bottom: 2rem;
+  padding: 18px 24px;
 }
 
 .seccion-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.icon-seccion {
+  color: #315adf;
+  margin-right: 0.4rem;
+  font-size: 24px !important;
+}
+
+.titulo-seccion input {
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+.acciones-seccion button {
+  margin-right: 0.4rem;
+  border-radius: 50% !important;
 }
 
 .campo-lista {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-top: 1rem;
+  min-height: 80px;
 }
 
 .campo-item {
-  background-color: #f9fafb;
-  border: 1px dashed #ccc;
-  border-radius: 8px;
-  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #e6e8f1;
+  border-radius: 9px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: background-color 0.2s ease-in-out;
+  min-width: 260px;
+  box-shadow: 0 2px 6px #dde5fa14;
+  transition: background-color 0.2s ease, transform 0.15s;
 }
 
 .campo-item:hover {
   background-color: #eef3f8;
+  transform: translateY(-1px);
+}
+
+.campo-item mat-form-field {
+  flex: 1;
+}
+
+.campo-opciones {
+  min-width: 180px;
+  margin-left: 1rem;
 }
 
 .drag-icon {
   cursor: grab;
-  color: #888;
+  color: #b0bad4;
+  margin-right: 0.6rem;
+  font-size: 22px !important;
 }
 
 .botones-finales {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.tipos-campo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.btn-tipo-drag,
+.btn-tipo {
+  background: #e7ecfa;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  color: #20305a;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease, transform 0.15s;
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 1rem;
+}
+
+.btn-tipo-drag:hover,
+.btn-tipo:hover {
+  background: #dbe4fa;
+  transform: scale(1.01);
+}
+
+.btn-tipo-drag mat-icon,
+.btn-tipo mat-icon {
+  margin-right: 0.8rem;
+  color: #315adf;
+  font-size: 22px !important;
+}
+
+.cdk-drop-list-dragging .btn-tipo-drag {
+  opacity: 0.7;
+}
+
+.preview-card {
+  margin-top: 1rem;
+  background: #ffffff;
+  border: 1px solid #d9e2f3;
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 8px rgba(28, 40, 91, 0.08);
+  color: #3c497b;
+}
+.preview-card h3 {
+  margin: 0.5rem 0 0.3rem;
+  font-size: 1.15rem;
+  color: #2e3d6b;
+}
+.preview-card p {
+  margin: 0;
+  color: #5a6d9b;
+  font-size: 0.95rem;
+}
+.preview-titulo {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+.preview-label {
+  font-weight: 600;
+  margin-right: 0.7em;
+}
+.preview-seccion {
+  margin-bottom: 1.5rem;
+  background: #f8fafe;
+  border-radius: 8px;
+  padding: 1.2em 1em;
+}
+.preview-seccion-titulo {
+  font-weight: 600;
+  color: #315adf;
+  margin-bottom: 1em;
+}
+.preview-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: flex-end;
+}
+.preview-campo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1em;
+  min-width: 220px;
+}
+.preview-campo-label {
+  font-weight: 500;
+  margin-bottom: 0.6em;
+}
+.preview-input,
+.preview-select,
+.preview-textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #dde4f2;
+  border-radius: 7px;
+  font-size: 1rem;
+  background: #fff;
+}
+.preview-select {
+  min-width: 120px;
+}
+.preview-checkbox {
+  transform: scale(1.2);
+  margin-left: 0.6em;
+}
+
+.campo-etiqueta mat-label,
+.campo-tipo mat-label,
+.campo-opciones mat-label {
+  font-weight: 500;
+  color: #315adf;
+}
+
+@media (max-width: 900px) {
+  .container-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .panel-lateral {
+    order: -1;
+    width: 100%;
+    max-width: 100vw;
+    min-width: unset;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-bottom: 1.5em;
+  }
+  .panel-central {
+    width: 100%;
+    min-width: unset;
+    padding: 24px 12px;
+  }
+  .campo-item {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+@media (max-width: 650px) {
+  .campo-lista {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .campo-item {
+    flex-direction: column;
+    min-width: unset;
+  }
 }

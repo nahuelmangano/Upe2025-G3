@@ -1,83 +1,65 @@
-<div class="container" [formGroup]="formulario">
-  <h2 class="titulo">Creador de Plantillas</h2>
+<div class="container-flex" [formGroup]="formulario">
+  <div class="panel-central">
+    <h2 class="titulo">Creador de Plantillas</h2>
+    <div class="top-bar">
+      <mat-form-field appearance="outline" class="nombre-plantilla">
+        <mat-label>Nombre de Plantilla</mat-label>
+        <input matInput placeholder="Nombre de la Plantilla" formControlName="nombrePlantilla" />
+      </mat-form-field>
 
-  <div class="top-bar">
-    <mat-form-field appearance="outline" class="nombre-plantilla">
-      <mat-label>Nombre de Plantilla</mat-label>
-      <input
-        matInput
-        placeholder="Ingrese un nombre"
-        formControlName="nombrePlantilla"
-      />
-    </mat-form-field>
-
-    <div class="botones-acciones">
-      <button mat-flat-button color="primary" (click)="agregarSeccion()">
-        <mat-icon>add</mat-icon> Agregar Sección
-      </button>
-      <button mat-stroked-button color="warn" (click)="deshacer()">
-        <mat-icon>undo</mat-icon> Deshacer
-      </button>
-    </div>
-  </div>
-
-  <div formArrayName="secciones" class="zona-drag">
-    <div *ngIf="secciones.length === 0" class="zona-titulo">
-      <mat-icon></mat-icon>
-      <span>Agregue un diseño</span>
+      <div class="botones-acciones">
+        <button mat-flat-button color="primary" (click)="agregarSeccion()">
+          <mat-icon>add</mat-icon> Agregar Sección
+        </button>
+        <button mat-stroked-button color="warn" (click)="deshacer()">
+          <mat-icon>undo</mat-icon> Deshacer
+        </button>
+      </div>
     </div>
 
-    <mat-card
-      *ngFor="let seccion of secciones.controls; let i = index"
-      [formGroupName]="i"
-      class="seccion-card"
-    >
-      <div class="seccion-header">
-        <mat-form-field appearance="outline" class="titulo-seccion">
-          <mat-label>Título de Sección</mat-label>
-          <input matInput formControlName="titulo" />
-        </mat-form-field>
-
-        <div class="acciones-seccion">
-          <button mat-icon-button color="primary" (click)="agregarCampo(i)">
-            <mat-icon>add</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="eliminarSeccion(i)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
+    <div formArrayName="secciones">
+      <div *ngIf="secciones.length === 0" class="zona-instruccion">
+        <mat-icon>pan_tool</mat-icon>
+        <span>Agregue una sección para comenzar</span>
       </div>
 
-      <div
-        cdkDropList
-        [cdkDropListData]="seccion.get('campos').controls"
-        (cdkDropListDropped)="drop($event, i)"
-        class="campo-lista"
-      >
-        <div
-          *ngFor="let campo of seccion.get('campos').controls; let j = index"
-          [formGroup]="campo"
-          cdkDrag
-          class="campo-item"
-        >
-          <div class="campo-drag">
-            <mat-icon class="drag-icon" cdkDragHandle>drag_indicator</mat-icon>
+      <mat-card *ngFor="let seccion of secciones.controls; let i = index" [formGroupName]="i" class="seccion-card">
+        <div class="seccion-header">
+          <mat-icon class="icon-seccion">view_agenda</mat-icon>
+          <mat-form-field appearance="outline" class="titulo-seccion">
+            <mat-label>Título de Sección</mat-label>
+            <input matInput formControlName="titulo" />
+          </mat-form-field>
+          <div class="acciones-seccion">
+            <button mat-icon-button color="warn" (click)="eliminarSeccion(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="campo-lista">
+          <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroup]="campo"
+            class="campo-item">
+            <mat-icon class="drag-icon">drag_indicator</mat-icon>
 
             <mat-form-field appearance="outline" class="campo-etiqueta">
               <mat-label>Etiqueta</mat-label>
-              <input matInput formControlName="etiqueta" />
+              <input matInput formControlName="etiqueta" placeholder="Ej: Apellido, Fecha de Nacimiento, etc." />
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="campo-tipo">
               <mat-label>Tipo de Campo</mat-label>
-              <mat-select formControlName="tipoCampoId">
-                <mat-option
-                  *ngFor="let tipo of tiposCampos"
-                  [value]="tipo.id"
-                >
+              <mat-select formControlName="tipoCampoId" (selectionChange)="onTipoCampoChange(i, j, $event.value)">
+                <mat-option *ngFor="let tipo of tiposCampos" [value]="tipo.id">
                   {{ tipo.nombre }}
                 </mat-option>
               </mat-select>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="esCampoConOpciones(campo.value.tipoCampoNombre)" appearance="outline"
+              class="campo-opciones">
+              <mat-label>Opciones (separadas por coma)</mat-label>
+              <input matInput formControlName="opciones" placeholder="Ej: Masculino, Femenino, Otro" />
             </mat-form-field>
 
             <button mat-icon-button color="warn" (click)="eliminarCampo(i, j)">
@@ -85,36 +67,69 @@
             </button>
           </div>
         </div>
-      </div>
-    </mat-card>
-  </div>
-
-
-  <div class="botones-finales">
-    <button mat-stroked-button (click)="previsualizar()">
-      <mat-icon>visibility</mat-icon> Previsualizar
-    </button>
-    <button mat-flat-button color="primary" (click)="guardar()">
-      <mat-icon>save</mat-icon> Guardar
-    </button>
-  </div>
-  <ng-template #previsualizacionDialog let-data>
-  <h2 mat-dialog-title>Previsualización</h2>
-  <mat-dialog-content>
-    <p><strong>Nombre de Plantilla:</strong> {{ formulario.value.nombrePlantilla }}</p>
-
-    <div *ngFor="let seccion of formulario.value.secciones; let i = index">
-      <h4>Sección {{ i + 1 }}: {{ seccion.titulo }}</h4>
-      <ul>
-        <li *ngFor="let campo of seccion.campos">
-          {{ campo.etiqueta }} ({{ obtenerNombreTipo(campo.tipoCampoId) }})
-        </li>
-      </ul>
+      </mat-card>
     </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close color="primary">Cerrar</button>
-  </mat-dialog-actions>
-</ng-template>
-</div>
 
+    <div class="botones-finales">
+      <button mat-stroked-button (click)="previsualizar()">
+        <mat-icon>visibility</mat-icon> Previsualizar
+      </button>
+      <button mat-flat-button color="primary" (click)="guardar()">
+        <mat-icon>save</mat-icon> Guardar
+      </button>
+    </div>
+
+    <ng-template #previsualizacionDialog let-data>
+      <h2 mat-dialog-title>Previsualización</h2>
+      <mat-dialog-content>
+        <div class="preview-titulo">
+          <span class="preview-label">Nombre de Plantilla:</span>
+          <span>{{ formulario.value.nombrePlantilla }}</span>
+        </div>
+        <div *ngFor="let seccion of formulario.value.secciones; let i = index" class="preview-seccion">
+          <h4 class="preview-seccion-titulo">{{ seccion.titulo }}</h4>
+          <form class="preview-form">
+            <div *ngFor="let campo of seccion.campos" class="preview-campo">
+              <label class="preview-campo-label">{{ campo.etiqueta }}</label>
+              <ng-container [ngSwitch]="getInputType(campo.tipoCampoNombre)">
+                <input *ngSwitchCase="'text'" type="text" class="preview-input" [placeholder]="campo.etiqueta" />
+                <textarea *ngSwitchCase="'textarea'" rows="2" class="preview-textarea"
+                  [placeholder]="campo.etiqueta"></textarea>
+                <input *ngSwitchCase="'number'" type="number" step="1" class="preview-input"
+                  [placeholder]="campo.etiqueta" />
+                <input *ngSwitchCase="'decimal'" type="number" step="0.01" class="preview-input"
+                  [placeholder]="campo.etiqueta" />
+                <input *ngSwitchCase="'datetime-local'" type="datetime-local" class="preview-input" />
+                <select *ngSwitchCase="'select'" class="preview-select"
+                  [multiple]="campo.tipoCampoNombre === 'Selección Múltiple'">
+                  <option *ngFor="let opt of campo.opciones?.split(',')" [value]="opt">{{ opt }}</option>
+                </select>
+                <input *ngSwitchCase="'checkbox'" type="checkbox" class="preview-checkbox" />
+                <input *ngSwitchCase="'file'" type="file" class="preview-input" />
+                <input *ngSwitchCase="'email'" type="email" class="preview-input" [placeholder]="campo.etiqueta" />
+                <input *ngSwitchCase="'tel'" type="tel" class="preview-input" [placeholder]="campo.etiqueta" />
+                <input *ngSwitchDefault type="text" class="preview-input" [placeholder]="campo.etiqueta" />
+              </ng-container>
+            </div>
+          </form>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close color="primary">Cerrar</button>
+      </mat-dialog-actions>
+    </ng-template>
+  </div>
+
+  <aside class="panel-lateral">
+    <section>
+      <h4>Tipos de Dato</h4>
+      <div class="tipos-campo-lista">
+        <button *ngFor="let tipo of tiposCampos" mat-flat-button class="btn-tipo"
+          matTooltip="{{ tipo.descripcion || 'Sin descripción disponible' }}" matTooltipPosition="right"
+          (click)="agregarCampoUltimaSeccion(tipo)">
+          <mat-icon>{{ tipo.icono || 'widgets' }}</mat-icon> {{ tipo.nombre }}
+        </button>
+      </div>
+    </section>
+  </aside>
+</div>
