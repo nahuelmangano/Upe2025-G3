@@ -54,6 +54,53 @@ export class PlantillaComponent {
     });
   }
 
+  private defaultData: { [key: string]: { descripcion: string, icono: string } } = {
+    "Texto Corto": {
+      descripcion: "Campo de texto para hasta 255 caracteres. Ideal para nombres, apellidos o respuestas cortas.",
+      icono: "text_fields"
+    },
+    "Texto Largo": {
+      descripcion: "Área de texto multilínea para respuestas largas. Útil para observaciones o comentarios.",
+      icono: "notes"
+    },
+    "Número Entero": {
+      descripcion: "Permite ingresar únicamente valores enteros. Ejemplo: edad, stock, cantidad.",
+      icono: "filter_1"
+    },
+    "Número Decimal": {
+      descripcion: "Acepta valores numéricos con decimales. Ejemplo: precios o medidas precisas.",
+      icono: "calculate"
+    },
+    "Fecha y Hora": {
+      descripcion: "Selector de fecha y hora combinadas. Ideal para turnos, citas o registros temporales.",
+      icono: "event"
+    },
+    "Selección Única": {
+      descripcion: "Desplegable donde se puede elegir solo una opción.",
+      icono: "radio_button_checked"
+    },
+    "Selección Múltiple": {
+      descripcion: "Lista con opciones múltiples donde se pueden seleccionar varios valores.",
+      icono: "checklist"
+    },
+    "Casilla de Verificación": {
+      descripcion: "Check para opciones Sí/No o confirmaciones simples.",
+      icono: "check_box"
+    },
+    "Archivo": {
+      descripcion: "Permite subir archivos como PDF, imágenes o documentos adjuntos.",
+      icono: "attach_file"
+    },
+    "Email": {
+      descripcion: "Campo específico para direcciones de correo electrónico.",
+      icono: "email"
+    },
+    "Teléfono": {
+      descripcion: "Campo adaptado a números telefónicos con validación básica.",
+      icono: "phone"
+    }
+  };
+
   ngOnInit(): void {
     this.cargarTiposCampo();
   }
@@ -62,7 +109,14 @@ export class PlantillaComponent {
     this.tipoCampoService.lista().subscribe({
       next: (res: ResponseApi) => {
         if (res.estado && Array.isArray(res.valor)) {
-          this.tiposCampos = res.valor;
+          this.tiposCampos = res.valor.map((tipo: any) => {
+            const predeterminado = this.defaultData[tipo.nombre] || {};
+            return {
+              ...tipo,
+              descripcion: predeterminado.descripcion || "Sin descripción disponible.",
+              icono: predeterminado.icono || "widgets"
+            };
+          });
         }
       },
       error: (err) => console.error('Error HTTP al cargar tipos de campo:', err)
@@ -72,6 +126,7 @@ export class PlantillaComponent {
   get secciones(): FormArray {
     return this.formulario.get('secciones') as FormArray;
   }
+
   agregarSeccion() {
     const seccion = this.fb.group({
       titulo: ['', Validators.required],
@@ -104,7 +159,7 @@ export class PlantillaComponent {
 
   agregarCampoUltimaSeccion(tipoCampo: any) {
     if (this.secciones.length === 0) {
-      alert('Se necesita agregar primero una sección para poder añadir campos.');
+      alert('Agregá primero una sección para poder añadir campos.');
       return;
     }
     const index = this.secciones.length - 1;
@@ -131,29 +186,18 @@ export class PlantillaComponent {
     if (!tipo) return 'text';
     const nombre = tipo.toLowerCase();
     switch (nombre) {
-      case 'texto corto':
-        return 'text';
-      case 'texto largo':
-        return 'textarea';
-      case 'número entero':
-        return 'number';
-      case 'número decimal':
-        return 'decimal';
-      case 'fecha y hora':
-        return 'datetime-local';
-      case 'archivo':
-        return 'file';
-      case 'email':
-        return 'email';
-      case 'teléfono':
-        return 'tel';
-      case 'casilla de verificación':
-        return 'checkbox';
+      case 'texto corto': return 'text';
+      case 'texto largo': return 'textarea';
+      case 'número entero': return 'number';
+      case 'número decimal': return 'decimal';
+      case 'fecha y hora': return 'datetime-local';
+      case 'archivo': return 'file';
+      case 'email': return 'email';
+      case 'teléfono': return 'tel';
+      case 'casilla de verificación': return 'checkbox';
       case 'selección única':
-      case 'selección múltiple':
-        return 'select';
-      default:
-        return 'text';
+      case 'selección múltiple': return 'select';
+      default: return 'text';
     }
   }
 
@@ -167,6 +211,7 @@ export class PlantillaComponent {
       alert('Por favor complete todos los campos requeridos antes de previsualizar.');
     }
   }
+
   guardar() {
     if (!this.formulario.valid) {
       alert('Completa todos los campos antes de guardar.');
@@ -178,15 +223,15 @@ export class PlantillaComponent {
       activo: true,
       descripcion: this.formulario.value.descripcion || '',
       nombre: this.formulario.value.nombrePlantilla,
-      medicoId: 0,
-      medicoNombre: ''
+      medicoId: 0, 
+      medicoNombre: ""
     };
 
     this.plantillaService.crear(plantillaGuardar).subscribe({
       next: (res: ResponseApi) => {
         if (res.estado && res.valor && res.valor.id) {
           const plantillaId = res.valor.id;
-          this.guardarCampos(plantillaGuardar, plantillaId);
+          this.guardarCampos(plantillaGuardar, plantillaId, res.valor.nombre);
         } else {
           alert('Error al crear la plantilla');
         }
@@ -195,7 +240,7 @@ export class PlantillaComponent {
     });
   }
 
-  private guardarCampos(plantilla: Plantilla, plantillaId: number) {
+  private guardarCampos(plantilla: Plantilla, plantillaId: number, plantillaNombre?: string) {
     const camposGuardar: Campo[] = [];
 
     this.secciones.controls.forEach((seccion, indexSeccion) => {
@@ -210,8 +255,8 @@ export class PlantillaComponent {
           orden: indexCampo + 1,
           tipoCampoId: value.tipoCampoId,
           tipoCampoNombre: value.tipoCampoNombre,
-          plantillaId: plantillaId,
-          plantillaNombre: plantilla.nombre,
+          plantillaId: plantillaId, 
+          plantillaNombre: plantillaNombre || plantilla.nombre,
           activo: 1
         });
       });
@@ -219,7 +264,7 @@ export class PlantillaComponent {
 
     camposGuardar.forEach(campo => {
       this.campoService.crear(campo).subscribe({
-        next: () => {},
+        next: () => { },
         error: (err) => console.error('Error al guardar campo', err)
       });
     });
