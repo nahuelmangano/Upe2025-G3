@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { API_URL } from '../app.config'; // token de configuración
 import { ResponseApi } from '../interfaces/response-api';
 import { TipoEstudio } from '../interfaces/tipo-estudio';
+import { API_URL } from '../app.config';
+import { ResponseApi } from '../interfaces/response-api';
 @Injectable({
   providedIn: 'root'
 })
@@ -24,6 +26,11 @@ export class TipoEstudioService {
     eliminar(id: number): Observable<ResponseApi> {
     return this.http.put<ResponseApi>(`${this.urlApi}Eliminar/${id}`, {});
     }
+  private urlApi = this.apiUrl + 'TipoEstudio/';
+
+  lista(): Observable<ResponseApi> {
+    return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
+  }
 }
 
 

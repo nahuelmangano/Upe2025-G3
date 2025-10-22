@@ -23,6 +23,7 @@ const routes: Routes = [
       { path: 'plantillas', component: PlantillaComponent },
       { path: 'mis-plantillas', component: ListaPlantillasComponent },
       { path: '', redirectTo: 'mis-plantillas', pathMatch: 'full' }
+      { path: 'paciente/:id/archivos', component: ArchivosComponent }
     ]
   }
 ];

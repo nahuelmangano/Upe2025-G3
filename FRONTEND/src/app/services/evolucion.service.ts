@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { API_URL } from '../app.config'; // token de configuración
 import { ResponseApi } from '../interfaces/response-api';
 import { Evolucion } from '../interfaces/evolucion';
+import { API_URL } from '../app.config';
+import { ResponseApi } from '../interfaces/response-api';
 
 @Injectable({
   providedIn: 'root'
