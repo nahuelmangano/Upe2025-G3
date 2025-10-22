@@ -2,8 +2,28 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { firstValueFrom, Subscription } from 'rxjs';
-import { EvolucionesService, Evolucion, EvolucionInput } from '../services/evoluciones.service';
+import { firstValueFrom, Subscription, forkJoin, of } from 'rxjs';
+import { catchError, map as rxMap, tap } from 'rxjs/operators';
+import { EvolucionesService, EvolucionInput } from '../services/evoluciones.service';
+import { EvolucionService } from '../../services/evolucion.service';
+import { Evolucion as EvolucionModel } from '../../interfaces/evolucion';
+import { ProblemaService } from '../../services/problema.service';
+import { MedicoService } from '../../services/medico.service';
+import { EstadoProblemaService } from '../../services/estado-problema.service';
+
+interface EvolucionRow {
+  id: number;
+  problema: string;
+  diagnosticoInicial: string;
+  diagnosticoFinal?: string;
+  medico: string;
+  estado: string;
+  fecha?: string;
+  problemaId?: number;
+  estadoId?: number;
+  medicoId?: number;
+  source?: any;
+}
 
 @Component({
   standalone: true,
@@ -26,7 +46,6 @@ import { EvolucionesService, Evolucion, EvolucionInput } from '../services/evolu
             <thead>
               <tr>
                 <th>Problema</th>
-                <th>Paciente</th>
                 <th>Diagnostico Inicial</th>
                 <th>Diagnostico Final</th>
                 <th>Medico</th>
@@ -37,7 +56,6 @@ import { EvolucionesService, Evolucion, EvolucionInput } from '../services/evolu
             <tbody>
               <tr *ngFor="let e of pageItems()">
                 <td>{{ e.problema }}</td>
-                <td>{{ e.paciente }}</td>
                 <td>{{ e.diagnosticoInicial }}</td>
                 <td>{{ e.diagnosticoFinal }}</td>
                 <td>{{ e.medico }}</td>
@@ -97,6 +115,12 @@ import { EvolucionesService, Evolucion, EvolucionInput } from '../services/evolu
               <span>Descripcion</span>
               <textarea rows="4" [(ngModel)]="form.descripcion" name="descripcion"></textarea>
             </label>
+            <label class="full">
+              <span>Estado del problema</span>
+              <select [(ngModel)]="editEstadoId" name="estadoProblema">
+                <option *ngFor="let est of estadoOptions" [ngValue]="est.id">{{ est.nombre }}</option>
+              </select>
+            </label>
           </div>
 
           <div *ngIf="modalError" style="color:#d63031">{{ modalError }}</div>
@@ -120,11 +144,17 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   sub?: Subscription;
 
   q = '';
-  data: Evolucion[] = [];
+  data: EvolucionRow[] = [];
   page = 0;
   pageSize = 5;
   loading = false;
   error = '';
+  private catalogSub?: Subscription;
+  private catalogsLoaded = false;
+  private problemaMap = new Map<number, string>();
+  private medicoMap = new Map<number, string>();
+  private estadoMap = new Map<number, string>();
+  estadoOptions: { id: number; nombre: string }[] = [];
 
   modalOpen = false;
   saving = false;
@@ -132,59 +162,269 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   editId: number | null = null;
   fecha = '';
   form: Partial<EvolucionInput> = { diagnosticoInicial: '' };
+  private editProblemaId?: number;
+  private editEstadoId?: number;
+  private editMedicoId?: number;
+  private editSource: any;
 
-  constructor(private route: ActivatedRoute, private evoluciones: EvolucionesService, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private evolucionesSrv: EvolucionesService,
+    private evolucionSrv: EvolucionService,
+    private problemaSrv: ProblemaService,
+    private medicoSrv: MedicoService,
+    private estadoSrv: EstadoProblemaService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.sub = this.route.paramMap.subscribe(pm => {
       this.pacienteId = Number(pm.get('id')) || 0;
-      this.load();
+      this.fetchData();
     });
   }
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this.catalogSub?.unsubscribe();
+  }
 
-  private load(): void {
+  private fetchData(): void {
     this.loading = true; this.error='';
-    this.evoluciones.listByPaciente(this.pacienteId).subscribe({
-      next: items => { this.data = items; this.loading=false; this.page=0; },
+    const catalogs$ = this.ensureCatalogs();
+    this.catalogSub?.unsubscribe();
+    this.catalogSub = catalogs$.subscribe({
+      next: () => this.loadEvoluciones(),
+      error: () => this.loadEvoluciones()
+    });
+  }
+
+  private loadEvoluciones(): void {
+    this.loading = true; this.error='';
+    this.evolucionSrv.listaPorPaciente(this.pacienteId).subscribe({
+      next: (resp: any) => {
+        const items: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.data = items.map(it => this.mapRow(it));
+        this.loading=false; this.page=0;
+      },
       error: () => { this.loading=false; this.error='No pudimos cargar evoluciones'; }
     });
   }
 
-  filtradas(): Evolucion[] {
+  filtradas(): EvolucionRow[] {
     const term = this.q.toLowerCase();
-    return this.data.filter(e => `${e.problema} ${e.paciente} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado}`.toLowerCase().includes(term));
+    return this.data.filter(e => `${e.problema} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado}`.toLowerCase().includes(term));
   }
   pagesCount(): number { return Math.max(1, Math.ceil(this.filtradas().length / this.pageSize)); }
-  pageItems(): Evolucion[] { const s = this.page * this.pageSize; return this.filtradas().slice(s, s + this.pageSize); }
+  pageItems(): EvolucionRow[] { const s = this.page * this.pageSize; return this.filtradas().slice(s, s + this.pageSize); }
   rangeLabel(): string { const t = this.filtradas().length; const s = t ? this.page * this.pageSize + 1 : 0; const e = Math.min(t, (this.page + 1) * this.pageSize); return `${s} - ${e} of ${t}`; }
   prev(): void { if (this.page>0) this.page--; }
   next(): void { if ((this.page+1) < this.pagesCount()) this.page++; }
 
-  openModal(): void { this.router.navigate(['/pacientes', this.pacienteId, 'evoluciones', 'nueva']); }
-  openEdit(e: Evolucion): void { this.modalOpen = true; this.modalError=''; this.editId=e.id; this.fecha = e.fecha ? e.fecha.substring(0,10) : ''; this.form={ diagnosticoInicial: e.diagnosticoInicial, diagnosticoDefinitivo: e.diagnosticoFinal, descripcion: '' }; }
-  closeModal(): void { if(!this.saving) this.modalOpen = false; }
+  openModal(): void { this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'evoluciones', 'nueva']); }
+  openEdit(e: EvolucionRow): void {
+    this.modalOpen = true;
+    this.modalError='';
+    this.editId = e.id;
+    this.fecha = e.fecha ? e.fecha.substring(0,10) : '';
+    const src = e.source || {};
+    this.editSource = src;
+    this.editProblemaId = this.toNumberOrUndefined(e.problemaId ?? src.problemaId ?? src.ProblemaId, true);
+    this.editEstadoId = this.toNumberOrUndefined(e.estadoId ?? src.estadoProblemaId ?? src.EstadoProblemaId, true) ?? this.estadoOptions[0]?.id;
+    this.editMedicoId = this.toNumberOrUndefined(e.medicoId ?? src.medicoId ?? src.MedicoId, true);
+    this.form = {
+      diagnosticoInicial: e.diagnosticoInicial,
+      diagnosticoDefinitivo: e.diagnosticoFinal,
+      descripcion: ''
+    };
+  }
+  closeModal(): void {
+    if (this.saving) { return; }
+    this.modalOpen = false;
+    this.editId = null;
+    this.editProblemaId = undefined;
+    this.editEstadoId = undefined;
+    this.editMedicoId = undefined;
+    this.editSource = undefined;
+    this.form = { diagnosticoInicial: '' };
+    this.fecha = '';
+  }
 
   async save(): Promise<void> {
     if (this.saving) return; this.saving = true; this.modalError='';
     try {
+      const currentRow = this.editId ? this.data.find(x => x.id === this.editId) : undefined;
+      const src = this.editSource || currentRow?.source || {};
+      const problemaId = this.resolveId(this.editProblemaId, currentRow?.problemaId ?? this.toNumberOrUndefined(src.problemaId ?? src.ProblemaId, true), currentRow?.problema, this.problemaMap, true)
+        ?? this.toNumberOrUndefined(src.problemaId ?? src.ProblemaId, true);
+      const estadoId = this.resolveId(this.editEstadoId, currentRow?.estadoId ?? this.toNumberOrUndefined(src.estadoProblemaId ?? src.EstadoProblemaId, true), currentRow?.estado, this.estadoMap, true)
+        ?? this.toNumberOrUndefined(src.estadoProblemaId ?? src.EstadoProblemaId, true);
+      const medicoId = this.resolveId(this.editMedicoId, currentRow?.medicoId ?? this.toNumberOrUndefined(src.medicoId ?? src.MedicoId, true), currentRow?.medico, this.medicoMap, true)
+        ?? this.toNumberOrUndefined(src.medicoId ?? src.MedicoId, true);
+
+      const pacienteId = this.pacienteId || this.toNumberOrUndefined(src.pacienteId ?? src.PacienteId) || 0;
+      if (!pacienteId) {
+        throw new Error('No encontramos el identificador del paciente para actualizar la evolución');
+      }
+
       const base: EvolucionInput = {
         descripcion: this.form.descripcion,
         fechaConsulta: this.fecha ? new Date(this.fecha).toISOString() : new Date().toISOString(),
         diagnosticoInicial: this.form.diagnosticoInicial || '',
         diagnosticoDefinitivo: this.form.diagnosticoDefinitivo,
-        pacienteId: this.pacienteId
+        pacienteId,
+        problemaId,
+        estadoProblemaId: estadoId,
+        medicoId
       };
       if (this.editId) {
-        await firstValueFrom(this.evoluciones.update({ id: this.editId, ...base }));
-        this.data = this.data.map(x => x.id === this.editId ? { ...x, diagnosticoInicial: base.diagnosticoInicial, diagnosticoFinal: base.diagnosticoDefinitivo, fecha: base.fechaConsulta } : x);
+        const original = { ...(this.editSource || {}), ...(currentRow?.source || {}) } as any;
+        const request: EvolucionModel = {
+          id: this.editId,
+          descripcion: base.descripcion,
+          fechaConsulta: new Date(base.fechaConsulta),
+          diagnosticoInicial: base.diagnosticoInicial,
+          diagnosticoDefinitivo: base.diagnosticoDefinitivo,
+          pacienteId,
+          pacienteNombre: original.pacienteNombre ?? original.PacienteNombre ?? '',
+          plantillaId: this.toNumberOrUndefined(original.plantillaId ?? original.PlantillaId, true) ?? 0,
+          plantillaNombre: original.plantillaNombre ?? original.PlantillaNombre,
+          problemaId: problemaId ?? this.toNumberOrUndefined(original.problemaId ?? original.ProblemaId, true) ?? 0,
+          problemaTitulo: original.problemaTitulo ?? original.ProblemaTitulo ?? currentRow?.problema,
+          estadoProblemaId: estadoId ?? this.toNumberOrUndefined(original.estadoProblemaId ?? original.EstadoProblemaId, true) ?? 0,
+          estadoProblemaNombre: original.estadoProblemaNombre ?? original.EstadoProblemaNombre ?? currentRow?.estado,
+          medicoId: medicoId ?? this.toNumberOrUndefined(original.medicoId ?? original.MedicoId, true) ?? 0,
+          medicoNombre: original.medicoNombre ?? original.MedicoNombre ?? currentRow?.medico
+        };
+
+        const resp = await firstValueFrom(this.evolucionSrv.editar(request));
+        if (!resp?.estado) {
+          throw new Error(resp?.mensaje || 'El servicio no confirmó la actualización');
+        }
       } else {
-        const nuevo = await firstValueFrom(this.evoluciones.create(base));
-        this.data = [nuevo, ...this.data];
+        console.log('[Evoluciones] create payload', base);
+        await firstValueFrom(this.evolucionesSrv.create(base));
       }
-      this.page = 0; this.q=''; this.closeModal();
+      this.page = 0;
+      this.q='';
+      this.modalOpen = false;
+      this.loadEvoluciones();
+      this.editId = null;
+      this.form = { diagnosticoInicial: '' };
+      this.editProblemaId = undefined;
+      this.editEstadoId = undefined;
+      this.editMedicoId = undefined;
+      this.editSource = undefined;
     } catch (e:any) {
       this.modalError = e?.message || 'No pudimos guardar la evolución';
     } finally { this.saving = false; }
+  }
+
+  private mapRow(it: any): EvolucionRow {
+    const rawProblemaId = it?.problemaId ?? it?.ProblemaId;
+    const rawMedicoId = it?.medicoId ?? it?.MedicoId;
+    const rawEstadoId = it?.estadoProblemaId ?? it?.EstadoProblemaId;
+    const problemaId = Number(rawProblemaId);
+    const medicoId = Number(rawMedicoId);
+    const estadoId = Number(rawEstadoId);
+    const problemaNombre = it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
+    const medicoNombre = it?.medicoNombre ?? it?.MedicoNombre ?? it?.medico ?? (Number.isFinite(medicoId) && medicoId > 0 ? this.medicoMap.get(medicoId) : undefined);
+    const estadoNombre = it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado ?? ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
+    return {
+      id: it?.id ?? 0,
+      problema: problemaNombre || '-',
+      diagnosticoInicial: it?.diagnosticoInicial ?? it?.DiagnosticoInicial ?? '',
+      diagnosticoFinal: it?.diagnosticoDefinitivo ?? it?.DiagnosticoDefinitivo ?? it?.diagnosticoFinal ?? '',
+      medico: medicoNombre || '-',
+      estado: estadoNombre || '-',
+      fecha: it?.fechaConsulta ?? it?.FechaConsulta ?? it?.fecha,
+      problemaId: Number.isFinite(problemaId) && problemaId > 0 ? problemaId : undefined,
+      estadoId: Number.isFinite(estadoId) && estadoId >= 0 ? estadoId : undefined,
+      medicoId: Number.isFinite(medicoId) && medicoId > 0 ? medicoId : undefined,
+      source: it
+    };
+  }
+
+  private ensureCatalogs() {
+    if (this.catalogsLoaded) {
+      return of(void 0);
+    }
+    return forkJoin({
+      problemas: this.problemaSrv.lista().pipe(catchError(() => of({ estado: false, valor: [] }))),
+      medicos: this.medicoSrv.lista().pipe(catchError(() => of({ estado: false, valor: [] }))),
+      estados: this.estadoSrv.lista().pipe(catchError(() => of({ estado: false, valor: [] })))
+    }).pipe(
+      tap(({ problemas, medicos, estados }) => {
+        this.populateProblemas(problemas);
+        this.populateMedicos(medicos);
+        this.populateEstados(estados);
+      }),
+      tap(() => { this.catalogsLoaded = true; }),
+      rxMap(() => void 0)
+    );
+  }
+
+  private resolveId(explicit?: number, current?: number, label?: string, map?: Map<number, string>, allowZero = false): number | undefined {
+    if (explicit && explicit > 0) { return explicit; }
+    if (current && (allowZero ? current >= 0 : current > 0)) { return current; }
+    if (!label || !map) { return undefined; }
+    const normalizedLabel = String(label).trim().toLowerCase();
+    const match = Array.from(map.entries()).find(([_, value]) => String(value ?? '').trim().toLowerCase() === normalizedLabel);
+    return match ? match[0] : undefined;
+  }
+
+  private toNumberOrUndefined(value: unknown, allowZero = false): number | undefined {
+    const num = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(num)) { return undefined; }
+    if (!allowZero && num <= 0) { return undefined; }
+    if (allowZero && num < 0) { return undefined; }
+    return num;
+  }
+
+  private populateProblemas(resp: any): void {
+    const items: any[] = resp?.estado ? (resp.valor || []) : [];
+    items.forEach(item => {
+      const id = Number(item?.id ?? item?.Id);
+      if (!Number.isFinite(id) || id <= 0) { return; }
+      const titulo = item?.titulo ?? item?.Titulo ?? item?.nombre ?? item?.Nombre ?? '';
+      if (titulo) { this.problemaMap.set(id, titulo); }
+    });
+  }
+
+  private populateMedicos(resp: any): void {
+    const items: any[] = resp?.estado ? (resp.valor || []) : [];
+    items.forEach(item => {
+      const id = Number(item?.id ?? item?.Id);
+      if (!Number.isFinite(id) || id <= 0) { return; }
+      const nombre = [
+        item?.usuarioNombre ?? item?.UsuarioNombre ?? item?.nombre ?? item?.Nombre ?? '',
+        item?.usuarioApellido ?? item?.UsuarioApellido ?? item?.apellido ?? item?.Apellido ?? ''
+      ].filter(Boolean).join(' ').trim();
+      const email = item?.usuarioMail ?? item?.UsuarioMail ?? '';
+      const matricula = item?.matricula ?? item?.Matricula ?? '';
+      const display = nombre || email || matricula || `Medico ${id}`;
+      this.medicoMap.set(id, display);
+    });
+  }
+
+  private populateEstados(resp: any): void {
+    const items: any[] = resp?.estado ? (resp.valor || []) : [];
+    this.estadoOptions = items
+      .map(item => {
+        const id = Number(item?.id ?? item?.Id);
+        if (!Number.isFinite(id) || id < 0) { return null; }
+        const nombre = this.toDisplayName(item?.nombre ?? item?.Nombre ?? item?.titulo ?? item?.Titulo);
+        if (!nombre) { return null; }
+        this.estadoMap.set(id, nombre);
+        return { id, nombre };
+      })
+      .filter((v): v is { id: number; nombre: string } => !!v);
+    // Ordenamos con el valor 0 (ej. "Nuevo") primero si existe.
+    this.estadoOptions.sort((a, b) => a.id - b.id);
+  }
+
+  private toDisplayName(value: unknown): string | undefined {
+    if (value === null || value === undefined) { return undefined; }
+    const text = String(value).trim();
+    return text.length > 0 ? text : undefined;
   }
 }

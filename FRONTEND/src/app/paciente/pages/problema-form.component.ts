@@ -15,10 +15,17 @@ import { PacienteCatalogoService, Opcion } from '../services/catalogo.service';
       <h3 class="h3" style="margin-bottom:12px">Problemas</h3>
       <div class="modal-grid" style="grid-template-columns: 1fr 1fr">
         <label>
-          <span>Titulo</span>
-          <select [(ngModel)]="titulo" name="titulo">
-            <option *ngFor="let p of opcionesTitulo" [ngValue]="p.titulo">{{p.titulo}}</option>
-          </select>
+          <span>Título</span>
+          <input
+            [(ngModel)]="titulo"
+            name="titulo"
+            type="text"
+            placeholder="Escribí el nombre del problema"
+            list="sugerencias-problema"
+          />
+          <datalist id="sugerencias-problema">
+            <option *ngFor="let p of opcionesTitulo" [value]="p.titulo || ''"></option>
+          </datalist>
         </label>
         <label>
           <span>Estado</span>
@@ -56,17 +63,17 @@ export class ProblemaFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.sub = this.route.paramMap.subscribe(pm => {
       this.pacienteId = Number(pm.get('id')) || 0;
-      this.problemas.list().subscribe(p => { this.opcionesTitulo = p; this.titulo = p[0]?.titulo || ''; });
+      this.problemas.list().subscribe(p => { this.opcionesTitulo = p; });
       this.catalogo.estadosProblema().subscribe(e => { this.estados = e; this.estadoId = e[0]?.id; });
     });
   }
   ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
-  cancelar(): void { this.router.navigate(['/pacientes', this.pacienteId, 'evoluciones']); }
+  cancelar(): void { this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'evoluciones']); }
 
   async crear(): Promise<void> {
     await firstValueFrom(this.problemas.create({ titulo: this.titulo, descripcion: this.descripcion, estadoProblemaId: this.estadoId }));
-    this.router.navigate(['/pacientes', this.pacienteId, 'evoluciones']);
+    this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'evoluciones']);
   }
 }
 

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { API_URL } from '../app.config';
 
 export interface DomicilioInput {
   calle?: string;
@@ -22,9 +22,8 @@ interface ApiResponse<T> {
 
 @Injectable({ providedIn: 'root' })
 export class DomicilioService {
-  private readonly baseUrl = `${environment.apiBaseUrl}/Domicilio`;
-
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(API_URL) private apiUrl: string) {}
+  private get baseUrl(){ return `${this.apiUrl}Domicilio`; }
 
   crear(payload: DomicilioInput): Observable<number> {
     return this.http

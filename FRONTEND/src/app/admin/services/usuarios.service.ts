@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../../app.config';
 
 export interface Usuario {
   id: number;
@@ -44,24 +44,16 @@ const MOCK_USUARIOS: Usuario[] = [
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosService {
-  private baseUrl = `${environment.apiBaseUrl}/Usuario`;
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(API_URL) private apiUrl: string) {}
+  private get baseUrl(){ return `${this.apiUrl}Usuario`; }
 
   list(): Observable<Usuario[]> {
-    if (environment.useMock) return of(MOCK_USUARIOS);
     return this.http.get<ApiResponse<UsuarioApi[]>>(`${this.baseUrl}/Lista`).pipe(
       map(res => (res?.estado ? (res.valor || []).map(this.mapItem) : []))
     );
   }
 
   create(input: UsuarioInput): Observable<Usuario> {
-    if (environment.useMock) {
-      const nuevo: Usuario = { id: Math.round(Math.random()*100000), ...input } as Usuario;
-      (nuevo as any).rolNombre = nuevo.rolId === 1 ? 'Administrador' : 'Usuario';
-      (nuevo as any).estadoNombre = nuevo.estadoId === 1 ? 'Activo' : 'Inactivo';
-      MOCK_USUARIOS.unshift(nuevo);
-      return of(nuevo);
-    }
     return this.http.post<ApiResponse<UsuarioApi>>(`${this.baseUrl}/Crear`, {
       Nombre: input.nombre,
       Apellido: input.apellido,
@@ -73,13 +65,6 @@ export class UsuariosService {
   }
 
   update(id: number, input: UsuarioInput): Observable<boolean> {
-    if (environment.useMock) {
-      const idx = MOCK_USUARIOS.findIndex(u => u.id === id);
-      if (idx >= 0) {
-        MOCK_USUARIOS[idx] = { id, ...input } as Usuario;
-      }
-      return of(true);
-    }
     return this.http.put<ApiResponse<boolean>>(`${this.baseUrl}/Editar`, {
       Id: id,
       Nombre: input.nombre,
@@ -92,11 +77,6 @@ export class UsuariosService {
   }
 
   eliminar(id: number): Observable<boolean> {
-    if (environment.useMock) {
-      const idx = MOCK_USUARIOS.findIndex(u => u.id === id);
-      if (idx >= 0) MOCK_USUARIOS.splice(idx,1);
-      return of(true);
-    }
     return this.http.put<ApiResponse<boolean>>(`${this.baseUrl}/Eliminar/${id}`, {}).pipe(map(r => !!r?.estado));
   }
 

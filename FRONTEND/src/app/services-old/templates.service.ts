@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
 import { Observable, of } from 'rxjs';
 import { Plantilla, MOCK_PLANTILLAS } from '../mock/mock-templates';
 
@@ -15,7 +14,7 @@ export class TemplatesService {
     return JSON.parse(localStorage.getItem(KEY(this.userId)) || '[]');
   }
   private saveLocal(data: Plantilla[]) { localStorage.setItem(KEY(this.userId), JSON.stringify(data)); }
-  list(): Observable<Plantilla[]> { if (environment.useMock) return of(this.loadLocal()); return of(this.loadLocal()); }
+  list(): Observable<Plantilla[]> { return of(this.loadLocal()); }
   get(id: string){ return of(this.loadLocal().find(x=>x.id===id)); }
   upsert(input:any){ const all=this.loadLocal(); let item= input.id? all.find(x=>x.id===input.id): undefined;
     if(!item){ item={ id: input.id || `tpl-${Math.random().toString(36).slice(2,8)}`, titulo: input.titulo||'Sin título', categoria: input.categoria||'', cuerpo: input.cuerpo||'', visibilidad: input.visibilidad||'privada', tags: input.tags||[], ownerUserId: this.userId, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() }; all.unshift(item); }

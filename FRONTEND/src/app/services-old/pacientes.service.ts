@@ -1,8 +1,8 @@
 ﻿import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { API_URL } from '../app.config';
 
 export interface Paciente {
   id: number;
@@ -77,64 +77,26 @@ const MOCK_PACIENTES: Paciente[] = [
 
 @Injectable({ providedIn: 'root' })
 export class PacientesService {
-  private readonly baseUrl = `${environment.apiBaseUrl}/Paciente`;
-
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(API_URL) private apiUrl: string) {}
+  private get baseUrl(){ return `${this.apiUrl}Paciente`; }
 
   list(): Observable<Paciente[]> {
-    if (environment.useMock) {
-      return of(MOCK_PACIENTES);
-    }
     return this.http
       .get<ApiResponse<PacienteApi[]>>(`${this.baseUrl}/Lista`)
       .pipe(map(res => this.mapResponse(res)));
   }
 
   get(id: number): Observable<Paciente> {
-    if (environment.useMock) {
-      const found = MOCK_PACIENTES.find(p => p.id === id);
-      return of(found ?? MOCK_PACIENTES[0]);
-    }
     return this.list().pipe(map(items => items.find(p => p.id === id) ?? { id, nombre: '' }));
   }
 
   create(input: PacienteCreate): Observable<Paciente> {
-    if (environment.useMock) {
-      const nuevo: Paciente = {
-        id: Math.round(Math.random() * 100000),
-        nombre: `${input.nombre ?? ''} ${input.apellido ?? ''}`.trim() || 'Sin nombre',
-        email: input.email,
-        telefono: input.telefono1,
-        ciudad: input.domicilioCiudad,
-        estado: 'Activo'
-      };
-      MOCK_PACIENTES.unshift(nuevo);
-      return of(nuevo);
-    }
-
     return this.http
       .post<ApiResponse<PacienteApi>>(`${this.baseUrl}/Crear`, input)
       .pipe(map(res => this.mapItem(res.valor)));
   }
 
   update(input: PacienteUpdate): Observable<Paciente> {
-    if (environment.useMock) {
-      const idx = MOCK_PACIENTES.findIndex(p => p.id === input.id);
-      const updated: Paciente = {
-        id: input.id,
-        nombre: `${input.nombre ?? ''} ${input.apellido ?? ''}`.trim() || (MOCK_PACIENTES[idx]?.nombre ?? 'Sin nombre'),
-        email: input.email ?? MOCK_PACIENTES[idx]?.email,
-        telefono: input.telefono1 ?? input.telefono2 ?? MOCK_PACIENTES[idx]?.telefono,
-        ciudad: input.domicilioCiudad ?? MOCK_PACIENTES[idx]?.ciudad,
-        estado: MOCK_PACIENTES[idx]?.estado ?? 'Activo'
-      };
-      if (idx >= 0) {
-        MOCK_PACIENTES[idx] = updated;
-      } else {
-        MOCK_PACIENTES.unshift(updated);
-      }
-      return of(updated);
-    }
     return this.http
       .put<ApiResponse<boolean>>(`${this.baseUrl}/Editar`, { ...input })
       .pipe(map(() => ({
@@ -148,13 +110,6 @@ export class PacientesService {
   }
 
   eliminar(id: number): Observable<boolean> {
-    if (environment.useMock) {
-      const idx = MOCK_PACIENTES.findIndex(p => p.id === id);
-      if (idx >= 0) {
-        MOCK_PACIENTES.splice(idx, 1);
-      }
-      return of(true);
-    }
     return this.http
       .put<ApiResponse<boolean>>(`${this.baseUrl}/Eliminar/${id}`, {})
       .pipe(map(res => !!res?.estado));
