@@ -1,0 +1,27 @@
+/* Baseline styles shared by simple standalone components */
+:root{
+  --primary: #574bff;
+  --text: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --bg: #fafafe;
+}
+
+.card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.h3{ font-size:18px; color:var(--text); font-weight:600; }
+
+.btn{ background:var(--primary); color:#fff; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+.btn-outline{ background:#fff; color:var(--muted); border:1px solid #cfc7ff; border-radius:6px; padding:6px 10px; cursor:pointer; }
+
+.table-wrap{ width:100%; overflow:auto; border:1px solid var(--line); border-radius:10px; background:#fbfbff; }
+.table{ width:100%; border-collapse:collapse; }
+.table thead th{ text-align:left; padding:10px; font-weight:600; color:#374151; border-bottom:1px solid var(--line); background:#f9f9ff; }
+.table tbody td{ padding:10px; border-bottom:1px solid var(--line); color:#374151; }
+
+/* Simple modal helpers used across old templates */
+.modal-backdrop{ position:fixed; inset:0; background:rgba(17,24,39,.5); display:flex; align-items:center; justify-content:center; }
+.modal-card{ width:min(720px, 92vw); background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.modal-grid label{ display:flex; flex-direction:column; gap:6px; }
+.modal-grid input, .modal-grid textarea, .modal-grid select{ width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; }

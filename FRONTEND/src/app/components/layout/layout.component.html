@@ -8,21 +8,87 @@
 </mat-toolbar>
 
 <mat-sidenav-container class="test">
-  <mat-sidenav #sidenav [opened]="isExpanded" class="contenedor-marco" [mode]="isDesktop ? 'side' : 'over'" [fixedInViewport]="!isDesktop" [fixedTopGap]="isDesktop ? 64 : 56">
-    <mat-nav-list>
+  <mat-sidenav
+    #sidenav
+    [opened]="isExpanded"
+    class="contenedor-marco"
+    [mode]="isDesktop ? 'side' : 'over'"
+    [fixedInViewport]="!isDesktop"
+    [fixedTopGap]="isDesktop ? 64 : 56"
+    (closedStart)="isExpanded=false"
+    (openedStart)="isExpanded=true"
+  >
+    <ng-container *ngIf="isPacienteCtx; else defaultNav">
+      <div class="side-panel">
+        <div class="patient-card">
+          <div class="avatar" aria-hidden="true">{{ pacienteIniciales || 'P' }}</div>
+          <div class="patient-name">{{ pacienteNombre || 'Nombre del paciente' }}</div>
+          <div class="actions">
+            <button class="btn-outline light" type="button">Salir</button>
+            <button class="btn-outline light" type="button">Datos</button>
+          </div>
+          <dl class="patient-meta">
+            <div>
+              <dt>Edad</dt>
+              <dd>{{ pacienteEdad ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>nro HC</dt>
+              <dd>{{ pacienteHC || '—' }}</dd>
+            </div>
+            <div class="full">
+              <dt>DNI</dt>
+              <dd>{{ pacienteDni || '—' }}</dd>
+            </div>
+          </dl>
+        </div>
 
-      <mat-list-item>
-        <a routerLink="/pages/usuario" class="marco">
-          <mat-icon class="icono-usuario" style="margin-right: 16px;">group</mat-icon>
-          <span class="text-usuario">Usuarios</span>
-        </a>
-      </mat-list-item>
-
-    </mat-nav-list>
+        <nav class="nav">
+          <span class="nav-link disabled">Resumen</span>
+          <span class="nav-link disabled">Indicaciones</span>
+          <a
+            class="nav-link"
+            [routerLink]="pacienteRoute('problemas')"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="onNavClick(sidenav)"
+          >
+            Problemas
+          </a>
+          <a
+            class="nav-link"
+            [routerLink]="pacienteRoute('evoluciones')"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="onNavClick(sidenav)"
+          >
+            Evoluciones
+          </a>
+          <span class="nav-link disabled">Documentos y estudios</span>
+          <span class="nav-link disabled">Plantillas</span>
+        </nav>
+      </div>
+    </ng-container>
+    <ng-template #defaultNav>
+      <mat-nav-list class="default-nav">
+        <mat-list-item>
+          <a
+            routerLink="/pages/usuario"
+            routerLinkActive="active"
+            class="basic-link"
+            (click)="onNavClick(sidenav)"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <mat-icon class="icono-usuario">group</mat-icon>
+            <span>Usuarios</span>
+          </a>
+        </mat-list-item>
+      </mat-nav-list>
+    </ng-template>
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <div style="height: 90vh;">
+    <div class="layout-content">
       <router-outlet></router-outlet>
     </div>
   </mat-sidenav-content>

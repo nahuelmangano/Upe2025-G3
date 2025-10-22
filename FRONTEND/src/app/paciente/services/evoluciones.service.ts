@@ -1,17 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../../app.config';
 
 export interface Evolucion {
   id: number;
   problema?: string;
+  problemaId?: number;
   paciente?: string;
   diagnosticoInicial: string;
   diagnosticoFinal?: string;
   medico?: string;
   estado?: string;
+  estadoProblemaId?: number;
   fecha?: string; // ISO
 }
 
@@ -29,21 +31,22 @@ export interface EvolucionInput {
 
 interface ApiResponse<T> { estado: boolean; valor: T; mensaje?: string; }
 interface EvolucionApi {
+  // El backend expone PascalCase; dejamos camel opcional por si cambia
   id: number;
-  descripcion?: string;
-  fechaConsulta: string;
-  diagnosticoInicial: string;
-  diagnosticoDefinitivo?: string;
-  pacienteId: number;
-  pacienteNombre?: string;
-  plantillaId?: number;
-  plantillaNombre?: string;
-  problemaId?: number;
-  problemaTitulo?: string;
-  estadoProblemaId?: number;
-  estadoProblemaNombre?: string;
-  medicoId?: number;
-  medicoNombre?: string;
+  descripcion?: string; Descripcion?: string;
+  fechaConsulta: string; FechaConsulta?: string;
+  diagnosticoInicial: string; DiagnosticoInicial?: string;
+  diagnosticoDefinitivo?: string; DiagnosticoDefinitivo?: string;
+  pacienteId: number; PacienteId?: number;
+  pacienteNombre?: string; PacienteNombre?: string;
+  plantillaId?: number; PlantillaId?: number;
+  plantillaNombre?: string; PlantillaNombre?: string;
+  problemaId?: number; ProblemaId?: number;
+  problemaTitulo?: string; ProblemaTitulo?: string;
+  estadoProblemaId?: number; EstadoProblemaId?: number;
+  estadoProblemaNombre?: string; EstadoProblemaNombre?: string;
+  medicoId?: number; MedicoId?: number;
+  medicoNombre?: string; MedicoNombre?: string;
 }
 
 const MOCK: Evolucion[] = [
@@ -53,11 +56,10 @@ const MOCK: Evolucion[] = [
 
 @Injectable({ providedIn: 'root' })
 export class EvolucionesService {
-  private base = `${environment.apiBaseUrl}/Evolucion`;
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, @Inject(API_URL) private apiUrl: string) {}
+  private get base() { return `${this.apiUrl}Evolucion`; }
 
   listByPaciente(pacienteId: number): Observable<Evolucion[]> {
-    if (environment.useMock) return of(MOCK);
     return this.http
       .get<ApiResponse<EvolucionApi[]>>(`${this.base}/ListaPorPaciente/${pacienteId}`)
       .pipe(
@@ -67,20 +69,6 @@ export class EvolucionesService {
   }
 
   create(input: EvolucionInput): Observable<Evolucion> {
-    if (environment.useMock) {
-      const nuevo: Evolucion = {
-        id: Math.round(Math.random()*100000),
-        problema: '—',
-        paciente: '—',
-        diagnosticoInicial: input.diagnosticoInicial,
-        diagnosticoFinal: input.diagnosticoDefinitivo,
-        medico: '—',
-        estado: 'Activo',
-        fecha: input.fechaConsulta
-      };
-      MOCK.unshift(nuevo);
-      return of(nuevo);
-    }
     return this.http.post<ApiResponse<EvolucionApi>>(`${this.base}/Crear`, {
       Descripcion: input.descripcion,
       FechaConsulta: input.fechaConsulta,
@@ -95,13 +83,6 @@ export class EvolucionesService {
   }
 
   update(input: EvolucionInput & { id: number }): Observable<boolean> {
-    if (environment.useMock) {
-      const idx = MOCK.findIndex(e => e.id === input.id);
-      if (idx >= 0) {
-        MOCK[idx] = { ...MOCK[idx], diagnosticoInicial: input.diagnosticoInicial, diagnosticoFinal: input.diagnosticoDefinitivo, fecha: input.fechaConsulta };
-      }
-      return of(true);
-    }
     return this.http.put<ApiResponse<boolean>>(`${this.base}/Editar`, {
       Id: input.id,
       Descripcion: input.descripcion,
@@ -116,15 +97,20 @@ export class EvolucionesService {
     }).pipe(map(r => !!r?.estado));
   }
 
-  private mapItem = (item?: EvolucionApi): Evolucion => ({
-    id: item?.id ?? 0,
-    problema: item?.problemaTitulo ?? '',
-    paciente: item?.pacienteNombre ?? '',
-    diagnosticoInicial: item?.diagnosticoInicial ?? '',
-    diagnosticoFinal: item?.diagnosticoDefinitivo ?? '',
-    medico: item?.medicoNombre ?? '',
-    estado: item?.estadoProblemaNombre ?? '',
-    fecha: item?.fechaConsulta
-  });
+  private mapItem = (item?: EvolucionApi): Evolucion => {
+    const it: any = item || {};
+    return {
+      id: it.id ?? 0,
+      problema: it.problemaTitulo ?? it.ProblemaTitulo ?? '',
+      problemaId: it.problemaId ?? it.ProblemaId,
+      paciente: it.pacienteNombre ?? it.PacienteNombre ?? '',
+      diagnosticoInicial: it.diagnosticoInicial ?? it.DiagnosticoInicial ?? '',
+      diagnosticoFinal: it.diagnosticoDefinitivo ?? it.DiagnosticoDefinitivo ?? '',
+      medico: it.medicoNombre ?? it.MedicoNombre ?? '',
+      estado: it.estadoProblemaNombre ?? it.EstadoProblemaNombre ?? '',
+      estadoProblemaId: it.estadoProblemaId ?? it.EstadoProblemaId,
+      fecha: it.fechaConsulta ?? it.FechaConsulta
+    };
+  };
 }
 

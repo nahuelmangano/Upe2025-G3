@@ -12,7 +12,7 @@ namespace DTOs
 
         public string Matricula { get; set; } = null!;
 
-        public DateTime FechaVencimientoMatricula { get; set; }
+        public DateOnly FechaVencimientoMatricula { get; set; }
 
         public int UsuarioId { get; set; }
 
