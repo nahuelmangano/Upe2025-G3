@@ -1,0 +1,149 @@
+.panel-central {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 22px;
+  box-shadow: 0 4px 24px rgba(28, 40, 91, 0.07);
+  max-width: 700px;
+  margin: 2rem auto;
+}
+
+.titulo {
+  font-weight: 600;
+  font-size: 1.6rem;
+  text-align: center;
+  color: #2a3560;
+  margin-bottom: 1.2rem;
+}
+
+.top-bar {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.buscador {
+  flex: 1;
+  min-width: 220px;
+}
+
+.lista-plantillas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tarjeta-plantilla {
+  background: #f8fbff;
+  border-radius: 16px;
+  box-shadow: 0 3px 10px #dde5fa33;
+  border: 1px solid #e5e9f2;
+  padding: 20px 28px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: box-shadow 0.15s;
+}
+
+.tarjeta-plantilla:hover {
+  box-shadow: 0 6px 24px #dde5fa77;
+}
+
+.tarjeta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plantilla-nombre {
+  font-weight: 600;
+  color: #2a3560;
+  font-size: 1.15rem;
+}
+
+.plantilla-id {
+  color: #b0bad4;
+  margin-left: 1em;
+  font-size: 0.95rem;
+}
+
+.plantilla-descripcion {
+  color: #5a6d9b;
+  font-size: 1rem;
+  margin-left: 2px;
+}
+
+.tarjeta-acciones button {
+  margin-left: 0.7em;
+}
+
+.zona-vacia {
+  text-align: center;
+  color: #8ba1c7;
+  margin-top: 2rem;
+  font-size: 1.1rem;
+}
+.zona-vacia mat-icon {
+  vertical-align: middle;
+  font-size: 2rem;
+  margin-right: 0.4rem;
+}
+
+.preview-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #dde5fa40;
+  padding: 2rem 2.6rem 2rem 2.6rem;
+  min-width: 480px;
+  max-width: 98vw;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.preview-card h3 {
+  font-size: 1.41rem;
+  color: #1c2561;
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+}
+
+.preview-label {
+  color: #3c497b;
+  font-size: 1.13rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.preview-secciones {
+  margin-top: 1.3em;
+}
+
+.preview-seccion h4 {
+  color: #295adf;
+  font-size: 1.13rem;
+  margin-bottom: 0.45em;
+  font-weight: 500;
+}
+
+.preview-seccion ul {
+  padding-left: 1.1em;
+  margin: 0;
+}
+
+.preview-seccion li {
+  color: #4d5e84;
+  font-size: 1.06em;
+  margin-bottom: 0.18em;
+  letter-spacing: 0.1px;
+}
+
+.tipo-campo {
+  color: #91a5d9;
+  font-size: 0.97em;
+  margin-left: 0.4em;
+}
+
+

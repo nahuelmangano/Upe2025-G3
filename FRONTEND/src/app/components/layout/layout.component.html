@@ -46,41 +46,29 @@
         <nav class="nav">
           <span class="nav-link disabled">Resumen</span>
           <span class="nav-link disabled">Indicaciones</span>
-          <a
-            class="nav-link"
-            [routerLink]="pacienteRoute('problemas')"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-            (click)="onNavClick(sidenav)"
-          >
-            Problemas
-          </a>
-          <a
-            class="nav-link"
-            [routerLink]="pacienteRoute('evoluciones')"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-            (click)="onNavClick(sidenav)"
-          >
-            Evoluciones
-          </a>
+          <a class="nav-link" [routerLink]="pacienteRoute('problemas')" routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">Problemas</a>
+          <a class="nav-link" [routerLink]="pacienteRoute('evoluciones')" routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">Evoluciones</a>
           <span class="nav-link disabled">Documentos y estudios</span>
           <span class="nav-link disabled">Plantillas</span>
         </nav>
       </div>
     </ng-container>
+
     <ng-template #defaultNav>
       <mat-nav-list class="default-nav">
         <mat-list-item>
-          <a
-            routerLink="/pages/usuario"
-            routerLinkActive="active"
-            class="basic-link"
-            (click)="onNavClick(sidenav)"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
+          <a routerLink="/pages/usuario" routerLinkActive="active" class="basic-link"
+             (click)="onNavClick(sidenav)" [routerLinkActiveOptions]="{ exact: true }">
             <mat-icon class="icono-usuario">group</mat-icon>
             <span>Usuarios</span>
+          </a>
+        </mat-list-item>
+        <mat-list-item>
+          <a routerLink="/pages/mis-plantillas" class="basic-link" (click)="onNavClick(sidenav)">
+            <mat-icon class="icono-usuario">description</mat-icon>
+            <span>Plantillas</span>
           </a>
         </mat-list-item>
       </mat-nav-list>

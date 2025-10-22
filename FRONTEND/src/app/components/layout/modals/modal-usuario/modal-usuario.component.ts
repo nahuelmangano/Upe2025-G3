@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [SharedModule, CommonModule],
   templateUrl: './modal-usuario.component.html',
-  styleUrl: './modal-usuario.component.css',
+  styleUrls: ['./modal-usuario.component.css'],
 })
 export class ModalUsuarioComponent {
   formularioUsuario: FormGroup;
@@ -43,8 +43,8 @@ export class ModalUsuarioComponent {
       passwordHash: ["", Validators.required],
       estadoId: [null],
       rolId: ["", Validators.required],
-      matricula: [""], // opcional
-      fechaVencimientoMatricula: [""] // opcional
+      matricula: [""], 
+      fechaVencimientoMatricula: [""] 
     });
 
     if (this.datosUsuario != null) {

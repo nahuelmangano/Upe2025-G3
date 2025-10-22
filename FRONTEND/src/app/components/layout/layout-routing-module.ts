@@ -5,6 +5,8 @@ import { ProblemasComponent } from '../../paciente/pages/problemas.component';
 import { ProblemaFormComponent } from '../../paciente/pages/problema-form.component';
 import { EvolucionesComponent } from '../../paciente/pages/evoluciones.component';
 import { EvolucionFormComponent } from '../../paciente/pages/evolucion-form.component';
+import { PlantillaComponent } from '../plantilla/crear-plantilla/plantilla';
+import { ListaPlantillasComponent } from '../plantilla/lista-plantillas/lista-plantillas';
 import { LayoutComponent } from './layout.component';
 
 const routes: Routes = [
@@ -16,7 +18,10 @@ const routes: Routes = [
       { path: 'pacientes/:id/problemas', component: ProblemasComponent },
       { path: 'pacientes/:id/problemas/nuevo', component: ProblemaFormComponent },
       { path: 'pacientes/:id/evoluciones', component: EvolucionesComponent },
-      { path: 'pacientes/:id/evoluciones/nueva', component: EvolucionFormComponent }
+      { path: 'pacientes/:id/evoluciones/nueva', component: EvolucionFormComponent },
+      { path: 'plantillas', component: PlantillaComponent },
+      { path: 'mis-plantillas', component: ListaPlantillasComponent },
+      { path: '', redirectTo: 'mis-plantillas', pathMatch: 'full' }
     ]
   }
 ];
@@ -25,4 +30,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class LayoutRoutingModule { }
+export class LayoutRoutingModule {}

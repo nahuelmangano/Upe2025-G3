@@ -13,7 +13,7 @@ import { MatSidenav } from '@angular/material/sidenav';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, SharedModule, RouterModule],
   templateUrl: './layout.component.html',
-  styleUrl: './layout.component.css'
+  styleUrls: ['./layout.component.css']
 })
 export class LayoutComponent implements OnDestroy {
   isDesktop = true;

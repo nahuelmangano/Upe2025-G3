@@ -29,4 +29,14 @@ export class UtilidadService {
   eliminarSesionUsuario(){
     localStorage.removeItem('usuario');
   }
+
+  obtenerUsuarioId(): number {
+  const usuario = this.obtenerSesionUsuario();
+  return usuario ? usuario.id : 0;
+  }
+
+  obtenerNombreCompletoUsuario(): string {
+  const usuario = this.obtenerSesionUsuario();
+  return usuario ? `${usuario.nombre} ${usuario.apellido}` : '';
+  }
 }

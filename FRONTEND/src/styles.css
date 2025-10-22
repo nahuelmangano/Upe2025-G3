@@ -29,3 +29,5 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
 .modal-grid label{ display:flex; flex-direction:column; gap:6px; }
 .modal-grid input, .modal-grid textarea, .modal-grid select{ width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
