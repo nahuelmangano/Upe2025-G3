@@ -1,0 +1,42 @@
+<div class="panel-central">
+  <h2 class="titulo">Mis Plantillas</h2>
+
+  <div class="top-bar">
+    <mat-form-field appearance="outline" class="buscador">
+      <mat-label>Buscar plantilla</mat-label>
+      <input matInput [(ngModel)]="filtro" (ngModelChange)="filtrarPlantillas($event)" placeholder="Nombre o descripción" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <button mat-flat-button color="primary" routerLink="/pages/plantillas">
+      <mat-icon>add_circle</mat-icon>
+      Crear Plantilla
+    </button>
+  </div>
+
+  <div *ngIf="dataSource.length === 0" class="zona-vacia">
+    <mat-icon>description</mat-icon>
+    <span>No tienes plantillas creadas aún.</span>
+  </div>
+
+  <div *ngIf="dataSource.length > 0" class="lista-plantillas">
+    <div *ngFor="let p of dataSource" class="tarjeta-plantilla">
+      <div class="tarjeta-header">
+        <div>
+          <span class="plantilla-nombre">{{ p.nombre }}</span>
+          <span class="plantilla-id">#{{ p.id }}</span>
+        </div>
+        <div class="tarjeta-acciones">
+          <button mat-icon-button color="primary" matTooltip="Ver Plantilla" (click)="verPlantilla(p)">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button color="accent" matTooltip="Completar Plantilla" (click)="completarPlantilla(p)">
+            <mat-icon>edit_note</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="plantilla-descripcion">
+        {{ p.descripcion || 'Sin descripción' }}
+      </div>
+    </div>
+  </div>
+</div>

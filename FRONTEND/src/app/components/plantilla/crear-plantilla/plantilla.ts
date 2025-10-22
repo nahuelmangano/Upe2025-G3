@@ -8,12 +8,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { TipoCampoService } from '../../services/tipo-campo.service';
-import { PlantillaService } from '../../services/plantilla.service';
-import { CampoService } from '../../services/campo.service';
+import { TipoCampoService } from '../../../services/tipo-campo.service';
+import { PlantillaService } from '../../../services/plantilla.service';
+import { CampoService } from '../../../services/campo.service';
 import { Plantilla } from 'src/app/interfaces/plantilla';
 import { Campo } from 'src/app/interfaces/campo';
-import { ResponseApi } from '../../interfaces/response-api';
+import { ResponseApi } from '../../../interfaces/response-api';
+import { UtilidadService } from '../../../reutilizable/utilidad.service';
+
 
 @Component({
   selector: 'app-plantilla',
@@ -45,6 +47,7 @@ export class PlantillaComponent {
     private tipoCampoService: TipoCampoService,
     private plantillaService: PlantillaService,
     private campoService: CampoService,
+    private utilidadService: UtilidadService,
     private dialog: MatDialog
   ) {
     this.formulario = this.fb.group({
@@ -218,13 +221,16 @@ export class PlantillaComponent {
       return;
     }
 
+    const medicoId = this.utilidadService.obtenerUsuarioId();
+    const medicoNombre = this.utilidadService.obtenerNombreCompletoUsuario();
+
     const plantillaGuardar: Plantilla = {
       id: 0,
       activo: true,
       descripcion: this.formulario.value.descripcion || '',
       nombre: this.formulario.value.nombrePlantilla,
-      medicoId: 0, 
-      medicoNombre: ""
+      medicoId: medicoId,
+      medicoNombre: medicoNombre
     };
 
     this.plantillaService.crear(plantillaGuardar).subscribe({
@@ -239,6 +245,7 @@ export class PlantillaComponent {
       error: (err) => console.error('Error al guardar plantilla', err)
     });
   }
+
 
   private guardarCampos(plantilla: Plantilla, plantillaId: number, plantillaNombre?: string) {
     const camposGuardar: Campo[] = [];
@@ -255,7 +262,7 @@ export class PlantillaComponent {
           orden: indexCampo + 1,
           tipoCampoId: value.tipoCampoId,
           tipoCampoNombre: value.tipoCampoNombre,
-          plantillaId: plantillaId, 
+          plantillaId: plantillaId,
           plantillaNombre: plantillaNombre || plantilla.nombre,
           activo: 1
         });
