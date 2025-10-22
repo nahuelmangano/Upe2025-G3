@@ -1,0 +1,157 @@
+<mat-card class="main-card tarjeta-superior">
+  <mat-card-title class="card-title">
+    <div class="title-content">
+      <span class="h3 titulo-seccion">Archivos del paciente</span>
+      <span class="espaciador"></span>
+      <button mat-raised-button color="primary" (click)="resetForm()">
+        <mat-icon>refresh</mat-icon>
+        Limpiar
+      </button>
+    </div>
+  </mat-card-title>
+
+  <div *ngIf="loading()">Cargando archivos...</div>
+  <div *ngIf="error()" class="mensaje-error">{{ error() }}</div>
+
+  <ng-container *ngIf="!loading() && !error()">
+    <div class="table-wrap mat-elevation-z2">
+      <table mat-table [dataSource]="archivos()" class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo de documento</th>
+            <th>Fecha subida</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of archivos()">
+            <td>
+              <mat-form-field appearance="fill" class="entrada-ancho-completo">
+                <mat-label>Nombre del archivo</mat-label>
+                <input matInput [(ngModel)]="a.nombreArchivo" [readonly]="a.__readonly" />
+              </mat-form-field>
+            </td>
+            <td>{{ a.estudioTipoNombre || '—' }}</td>
+            <td>{{ a.fechaSubida || '—' }}</td>
+            <td>
+              <button mat-stroked-button color="primary" (click)="toggleEdit(a)">{{ a.__readonly ? 'Editar' : 'Cancelar' }}</button>
+              <button mat-flat-button color="primary" [disabled]="a.__readonly" (click)="saveEdit(a)">Guardar</button>
+              <button mat-stroked-button color="warn" (click)="remove(a)">Borrar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</mat-card>
+
+<!-- Panel lateral con información del paciente (como en problemas/evoluciones) -->
+<mat-card class="main-card info-paciente" *ngIf="paciente as p">
+  <mat-card-title class="card-title">
+    <div class="title-content">
+      <mat-icon>person</mat-icon>
+      <span> Información del paciente</span>
+    </div>
+  </mat-card-title>
+  <mat-card-content class="dashboard-card-content">
+    <div class="grid-paciente">
+      <div>
+        <small>Nombre</small>
+        <div>{{ p.nombre }} {{ p.apellido }}</div>
+      </div>
+      <div>
+        <small>DNI</small>
+        <div>{{ p.dni }}</div>
+      </div>
+      <div>
+        <small>Edad</small>
+        <div>{{ p.fechaNac | date:'yyyy-MM-dd' }}</div>
+      </div>
+      <div>
+        <small>Sexo</small>
+        <div>{{ p.sexoNombre || '—' }}</div>
+      </div>
+      <div class="columna-completa">
+        <small>Ciudad</small>
+        <div>{{ p.domicilioCiudad || '—' }}</div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="main-card">
+  <mat-card-title class="card-title">
+    <div class="title-content">
+      <mat-icon>cloud_upload</mat-icon>
+      <span> Cargar documento</span>
+    </div>
+  </mat-card-title>
+
+  <mat-card-content class="dashboard-card-content">
+  <form (ngSubmit)="upload()" class="formulario-carga">
+    <div class="cuadricula-modal">
+      <label>
+        <span>Evolución</span>
+        <mat-form-field appearance="fill">
+          <mat-select [(ngModel)]="form.evolucionId" name="evolucionId" required>
+            <mat-option [value]="null">Seleccione…</mat-option>
+            <mat-option *ngFor="let e of evoluciones()" [value]="e.id">{{ e.descripcion || ('Evolución #' + e.id) }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </label>
+      <label>
+        <span>Tipo de estudio</span>
+        <mat-form-field appearance="fill">
+          <mat-select [(ngModel)]="form.tipoEstudioId" name="tipoEstudioId" required>
+            <mat-option [value]="null">Seleccione…</mat-option>
+            <mat-option *ngFor="let t of tiposEstudio()" [value]="t.id">{{ t.nombre }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </label>
+      <label>
+        <span>Fecha</span>
+        <mat-form-field appearance="fill">
+          <input matInput type="date" [(ngModel)]="form.fecha" name="fecha" required />
+        </mat-form-field>
+      </label>
+      <label>
+        <span>Realizado por</span>
+        <mat-form-field appearance="fill">
+          <input matInput [(ngModel)]="form.realizadoPor" name="realizadoPor" required />
+        </mat-form-field>
+      </label>
+      <label class="columna-completa">
+        <span>Observaciones</span>
+        <mat-form-field appearance="fill" class="entrada-ancho-completo">
+          <input matInput [(ngModel)]="form.observaciones" name="observaciones" />
+        </mat-form-field>
+      </label>
+      <label class="columna-completa">
+        <span>Seleccionar archivos</span>
+        <input type="file" (change)="onFiles($event)" multiple accept=".jpg,.jpeg,.png,.pdf,.bmp,.gif" />
+      </label>
+    </div>
+
+    <div *ngIf="selectedFiles().length" class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Archivo</th><th>Tamaño</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let f of selectedFiles()"><td>{{ f.name }}</td><td>{{ f.size | number }} bytes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="acciones-formulario">
+      <button mat-stroked-button color="primary" type="button" (click)="resetForm()">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" type="button" (click)="upload()" [disabled]="!canUpload()">
+        Guardar
+      </button>
+    </div>
+  </form>
+  </mat-card-content>
+</mat-card>
+
+

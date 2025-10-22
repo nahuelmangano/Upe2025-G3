@@ -5,9 +5,7 @@ import { API_URL } from "../app.config"; // token de configuración
 import { ResponseApi } from "../interfaces/response-api";
 import { Paciente } from "../interfaces/paciente";
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class PacienteService {
     private http = inject(HttpClient);
     private apiUrl = inject(API_URL);

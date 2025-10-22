@@ -8,6 +8,7 @@ import { EvolucionFormComponent } from '../../paciente/pages/evolucion-form.comp
 import { PlantillaComponent } from '../plantilla/crear-plantilla/plantilla';
 import { ListaPlantillasComponent } from '../plantilla/lista-plantillas/lista-plantillas';
 import { LayoutComponent } from './layout.component';
+import { ArchivosComponent } from '../../Archivos/archivos.component';
 
 const routes: Routes = [
   {
