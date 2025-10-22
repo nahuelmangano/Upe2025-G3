@@ -39,4 +39,85 @@
       </div>
     </div>
   </div>
+<ng-template #previsualizacionDialog let-data>
+  <h2 mat-dialog-title>Previsualización</h2>
+  <mat-dialog-content>
+    <div class="preview-titulo">
+      <span class="preview-label">Nombre de Plantilla:</span>
+      <span>{{ data.nombrePlantilla }}</span>
+    </div>
+    <div *ngFor="let seccion of data.secciones" class="preview-seccion">
+      <h4 class="preview-seccion-titulo">{{ seccion.titulo }}</h4>
+      <form class="preview-form">
+        <div *ngFor="let campo of seccion.campos" class="preview-campo">
+          <label class="preview-campo-label">{{ campo.etiqueta }}</label>
+          <ng-container [ngSwitch]="getInputType(campo.tipoCampoNombre)">
+            <input *ngSwitchCase="'text'"
+                   [value]="campo.valor || ''"
+                   class="preview-input" readonly />
+
+            <textarea *ngSwitchCase="'textarea'"
+                      class="preview-textarea" readonly>{{ campo.valor || '' }}</textarea>
+
+            <input *ngSwitchCase="'number'"
+                   type="number"
+                   [value]="campo.valor != null ? campo.valor : ''"
+                   class="preview-input" readonly />
+
+            <input *ngSwitchCase="'decimal'"
+                   type="number" step="0.01"
+                   [value]="campo.valor != null ? campo.valor : ''"
+                   class="preview-input" readonly />
+
+            <input *ngSwitchCase="'datetime-local'"
+                   type="datetime-local"
+                   [value]="campo.valor ? (campo.valor | date:'yyyy-MM-ddTHH:mm') : ''"
+                   class="preview-input" readonly />
+
+            <select *ngSwitchCase="'select'"
+                    class="preview-select"
+                    [multiple]="campo.tipoCampoNombre === 'Selección Múltiple'"
+                    disabled>
+              <option *ngFor="let opt of campo.opciones?.split(',')"
+                      [selected]="esOpcionSeleccionada(opt, campo.valor)">
+                {{ opt }}
+              </option>
+            </select>
+
+            <input *ngSwitchCase="'checkbox'"
+                   type="checkbox"
+                   [checked]="campo.valor === true || campo.valor === 'true'"
+                   disabled />
+
+            <input *ngSwitchCase="'file'"
+                   type="file"
+                   class="preview-input" disabled />
+
+            <input *ngSwitchCase="'email'"
+                   type="email"
+                   [value]="campo.valor || ''"
+                   class="preview-input" readonly />
+
+            <input *ngSwitchCase="'tel'"
+                   type="tel"
+                   [value]="campo.valor || ''"
+                   class="preview-input" readonly />
+
+            <input *ngSwitchDefault
+                   [value]="campo.valor || ''"
+                   class="preview-input" readonly />
+          </ng-container>
+        </div>
+      </form>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button mat-dialog-close color="primary">Cerrar</button>
+  </mat-dialog-actions>
+</ng-template>
+
+
+
+
+
 </div>

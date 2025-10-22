@@ -90,3 +90,60 @@
   font-size: 2rem;
   margin-right: 0.4rem;
 }
+
+.preview-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #dde5fa40;
+  padding: 2rem 2.6rem 2rem 2.6rem;
+  min-width: 480px;
+  max-width: 98vw;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.preview-card h3 {
+  font-size: 1.41rem;
+  color: #1c2561;
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+}
+
+.preview-label {
+  color: #3c497b;
+  font-size: 1.13rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.preview-secciones {
+  margin-top: 1.3em;
+}
+
+.preview-seccion h4 {
+  color: #295adf;
+  font-size: 1.13rem;
+  margin-bottom: 0.45em;
+  font-weight: 500;
+}
+
+.preview-seccion ul {
+  padding-left: 1.1em;
+  margin: 0;
+}
+
+.preview-seccion li {
+  color: #4d5e84;
+  font-size: 1.06em;
+  margin-bottom: 0.18em;
+  letter-spacing: 0.1px;
+}
+
+.tipo-campo {
+  color: #91a5d9;
+  font-size: 0.97em;
+  margin-left: 0.4em;
+}
+
+
