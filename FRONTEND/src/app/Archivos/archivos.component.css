@@ -1,0 +1,21 @@
+.modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.modal-grid .full{grid-column:1/-1}
+
+/* Nuevas clases en español */
+.tarjeta-superior{margin-bottom:12px}
+.titulo-seccion{margin-bottom:12px}
+.mensaje-error{color:#d63031}
+.entrada-ancho-completo{width:100%}
+.formulario-carga{display:grid;gap:10px}
+.cuadricula-modal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.columna-completa{grid-column:1/-1}
+.acciones-formulario{display:flex;gap:10px;justify-content:flex-end}
+
+/* Deprecadas pero mantenidas por compatibilidad temporal */
+.modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.modal-grid .full{grid-column:1/-1}
+
+/* Info paciente */
+.grid-paciente{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+

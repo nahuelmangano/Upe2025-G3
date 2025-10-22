@@ -25,3 +25,5 @@ export class TipoEstudioService {
     return this.http.put<ResponseApi>(`${this.urlApi}Eliminar/${id}`, {});
     }
 }
+
+

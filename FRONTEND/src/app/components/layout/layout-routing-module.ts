@@ -9,6 +9,7 @@ import { ResumenUsuarioComponent } from '../resumen-usuario/resumen-usuario.comp
 import { PlantillaComponent } from '../plantilla/crear-plantilla/plantilla';
 import { ListaPlantillasComponent } from '../plantilla/lista-plantillas/lista-plantillas';
 import { LayoutComponent } from './layout.component';
+import { ArchivosComponent } from '../../Archivos/archivos.component';
 
 const routes: Routes = [
   {
