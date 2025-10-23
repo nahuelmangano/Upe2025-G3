@@ -1,9 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+<<<<<<< Updated upstream
 import { API_URL } from '../app.config'; // token de configuración
 import { ResponseApi } from '../interfaces/response-api';
 import { Evolucion } from '../interfaces/evolucion';
+=======
+>>>>>>> Stashed changes
 import { API_URL } from '../app.config';
 import { ResponseApi } from '../interfaces/response-api';
 
@@ -11,7 +14,10 @@ import { ResponseApi } from '../interfaces/response-api';
   providedIn: 'root'
 })
 export class EvolucionService {
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
   private http = inject(HttpClient);
   private apiUrl = inject(API_URL);
 
@@ -20,6 +26,7 @@ export class EvolucionService {
   listaPorPaciente(pacienteId: number): Observable<ResponseApi> {
     return this.http.get<ResponseApi>(`${this.urlApi}ListaPorPaciente/${pacienteId}`);
   }
+<<<<<<< Updated upstream
 
   crear(request: Evolucion): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
@@ -29,4 +36,6 @@ export class EvolucionService {
     return this.http.put<ResponseApi>(`${this.urlApi}Editar`, request);
   }
 
+=======
+>>>>>>> Stashed changes
 }

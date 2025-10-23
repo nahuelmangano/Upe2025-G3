@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
@@ -33,6 +34,17 @@ import { Paciente } from '../interfaces/paciente';
 
 @Injectable({ providedIn: 'root' })
 export class PacienteService {
+=======
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, Observable } from 'rxjs';
+import { API_URL } from '../app.config';
+import { ResponseApi } from '../interfaces/response-api';
+import { Paciente } from '../interfaces/paciente';
+
+@Injectable({ providedIn: 'root' })
+export class PacienteService {
+>>>>>>> Stashed changes
   private http = inject(HttpClient);
   private apiUrl = inject(API_URL);
   private urlApi = this.apiUrl + 'Paciente/';
