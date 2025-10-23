@@ -17,6 +17,7 @@ const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: 'usuario', component: UsuarioComponent },
+<<<<<<< Updated upstream
       { path: 'pacientes/:id/problemas', component: ProblemasComponent },
       { path: 'pacientes/:id/problemas/nuevo', component: ProblemaFormComponent },
       { path: 'pacientes/:id/evoluciones', component: EvolucionesComponent },
@@ -27,6 +28,8 @@ const routes: Routes = [
       { path: 'plantillas', component: PlantillaComponent }, 
       
       { path: '', redirectTo: 'mis-plantillas', pathMatch: 'full' }
+=======
+>>>>>>> Stashed changes
       { path: 'paciente/:id/archivos', component: ArchivosComponent }
     ]
   }
