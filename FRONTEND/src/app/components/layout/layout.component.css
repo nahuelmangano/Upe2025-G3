@@ -123,14 +123,23 @@
   overflow:hidden;
 }
 
-.nav-link{
-  display:block;
-  padding:16px 20px;
-  color:#eae8ff;
-  text-decoration:none;
-  font-weight:500;
-  border-bottom:1px solid rgba(236, 233, 255, 0.12);
-  transition:background 0.2s ease, color 0.2s ease;
+.nav-link {
+  display: flex;                     /* flex para alinear icono + texto */
+  align-items: center;               /* centra verticalmente */
+  gap: 10px;                         /* espacio entre icono y texto */
+  padding: 16px 20px;
+  color: #eae8ff;
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(236, 233, 255, 0.12);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.material-icons {
+  font-size: 20px;
+  line-height: 1;                    /* elimina desalineo */
+  display: flex;                     /* centra el ícono dentro del span */
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-link:hover:not(.disabled){

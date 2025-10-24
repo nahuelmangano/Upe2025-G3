@@ -35,7 +35,10 @@ interface ProblemaMeta {
     <div class="card card-problemas">
       <h3 class="h3">Problema</h3>
       <div class="toolbar">
-        <button class="btn" type="button" (click)="nuevo()">+ Nuevo Problema</button>
+       <button class="btn" type="button" (click)="nuevo()">
+  <span>Nuevo Problema</span>
+  <span class="material-icons">add_circle</span>
+</button>
         <input [(ngModel)]="q" placeholder="Buscar..." />
       </div>
 
@@ -133,6 +136,19 @@ interface ProblemaMeta {
       border-radius:6px;
       padding:6px 10px;
     }
+      .btn{
+  display: inline-flex;
+  align-items: center;   /* centra verticalmente texto + icono */
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.material-icons{
+  font-size: 20px;       /* ajustá al tamaño que uses */
+  line-height: 1;        /* evita desalineo por altura de línea */
+}
+
+
   `]
 })
 export class ProblemasComponent implements OnInit, OnDestroy {
