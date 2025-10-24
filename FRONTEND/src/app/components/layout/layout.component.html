@@ -8,23 +8,18 @@
 </mat-toolbar>
 
 <mat-sidenav-container class="test">
-  <mat-sidenav
-    #sidenav
-    [opened]="isExpanded"
-    class="contenedor-marco"
-    [mode]="isDesktop ? 'side' : 'over'"
-    [fixedInViewport]="!isDesktop"
-    [fixedTopGap]="isDesktop ? 64 : 56"
-    (closedStart)="isExpanded=false"
-    (openedStart)="isExpanded=true"
-  >
+  <mat-sidenav #sidenav [opened]="isExpanded" class="contenedor-marco" [mode]="isDesktop ? 'side' : 'over'"
+    [fixedInViewport]="!isDesktop" [fixedTopGap]="isDesktop ? 64 : 56" (closedStart)="isExpanded=false"
+    (openedStart)="isExpanded=true">
     <ng-container *ngIf="isPacienteCtx; else defaultNav">
       <div class="side-panel">
         <div class="patient-card">
           <div class="avatar" aria-hidden="true">{{ pacienteIniciales || 'P' }}</div>
           <div class="patient-name">{{ pacienteNombre || 'Nombre del paciente' }}</div>
           <div class="actions">
-            <button class="btn-outline light" type="button">Salir</button>
+            <button class="btn-outline light" type="button"><span class="material-icons">
+                logout
+              </span></button>
             <button class="btn-outline light" type="button">Datos</button>
           </div>
           <dl class="patient-meta">
@@ -44,14 +39,14 @@
         </div>
 
         <nav class="nav">
-          <span class="nav-link disabled">Resumen</span>
-          <span class="nav-link disabled">Indicaciones</span>
+          <span class="nav-link disabled"><span class="material-icons">dashboard</span>Resumen</span>
+          <span class="nav-link disabled"><span class="material-icons">assignment</span>Indicaciones</span>
           <a class="nav-link" [routerLink]="pacienteRoute('problemas')" routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">Problemas</a>
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">medical_information</span> Problemas</a>
           <a class="nav-link" [routerLink]="pacienteRoute('evoluciones')" routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">Evoluciones</a>
-          <span class="nav-link disabled">Documentos y estudios</span>
-          <span class="nav-link disabled">Plantillas</span>
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">timeline</span>Evoluciones</a>
+          <span class="nav-link disabled"><span class="material-icons">description</span>Documentos y estudios</span>
+          <span class="nav-link disabled"><span class="material-icons">content_copy</span>Plantillas</span>
         </nav>
       </div>
     </ng-container>
@@ -59,8 +54,8 @@
     <ng-template #defaultNav>
       <mat-nav-list class="default-nav">
         <mat-list-item>
-          <a routerLink="/pages/usuario" routerLinkActive="active" class="basic-link"
-             (click)="onNavClick(sidenav)" [routerLinkActiveOptions]="{ exact: true }">
+          <a routerLink="/pages/usuario" routerLinkActive="active" class="basic-link" (click)="onNavClick(sidenav)"
+            [routerLinkActiveOptions]="{ exact: true }">
             <mat-icon class="icono-usuario">group</mat-icon>
             <span>Usuarios</span>
           </a>
