@@ -136,7 +136,11 @@ interface EvolucionRow {
     </div>
   `,
   styles: [
-    `.modal-grid .full{grid-column:1/-1}`
+    `.modal-grid .full{grid-column:1/-1}
+    /* Rayado de filas: una blanca, una gris */
+.table tbody tr:nth-child(odd)  { background: #ffffff; }
+.table tbody tr:nth-child(even) { background: #f5f6f8; }`
+    
   ]
 })
 export class EvolucionesComponent implements OnInit, OnDestroy {

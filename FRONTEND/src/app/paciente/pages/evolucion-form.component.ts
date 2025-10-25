@@ -9,6 +9,7 @@ import { PacienteCatalogoService, Opcion } from '../services/catalogo.service';
 import { PlantillaService } from '../../services/plantilla.service';
 import { Plantilla } from '../../interfaces/plantilla';
 import { MedicoService } from '../../services/medico.service';
+import { CampoService } from '../../services/campo.service';
 
 @Component({
   standalone: true,
@@ -71,11 +72,56 @@ import { MedicoService } from '../../services/medico.service';
               <span>Plantillas</span>
               <select [(ngModel)]="plantillaId" (change)="applyTemplate()" name="plantillaId">
                 <option [ngValue]="undefined">Seleccione</option>
+                <option [ngValue]="0">Vacío</option>
                 <option *ngFor="let t of plantillas" [ngValue]="t.id">{{ t.nombre || ('Plantilla ' + t.id) }}</option>
               </select>
             </label>
+            <div style="grid-column:1/7" *ngIf="previewLoading">
+              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px">
+                <strong>Previsualización</strong>
+                <p style="margin:8px 0 0;font-size:13px;color:#4b5563">Cargando plantilla…</p>
+              </div>
+            </div>
+            <div style="grid-column:1/7" *ngIf="previewError && !previewLoading">
+              <div style="background:#fdf2f2;border:1px solid #fecaca;border-radius:8px;padding:14px">
+                <strong>Previsualización</strong>
+                <p style="margin:8px 0 0;font-size:13px;color:#b91c1c">{{ previewError }}</p>
+              </div>
+            </div>
+            <div style="grid-column:1/7" *ngIf="plantillaPreview && !previewLoading">
+              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px">
+                <div style="font-weight:600;font-size:16px;margin-bottom:6px">Previsualización</div>
+                <div style="font-size:14px;margin-bottom:8px">
+                  <div><strong>Nombre de Plantilla:</strong> {{ plantillaPreview.nombre || ('Plantilla ' + plantillaPreview.id) }}</div>
+                  <div *ngIf="plantillaPreview.descripcion"><strong>Descripción:</strong> {{ plantillaPreview.descripcion }}</div>
+                </div>
+                <div *ngIf="!plantillaPreview.secciones.length" style="font-size:13px;color:#4b5563">
+                  Esta plantilla no tiene campos definidos.
+                </div>
+                <ng-container *ngFor="let seccion of plantillaPreview.secciones">
+                  <div style="font-weight:600;color:#4f46e5;margin-top:12px">{{ seccion.titulo }}</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px">
+                    <ng-container *ngFor="let campo of seccion.campos">
+                      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#374151">
+                        <span>{{ campo.etiqueta }}</span>
+                        <ng-container [ngSwitch]="campo.tipoEntrada">
+                          <textarea *ngSwitchCase="'textarea'" rows="3" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}"></textarea>
+                          <select *ngSwitchCase="'select'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [multiple]="campo.multiple">
+                            <option *ngFor="let opcion of campo.opciones" [ngValue]="opcion">{{ opcion }}</option>
+                          </select>
+                          <input *ngSwitchCase="'checkbox'" type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
+                          <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step">
+                          <input *ngSwitchCase="'datetime-local'" type="datetime-local" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
+                          <input *ngSwitchDefault type="{{ campo.tipoEntrada }}" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
+                        </ng-container>
+                      </label>
+                    </ng-container>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
             <div style="grid-column:1/7">
-              <span style="display:block;margin-bottom:6px;color:#374151;font-size:14px">Evolucion</span>
+              <span style="display:block;margin-bottom:6px;color:#374151;font-size:14px">Diagnostico Inicial</span>
               <textarea rows="12" [(ngModel)]="texto" placeholder="Ingrese aqui una evolucion..."></textarea>
             </div>
           </div>
@@ -101,7 +147,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   problemas: Problema[] = [];
   selectedProblema: Problema | null = null;
   plantillas: Plantilla[] = [];
-  plantillaId?: number;
+  plantillaId: number | undefined;
   estados: Opcion[] = [];
   estadoProblemaId?: number;
   medicos: { id: number; nombre: string }[] = [];
@@ -111,6 +157,17 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   texto = '';
   maxMostrar = 10;
 
+  plantillaPreview: {
+    id: number;
+    nombre?: string | null;
+    descripcion?: string | null;
+    secciones: { titulo: string; campos: VistaCampo[] }[];
+  } | null = null;
+  previewLoading = false;
+  previewError = '';
+
+  private camposSub?: Subscription;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -118,7 +175,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private probs: ProblemasService,
     private catalogo: PacienteCatalogoService,
     private plantillaSrv: PlantillaService,
-    private medicoSrv: MedicoService
+    private medicoSrv: MedicoService,
+    private campoSrv: CampoService
   ) {}
 
   ngOnInit(): void {
@@ -131,7 +189,10 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       this.fechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     });
   }
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this.camposSub?.unsubscribe();
+  }
 
   selectProblema(p: Problema): void {
     this.selectedProblema = p;
@@ -140,14 +201,23 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     }
   }
   applyTemplate(): void {
+    if (!this.plantillaId) {
+      this.texto = '';
+      this.resetPlantillaPreview();
+      return;
+    }
     const tpl = this.plantillas.find(x => x.id === this.plantillaId);
-    if (tpl?.descripcion) {
-      this.texto = tpl.descripcion;
+    this.texto = tpl?.descripcion ?? '';
+    if (tpl) {
+      this.loadPlantillaCampos(tpl);
+    } else {
+      this.resetPlantillaPreview();
     }
   }
   clear(): void {
     this.texto = '';
-    this.plantillaId = undefined;
+    this.plantillaId = 0;
+    this.resetPlantillaPreview();
   }
   async guardar(): Promise<void> {
     if (!this.selectedProblema?.id) {
@@ -196,6 +266,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     } else {
       this.plantillas = [];
       this.plantillaId = undefined;
+      this.resetPlantillaPreview();
     }
   }
 
@@ -264,18 +335,171 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       next: resp => {
         const items: Plantilla[] = resp?.estado ? (resp.valor || []) : [];
         this.plantillas = items;
-        if (!this.plantillas.find(p => p.id === this.plantillaId)) {
-          this.plantillaId = this.plantillas[0]?.id;
-          if (this.plantillaId) {
-            this.applyTemplate();
-          }
+        const currentId = this.plantillaId ?? 0;
+        const exists = !!this.plantillas.find(p => p.id === currentId);
+        if (!exists) {
+          this.plantillaId = this.plantillas[0]?.id ?? 0;
+        }
+        if (this.plantillaId && this.plantillaId !== 0) {
+          this.applyTemplate();
+        } else {
+          this.resetPlantillaPreview();
         }
       },
       error: err => {
         console.error('No se pudo cargar la lista de plantillas', err);
         this.plantillas = [];
         this.plantillaId = undefined;
+        this.resetPlantillaPreview();
       }
     });
   }
+
+  private loadPlantillaCampos(plantilla: Plantilla): void {
+    this.camposSub?.unsubscribe();
+    this.previewError = '';
+    this.previewLoading = true;
+    this.camposSub = this.campoSrv.lista(plantilla.id).subscribe({
+      next: res => {
+        this.previewLoading = false;
+        const campos = Array.isArray(res?.valor) ? res.valor : [];
+        const secciones = this.buildSecciones(campos);
+        this.plantillaPreview = {
+          id: plantilla.id,
+          nombre: plantilla.nombre,
+          descripcion: plantilla.descripcion,
+          secciones
+        };
+      },
+      error: err => {
+        console.error('No se pudo cargar la plantilla seleccionada', err);
+        this.previewLoading = false;
+        this.previewError = 'No se pudieron cargar los campos de la plantilla.';
+        this.plantillaPreview = {
+          id: plantilla.id,
+          nombre: plantilla.nombre,
+          descripcion: plantilla.descripcion,
+          secciones: []
+        };
+      }
+    });
+  }
+
+  private buildSecciones(campos: any[]): { titulo: string; campos: VistaCampo[] }[] {
+    const seccionesMap = new Map<string, { titulo: string; campos: VistaCampo[] }>();
+    campos.forEach(raw => {
+      const titulo = raw?.seccionTitulo || 'Sección sin título';
+      let seccion = seccionesMap.get(titulo);
+      if (!seccion) {
+        seccion = { titulo, campos: [] };
+        seccionesMap.set(titulo, seccion);
+      }
+      const campo = this.mapCampo(raw);
+      seccion.campos.push(campo);
+    });
+
+    return Array.from(seccionesMap.values()).map(seccion => ({
+      titulo: seccion.titulo,
+      campos: [...seccion.campos].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+    }));
+  }
+
+  private mapCampo(raw: any): VistaCampo {
+    const tipoNombre = (raw?.tipoCampoNombre || '').toString().toLowerCase();
+    let tipoEntrada: VistaCampo['tipoEntrada'] = 'text';
+    let multiple = false;
+    let step: string | undefined;
+
+    switch (tipoNombre) {
+      case 'texto largo':
+        tipoEntrada = 'textarea';
+        break;
+      case 'número entero':
+        tipoEntrada = 'number';
+        step = '1';
+        break;
+      case 'número decimal':
+        tipoEntrada = 'number';
+        step = '0.01';
+        break;
+      case 'fecha y hora':
+        tipoEntrada = 'datetime-local';
+        break;
+      case 'email':
+        tipoEntrada = 'email';
+        break;
+      case 'teléfono':
+        tipoEntrada = 'tel';
+        break;
+      case 'casilla de verificación':
+        tipoEntrada = 'checkbox';
+        break;
+      case 'selección única':
+        tipoEntrada = 'select';
+        break;
+      case 'selección múltiple':
+        tipoEntrada = 'select';
+        multiple = true;
+        break;
+      default:
+        tipoEntrada = 'text';
+        break;
+    }
+
+    let valor: any = raw?.valor;
+    if (tipoEntrada === 'checkbox') {
+      valor = valor === true || valor === 'true' || valor === 1;
+    } else if (tipoEntrada === 'select') {
+      if (multiple) {
+        if (Array.isArray(valor)) {
+          valor = valor;
+        } else if (typeof valor === 'string' && valor.trim()) {
+          valor = valor.split(',').map((v: string) => v.trim());
+        } else {
+          valor = [];
+        }
+      } else if (valor === undefined || valor === null) {
+        valor = '';
+      }
+    } else if (valor === undefined || valor === null) {
+      valor = '';
+    }
+
+    return {
+      id: Number(raw?.id) || 0,
+      orden: raw?.orden ?? 0,
+      etiqueta: raw?.etiqueta || raw?.Etiqueta || 'Campo',
+      valor,
+      tipoEntrada,
+      opciones: tipoEntrada === 'select' ? this.parseOpciones(raw?.opciones) : undefined,
+      multiple,
+      step
+    };
+  }
+
+  private parseOpciones(opciones?: string | null): string[] {
+    if (!opciones) return [];
+    return opciones
+      .split(/[\n;,]/)
+      .map(op => op.trim())
+      .filter(Boolean);
+  }
+
+  private resetPlantillaPreview(): void {
+    this.camposSub?.unsubscribe();
+    this.plantillaPreview = null;
+    this.previewLoading = false;
+    this.previewError = '';
+  }
+}
+
+interface VistaCampo {
+  id: number;
+  orden?: number | null;
+  etiqueta: string;
+  valor: any;
+  tipoEntrada: 'text' | 'textarea' | 'number' | 'datetime-local' | 'checkbox' | 'select' | 'email' | 'tel';
+  opciones?: string[];
+  multiple?: boolean;
+  step?: string;
 }
