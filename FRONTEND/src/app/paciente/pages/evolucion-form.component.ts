@@ -75,7 +75,7 @@ import { MedicoService } from '../../services/medico.service';
               </select>
             </label>
             <div style="grid-column:1/7">
-              <span style="display:block;margin-bottom:6px;color:#374151;font-size:14px">Evolucion</span>
+              <span style="display:block;margin-bottom:6px;color:#374151;font-size:14px">Diagnostico Inicial</span>
               <textarea rows="12" [(ngModel)]="texto" placeholder="Ingrese aqui una evolucion..."></textarea>
             </div>
           </div>
