@@ -46,7 +46,8 @@
           <a class="nav-link" [routerLink]="pacienteRoute('evoluciones')" routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">timeline</span>Evoluciones</a>
           <span class="nav-link disabled"><span class="material-icons">description</span>Documentos y estudios</span>
-          <span class="nav-link disabled"><span class="material-icons">content_copy</span>Plantillas</span>
+          <a class="nav-link" [routerLink]="['/pages', 'mis-plantillas']" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">content_copy</span>Plantillas</a>
         </nav>
       </div>
     </ng-container>

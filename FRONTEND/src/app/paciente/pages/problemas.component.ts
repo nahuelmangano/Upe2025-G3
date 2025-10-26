@@ -147,6 +147,9 @@ interface ProblemaMeta {
   font-size: 20px;       /* ajustá al tamaño que uses */
   line-height: 1;        /* evita desalineo por altura de línea */
 }
+  /* Rayado de filas: una blanca, una gris */
+.table tbody tr:nth-child(odd)  { background: #ffffff; }
+.table tbody tr:nth-child(even) { background: #f5f6f8; }
 
 
   `]
