@@ -18,6 +18,7 @@ export const routes: Routes = [
   // { path: 'pacientes/:id/problemas/nuevo', component: ProblemaFormComponent },
   // { path: 'admin/usuarios', component: UsuariosComponent },
   // { path: 'plantillas', component: PlantillasComponent },
+  // { path: 'plantillas/:id', component: PlantillaComponent},
   // { path: '**', redirectTo: '' }
 
   { path: 'login', component: LoginComponent },

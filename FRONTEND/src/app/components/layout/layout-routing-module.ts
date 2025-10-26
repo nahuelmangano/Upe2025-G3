@@ -19,8 +19,10 @@ const routes: Routes = [
       { path: 'pacientes/:id/problemas/nuevo', component: ProblemaFormComponent },
       { path: 'pacientes/:id/evoluciones', component: EvolucionesComponent },
       { path: 'pacientes/:id/evoluciones/nueva', component: EvolucionFormComponent },
-      { path: 'plantillas', component: PlantillaComponent },
       { path: 'mis-plantillas', component: ListaPlantillasComponent },
+      { path: 'plantillas/:id', component: PlantillaComponent }, 
+      { path: 'plantillas', component: PlantillaComponent }, 
+      
       { path: '', redirectTo: 'mis-plantillas', pathMatch: 'full' }
     ]
   }
