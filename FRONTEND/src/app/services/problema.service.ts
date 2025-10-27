@@ -19,6 +19,10 @@ export class ProblemaService {
     return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
   }
 
+  listaPorPaciente(pacienteId: number): Observable<ResponseApi> {
+    return this.http.get<ResponseApi>(`${this.urlApi}ListaPorPaciente/${pacienteId}`);
+  }
+
   crear(request: Problema): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
   }
