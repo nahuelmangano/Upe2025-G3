@@ -6,6 +6,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { EvolucionesService } from '../services/evoluciones.service';
 import { ProblemasService, Problema } from '../services/problemas.service';
 import { PacienteCatalogoService, Opcion } from '../services/catalogo.service';
+import { TipoCampoService } from '../../services/tipo-campo.service';
 import { PlantillaService } from '../../services/plantilla.service';
 import { Plantilla } from '../../interfaces/plantilla';
 import { MedicoService } from '../../services/medico.service';
@@ -100,16 +101,19 @@ import { CampoService } from '../../services/campo.service';
                 </div>
                 <ng-container *ngFor="let seccion of plantillaPreview.secciones">
                   <div style="font-weight:600;color:#4f46e5;margin-top:12px">{{ seccion.titulo }}</div>
-                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px">
+                  <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px">
                     <ng-container *ngFor="let campo of seccion.campos">
-                      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#374151">
+                      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#374151;max-width:520px;width:100%">
                         <span>{{ campo.etiqueta }}</span>
                         <ng-container [ngSwitch]="campo.tipoEntrada">
                           <textarea *ngSwitchCase="'textarea'" rows="3" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}"></textarea>
                           <select *ngSwitchCase="'select'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [multiple]="campo.multiple">
                             <option *ngFor="let opcion of campo.opciones" [ngValue]="opcion">{{ opcion }}</option>
                           </select>
-                          <input *ngSwitchCase="'checkbox'" type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
+                          <div *ngSwitchCase="'checkbox'" style="display:flex;align-items:center;gap:8px">
+                            <input type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
+                            <span>Seleccionado</span>
+                          </div>
                           <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step">
                           <input *ngSwitchCase="'datetime-local'" type="datetime-local" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
                           <input *ngSwitchDefault type="{{ campo.tipoEntrada }}" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
@@ -148,6 +152,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   selectedProblema: Problema | null = null;
   plantillas: Plantilla[] = [];
   plantillaId: number | undefined;
+  preselectPlantillaId?: number;
   estados: Opcion[] = [];
   estadoProblemaId?: number;
   medicos: { id: number; nombre: string }[] = [];
@@ -167,6 +172,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   previewError = '';
 
   private camposSub?: Subscription;
+  private tiposCampos: { id: number; nombre: string }[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -176,7 +182,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private catalogo: PacienteCatalogoService,
     private plantillaSrv: PlantillaService,
     private medicoSrv: MedicoService,
-    private campoSrv: CampoService
+    private campoSrv: CampoService,
+    private tipoCampoSrv: TipoCampoService
   ) {}
 
   ngOnInit(): void {
@@ -187,6 +194,22 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       this.loadMedicos();
       const now = new Date();
       this.fechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    });
+    // Capturar plantillaId desde query params para preselección
+    this.route.queryParamMap.subscribe(qp => {
+      const raw = qp.get('plantillaId');
+      const id = raw ? Number(raw) : NaN;
+      this.preselectPlantillaId = Number.isFinite(id) && id > 0 ? id : undefined;
+    });
+    // Cargar catálogo de tipos de campo para poder mapear id -> nombre
+    this.tipoCampoSrv.lista().subscribe({
+      next: (res: any) => {
+        const items: any[] = res?.estado ? (res.valor || []) : [];
+        this.tiposCampos = items
+          .map(x => ({ id: Number(x?.id ?? x?.Id), nombre: String(x?.nombre ?? x?.Nombre ?? '') }))
+          .filter(t => Number.isFinite(t.id) && !!t.nombre);
+      },
+      error: () => { this.tiposCampos = []; }
     });
   }
   ngOnDestroy(): void {
@@ -335,9 +358,13 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       next: resp => {
         const items: Plantilla[] = resp?.estado ? (resp.valor || []) : [];
         this.plantillas = items;
+        const prefer = this.preselectPlantillaId;
         const currentId = this.plantillaId ?? 0;
-        const exists = !!this.plantillas.find(p => p.id === currentId);
-        if (!exists) {
+        const preferExists = prefer ? !!this.plantillas.find(p => p.id === prefer) : false;
+        const currentExists = !!this.plantillas.find(p => p.id === currentId);
+        if (prefer && preferExists) {
+          this.plantillaId = prefer;
+        } else if (!currentExists) {
           this.plantillaId = this.plantillas[0]?.id ?? 0;
         }
         if (this.plantillaId && this.plantillaId !== 0) {
@@ -388,7 +415,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   private buildSecciones(campos: any[]): { titulo: string; campos: VistaCampo[] }[] {
     const seccionesMap = new Map<string, { titulo: string; campos: VistaCampo[] }>();
     campos.forEach(raw => {
-      const titulo = raw?.seccionTitulo || 'Sección sin título';
+      const titulo = raw?.seccionTitulo || 'Campos sin sección';
       let seccion = seccionesMap.get(titulo);
       if (!seccion) {
         seccion = { titulo, campos: [] };
@@ -404,47 +431,45 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     }));
   }
 
-  private mapCampo(raw: any): VistaCampo {
-    const tipoNombre = (raw?.tipoCampoNombre || '').toString().toLowerCase();
-    let tipoEntrada: VistaCampo['tipoEntrada'] = 'text';
-    let multiple = false;
-    let step: string | undefined;
-
-    switch (tipoNombre) {
+  // Mantener el mismo mapeo de tipos que la previsualización de Mis Plantillas
+  private mapTipoEntrada(nombre?: string): {
+    tipoEntrada: VistaCampo['tipoEntrada'];
+    multiple?: boolean;
+    step?: string;
+  } {
+    const n = (nombre || '').toString().toLowerCase();
+    switch (n) {
       case 'texto largo':
-        tipoEntrada = 'textarea';
-        break;
+        return { tipoEntrada: 'textarea' };
       case 'número entero':
-        tipoEntrada = 'number';
-        step = '1';
-        break;
+        return { tipoEntrada: 'number', step: '1' };
       case 'número decimal':
-        tipoEntrada = 'number';
-        step = '0.01';
-        break;
+        return { tipoEntrada: 'number', step: '0.01' };
       case 'fecha y hora':
-        tipoEntrada = 'datetime-local';
-        break;
+        return { tipoEntrada: 'datetime-local' };
+      case 'archivo':
+        // No se soporta cargar archivos en esta vista, usar input text
+        return { tipoEntrada: 'text' };
       case 'email':
-        tipoEntrada = 'email';
-        break;
+        return { tipoEntrada: 'email' };
       case 'teléfono':
-        tipoEntrada = 'tel';
-        break;
+        return { tipoEntrada: 'tel' };
       case 'casilla de verificación':
-        tipoEntrada = 'checkbox';
-        break;
+        return { tipoEntrada: 'checkbox' };
       case 'selección única':
-        tipoEntrada = 'select';
-        break;
+        return { tipoEntrada: 'select' };
       case 'selección múltiple':
-        tipoEntrada = 'select';
-        multiple = true;
-        break;
+        return { tipoEntrada: 'select', multiple: true };
+      case 'texto corto':
       default:
-        tipoEntrada = 'text';
-        break;
+        return { tipoEntrada: 'text' };
     }
+  }
+
+  private mapCampo(raw: any): VistaCampo {
+    const nombreTipo: string | undefined = raw?.tipoCampoNombre
+      ?? this.tiposCampos.find(t => t.id === (Number(raw?.tipoCampoId) || -1))?.nombre;
+    const { tipoEntrada, multiple, step } = this.mapTipoEntrada(nombreTipo);
 
     let valor: any = raw?.valor;
     if (tipoEntrada === 'checkbox') {
