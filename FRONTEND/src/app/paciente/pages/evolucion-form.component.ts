@@ -100,21 +100,21 @@ import { CampoService } from '../../services/campo.service';
                 </div>
                 <ng-container *ngFor="let seccion of plantillaPreview.secciones">
                   <div style="font-weight:600;color:#4f46e5;margin-top:12px">{{ seccion.titulo }}</div>
-                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px">
+                  <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px;max-width:420px;width:100%">
                     <ng-container *ngFor="let campo of seccion.campos">
-                      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#374151">
-                        <span>{{ campo.etiqueta }}</span>
+                      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#374151">
+                        <span style="font-weight:600">{{ campo.etiqueta }}</span>
                         <ng-container [ngSwitch]="campo.tipoEntrada">
-                          <textarea *ngSwitchCase="'textarea'" rows="3" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}"></textarea>
-                          <select *ngSwitchCase="'select'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [multiple]="campo.multiple">
+                          <textarea *ngSwitchCase="'textarea'" rows="3" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%"></textarea>
+                          <select *ngSwitchCase="'select'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [multiple]="campo.multiple" style="width:100%">
                             <option *ngFor="let opcion of campo.opciones" [ngValue]="opcion">{{ opcion }}</option>
                           </select>
-                          <input *ngSwitchCase="'checkbox'" type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
-                          <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step">
-                          <input *ngSwitchCase="'datetime-local'" type="datetime-local" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
-                          <input *ngSwitchDefault type="{{ campo.tipoEntrada }}" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}">
+                          <input *ngSwitchCase="'checkbox'" type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:auto;align-self:flex-start">
+                          <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step" style="width:100%">
+                          <input *ngSwitchCase="'datetime-local'" type="datetime-local" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%">
+                          <input *ngSwitchDefault type="{{ campo.tipoEntrada }}" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%">
                         </ng-container>
-                      </label>
+                      </div>
                     </ng-container>
                   </div>
                 </ng-container>
