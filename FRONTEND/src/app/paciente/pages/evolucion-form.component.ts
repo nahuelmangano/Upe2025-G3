@@ -10,6 +10,20 @@ import { PlantillaService } from '../../services/plantilla.service';
 import { Plantilla } from '../../interfaces/plantilla';
 import { MedicoService } from '../../services/medico.service';
 import { CampoService } from '../../services/campo.service';
+import { TipoCampoService } from '../../services/tipo-campo.service';
+
+type VistaCampoEntrada =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'decimal'
+  | 'datetime-local'
+  | 'checkbox'
+  | 'select'
+  | 'multiselect'
+  | 'email'
+  | 'tel'
+  | 'file';
 
 @Component({
   standalone: true,
@@ -89,35 +103,59 @@ import { CampoService } from '../../services/campo.service';
               </div>
             </div>
             <div style="grid-column:1/7" *ngIf="plantillaPreview && !previewLoading">
-              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px">
-                <div style="font-weight:600;font-size:16px;margin-bottom:6px">Previsualización</div>
-                <div style="font-size:14px;margin-bottom:8px">
-                  <div><strong>Nombre de Plantilla:</strong> {{ plantillaPreview.nombre || ('Plantilla ' + plantillaPreview.id) }}</div>
-                  <div *ngIf="plantillaPreview.descripcion"><strong>Descripción:</strong> {{ plantillaPreview.descripcion }}</div>
-                </div>
-                <div *ngIf="!plantillaPreview.secciones.length" style="font-size:13px;color:#4b5563">
-                  Esta plantilla no tiene campos definidos.
-                </div>
-                <ng-container *ngFor="let seccion of plantillaPreview.secciones">
-                  <div style="font-weight:600;color:#4f46e5;margin-top:12px">{{ seccion.titulo }}</div>
-                  <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px;max-width:420px;width:100%">
-                    <ng-container *ngFor="let campo of seccion.campos">
-                      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#374151">
-                        <span style="font-weight:600">{{ campo.etiqueta }}</span>
+              <div style="border-radius:18px;padding:1px;background:linear-gradient(135deg,rgba(99,102,241,0.35) 0%,rgba(99,102,241,0.05) 100%);box-shadow:0 18px 40px rgba(79,70,229,0.18);">
+                <div style="background:#ffffff;border-radius:17px;padding:22px 26px;display:flex;flex-direction:column;gap:22px;">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <div style="display:flex;align-items:center;gap:12px;font-size:18px;font-weight:700;color:#1f2937">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:rgba(79,70,229,0.12);color:#4f46e5;font-weight:600;">PV</span>
+                      Previsualización
+                    </div>
+                    <div style="font-size:14px;color:#4b5563;display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;">
+                      <div><strong style="color:#1f2937">Nombre:</strong> {{ plantillaPreview.nombre || ('Plantilla ' + plantillaPreview.id) }}</div>
+                      <div *ngIf="plantillaPreview.descripcion"><strong style="color:#1f2937">Descripción:</strong> {{ plantillaPreview.descripcion }}</div>
+                    </div>
+                  </div>
+                  <div *ngIf="!plantillaPreview.secciones.length" style="font-size:14px;color:#6b7280;background:#f9fafb;border:1px dashed #d1d5db;border-radius:14px;padding:18px;text-align:center;">
+                    Esta plantilla no tiene campos definidos todavía.
+                  </div>
+                  <ng-container *ngFor="let seccion of plantillaPreview.secciones">
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                      <div style="display:flex;align-items:center;gap:12px">
+                        <span style="padding:6px 12px;border-radius:999px;background:rgba(79,70,229,0.12);color:#4f46e5;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Sección</span>
+                        <span style="font-weight:700;font-size:16px;color:#1f2937;">{{ seccion.titulo }}</span>
+                      </div>
+                      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;">
+                        <ng-container *ngFor="let campo of seccion.campos">
+                          <div style="display:flex;flex-direction:column;gap:10px;background:linear-gradient(145deg,rgba(249,250,251,1) 0%,rgba(255,255,255,1) 100%);border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 10px 24px rgba(15,23,42,0.06);">
+                            <span style="font-weight:600;font-size:13px;color:#1f2937;text-transform:none">{{ campo.etiqueta }}</span>
                         <ng-container [ngSwitch]="campo.tipoEntrada">
-                          <textarea *ngSwitchCase="'textarea'" rows="3" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%"></textarea>
-                          <select *ngSwitchCase="'select'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [multiple]="campo.multiple" style="width:100%">
-                            <option *ngFor="let opcion of campo.opciones" [ngValue]="opcion">{{ opcion }}</option>
+                          <input *ngSwitchCase="'text'" type="text" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                          <textarea *ngSwitchCase="'textarea'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;min-height:92px;resize:vertical;"></textarea>
+                          <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step || '1'" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                          <input *ngSwitchCase="'decimal'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step || '0.01'" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                          <input *ngSwitchCase="'datetime-local'" type="datetime-local" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                          <select *ngSwitchCase="'select'" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;appearance:none;">
+                            <option [ngValue]="''">Seleccione</option>
+                            <option *ngFor="let opt of (campo.opciones || [])" [ngValue]="opt">{{ opt }}</option>
                           </select>
-                          <input *ngSwitchCase="'checkbox'" type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:auto;align-self:flex-start">
-                          <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" [step]="campo.step" style="width:100%">
-                          <input *ngSwitchCase="'datetime-local'" type="datetime-local" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%">
-                          <input *ngSwitchDefault type="{{ campo.tipoEntrada }}" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%">
+                          <select *ngSwitchCase="'multiselect'" multiple [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;min-height:92px;">
+                            <option *ngFor="let opt of (campo.opciones || [])" [ngValue]="opt">{{ opt }}</option>
+                          </select>
+                          <label *ngSwitchCase="'checkbox'" style="display:flex;align-items:center;gap:10px;font-size:14px;color:#1f2937;">
+                                <input type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:18px;height:18px;border-radius:6px;accent-color:#4f46e5;" />
+                                <span>{{ campo.valor ? 'Seleccionado' : 'No seleccionado' }}</span>
+                              </label>
+                          <input *ngSwitchCase="'file'" type="file" disabled style="width:100%;padding:10px 12px;border:1px dashed #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#6b7280;" />
+                          <input *ngSwitchCase="'email'" type="email" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                          <input *ngSwitchCase="'tel'" type="tel" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                          <input *ngSwitchDefault type="text" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#f9fafb;font-size:14px;color:#1f2937;" />
+                        </ng-container>
+                          </div>
                         </ng-container>
                       </div>
-                    </ng-container>
-                  </div>
-                </ng-container>
+                    </div>
+                  </ng-container>
+                </div>
               </div>
             </div>
             <div style="grid-column:1/7">
@@ -167,6 +205,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   previewError = '';
 
   private camposSub?: Subscription;
+  private tiposCampos: { id: number; nombre: string }[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -176,10 +215,12 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private catalogo: PacienteCatalogoService,
     private plantillaSrv: PlantillaService,
     private medicoSrv: MedicoService,
-    private campoSrv: CampoService
+    private campoSrv: CampoService,
+    private tipoCampoSrv: TipoCampoService
   ) {}
 
   ngOnInit(): void {
+    this.loadTiposCampos();
     this.sub = this.route.paramMap.subscribe(pm => {
       this.pacienteId = Number(pm.get('id')) || 0;
       this.loadProblemas();
@@ -275,6 +316,21 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       return 'Selecciona un medico';
     }
     return this.medicos.find(m => m.id === this.medicoId)?.nombre || 'Medico seleccionado';
+  }
+
+  private loadTiposCampos(): void {
+    this.tipoCampoSrv.lista().subscribe({
+      next: resp => {
+        const items: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.tiposCampos = items
+          .map(item => ({ id: Number(item?.id ?? item?.Id), nombre: item?.nombre ?? item?.Nombre ?? '' }))
+          .filter(item => Number.isFinite(item.id) && item.id > 0 && !!item.nombre);
+        if (this.plantillaId && this.plantillaId !== 0) {
+          this.applyTemplate();
+        }
+      },
+      error: err => console.error('No se pudo cargar la lista de tipos de campo', err)
+    });
   }
 
   private loadProblemas(): void {
@@ -386,103 +442,158 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   }
 
   private buildSecciones(campos: any[]): { titulo: string; campos: VistaCampo[] }[] {
-    const seccionesMap = new Map<string, { titulo: string; campos: VistaCampo[] }>();
-    campos.forEach(raw => {
-      const titulo = raw?.seccionTitulo || 'Sección sin título';
-      let seccion = seccionesMap.get(titulo);
-      if (!seccion) {
-        seccion = { titulo, campos: [] };
-        seccionesMap.set(titulo, seccion);
+    const activos = Array.isArray(campos)
+      ? campos.filter(c => c?.activo === 1 || c?.activo === true)
+      : [];
+    const ordenados = [...activos].sort((a, b) => (a?.orden ?? 0) - (b?.orden ?? 0));
+
+    const secciones: { titulo: string; campos: VistaCampo[] }[] = [];
+    let seccionActual: { titulo: string; campos: VistaCampo[] } | null = null;
+
+    ordenados.forEach(raw => {
+      const tipoNombre = this.resolveTipoCampoNombre(raw);
+      if (tipoNombre === '__SECCION__') {
+        seccionActual = {
+          titulo: raw?.etiqueta || raw?.Etiqueta || 'Sección sin título',
+          campos: []
+        };
+        secciones.push(seccionActual);
+        return;
       }
-      const campo = this.mapCampo(raw);
-      seccion.campos.push(campo);
+
+      if (!seccionActual) {
+        seccionActual = { titulo: 'Campos sin sección', campos: [] };
+        secciones.push(seccionActual);
+      }
+
+      const campo = this.mapCampo(raw, tipoNombre);
+      seccionActual.campos.push(campo);
     });
 
-    return Array.from(seccionesMap.values()).map(seccion => ({
-      titulo: seccion.titulo,
-      campos: [...seccion.campos].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-    }));
+    return secciones;
   }
 
-  private mapCampo(raw: any): VistaCampo {
-    const tipoNombre = (raw?.tipoCampoNombre || '').toString().toLowerCase();
-    let tipoEntrada: VistaCampo['tipoEntrada'] = 'text';
-    let multiple = false;
-    let step: string | undefined;
-
-    switch (tipoNombre) {
-      case 'texto largo':
-        tipoEntrada = 'textarea';
-        break;
-      case 'número entero':
-        tipoEntrada = 'number';
-        step = '1';
-        break;
-      case 'número decimal':
-        tipoEntrada = 'number';
-        step = '0.01';
-        break;
-      case 'fecha y hora':
-        tipoEntrada = 'datetime-local';
-        break;
-      case 'email':
-        tipoEntrada = 'email';
-        break;
-      case 'teléfono':
-        tipoEntrada = 'tel';
-        break;
-      case 'casilla de verificación':
-        tipoEntrada = 'checkbox';
-        break;
-      case 'selección única':
-        tipoEntrada = 'select';
-        break;
-      case 'selección múltiple':
-        tipoEntrada = 'select';
-        multiple = true;
-        break;
-      default:
-        tipoEntrada = 'text';
-        break;
-    }
-
+  private mapCampo(raw: any, tipoCampoNombre?: string): VistaCampo {
+    const tipoNombre = (tipoCampoNombre ?? this.resolveTipoCampoNombre(raw) ?? '').toString();
+    const tipoEntrada = this.getInputType(tipoNombre);
     let valor: any = raw?.valor;
-    if (tipoEntrada === 'checkbox') {
-      valor = valor === true || valor === 'true' || valor === 1;
-    } else if (tipoEntrada === 'select') {
-      if (multiple) {
+    const opciones = this.parseOpciones(raw?.opciones);
+
+    switch (tipoEntrada) {
+      case 'checkbox':
+        valor = valor === true || valor === 'true' || valor === 1;
+        break;
+      case 'multiselect':
         if (Array.isArray(valor)) {
-          valor = valor;
+          valor = valor.filter((v: any) => typeof v === 'string').map((v: string) => v.trim()).filter(Boolean);
         } else if (typeof valor === 'string' && valor.trim()) {
-          valor = valor.split(',').map((v: string) => v.trim());
+          valor = valor.split(/[\n;,]/).map((v: string) => v.trim()).filter(Boolean);
         } else {
           valor = [];
         }
-      } else if (valor === undefined || valor === null) {
-        valor = '';
-      }
-    } else if (valor === undefined || valor === null) {
-      valor = '';
+        break;
+      case 'select':
+        if (Array.isArray(valor)) {
+          valor = valor[0] ?? '';
+        } else if (valor === undefined || valor === null) {
+          valor = '';
+        } else {
+          valor = valor.toString();
+        }
+        break;
+      case 'datetime-local':
+        valor = this.formatDateTime(valor);
+        break;
+      case 'number':
+      case 'decimal':
+        valor = valor === undefined || valor === null ? '' : valor;
+        break;
+      default:
+        if (valor === undefined || valor === null) {
+          valor = '';
+        }
+        break;
     }
+
+    const step = tipoEntrada === 'decimal' ? '0.01' : tipoEntrada === 'number' ? '1' : undefined;
 
     return {
       id: Number(raw?.id) || 0,
       orden: raw?.orden ?? 0,
       etiqueta: raw?.etiqueta || raw?.Etiqueta || 'Campo',
       valor,
+      tipoCampoNombre: tipoNombre,
       tipoEntrada,
-      opciones: tipoEntrada === 'select' ? this.parseOpciones(raw?.opciones) : undefined,
-      multiple,
+      opciones: opciones.length ? opciones : undefined,
+      multiple: tipoEntrada === 'multiselect',
       step
     };
+  }
+
+  private resolveTipoCampoNombre(raw: any): string {
+    if (raw?.tipoCampoNombre) {
+      return raw.tipoCampoNombre;
+    }
+    const tipoId = Number(raw?.tipoCampoId);
+    if (!Number.isFinite(tipoId) || tipoId <= 0) {
+      return '';
+    }
+    if (tipoId === 1002) {
+      return '__SECCION__';
+    }
+    const tipo = this.tiposCampos.find(t => t.id === tipoId);
+    return tipo?.nombre || 'Texto Corto';
   }
 
   private parseOpciones(opciones?: string | null): string[] {
     if (!opciones) return [];
     return opciones
       .split(/[\n;,]/)
-      .map(op => op.trim())
+      .map(opcion => opcion.trim())
       .filter(Boolean);
+  }
+
+  private getInputType(tipo: string): VistaCampoEntrada {
+    if (!tipo) return 'text';
+    const nombre = tipo.toLowerCase();
+    switch (nombre) {
+      case 'texto corto': return 'text';
+      case 'texto largo': return 'textarea';
+      case 'número entero': return 'number';
+      case 'número decimal': return 'decimal';
+      case 'fecha y hora': return 'datetime-local';
+      case 'archivo': return 'file';
+      case 'email': return 'email';
+      case 'teléfono': return 'tel';
+      case 'casilla de verificación': return 'checkbox';
+      case 'selección única': return 'select';
+      case 'selección múltiple': return 'multiselect';
+      default: return 'text';
+    }
+  }
+
+  private formatDateTime(valor: any): string {
+    if (!valor) return '';
+    if (valor instanceof Date) {
+      const local = new Date(valor.getTime() - valor.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 16);
+    }
+    if (typeof valor === 'string') {
+      const parsed = new Date(valor);
+      if (!isNaN(parsed.getTime())) {
+        const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 16);
+      }
+      return valor.slice(0, 16);
+    }
+    if (typeof valor === 'number') {
+      const date = new Date(valor);
+      if (!isNaN(date.getTime())) {
+        const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 16);
+      }
+    }
+    return '';
   }
 
   private resetPlantillaPreview(): void {
@@ -498,7 +609,8 @@ interface VistaCampo {
   orden?: number | null;
   etiqueta: string;
   valor: any;
-  tipoEntrada: 'text' | 'textarea' | 'number' | 'datetime-local' | 'checkbox' | 'select' | 'email' | 'tel';
+  tipoCampoNombre: string;
+  tipoEntrada: VistaCampoEntrada;
   opciones?: string[];
   multiple?: boolean;
   step?: string;
