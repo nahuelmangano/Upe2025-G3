@@ -11,6 +11,7 @@ import { Plantilla } from '../../interfaces/plantilla';
 import { MedicoService } from '../../services/medico.service';
 import { CampoService } from '../../services/campo.service';
 import { TipoCampoService } from '../../services/tipo-campo.service';
+import { CampoValorService } from '../../services/campo-valor.service';
 
 type VistaCampoEntrada =
   | 'text'
@@ -86,7 +87,7 @@ type VistaCampoEntrada =
               <span>Plantillas</span>
               <select [(ngModel)]="plantillaId" (change)="applyTemplate()" name="plantillaId">
                 <option [ngValue]="undefined">Seleccione</option>
-                <option [ngValue]="0">Vacío</option>
+                <option [ngValue]="null">Vacío</option>
                 <option *ngFor="let t of plantillas" [ngValue]="t.id">{{ t.nombre || ('Plantilla ' + t.id) }}</option>
               </select>
             </label>
@@ -185,7 +186,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   problemas: Problema[] = [];
   selectedProblema: Problema | null = null;
   plantillas: Plantilla[] = [];
-  plantillaId: number | undefined;
+  plantillaId: number | null | undefined;
   estados: Opcion[] = [];
   estadoProblemaId?: number;
   medicos: { id: number; nombre: string }[] = [];
@@ -216,7 +217,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private plantillaSrv: PlantillaService,
     private medicoSrv: MedicoService,
     private campoSrv: CampoService,
-    private tipoCampoSrv: TipoCampoService
+    private tipoCampoSrv: TipoCampoService,
+    private campoValorSrv: CampoValorService
   ) {}
 
   ngOnInit(): void {
@@ -257,7 +259,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   }
   clear(): void {
     this.texto = '';
-    this.plantillaId = 0;
+    this.plantillaId = null;
     this.resetPlantillaPreview();
   }
   async guardar(): Promise<void> {
@@ -282,7 +284,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     const diagnostico = this.texto.trim() ? this.texto.trim().slice(0, 250) : 'Sin detalle';
 
     try {
-      await firstValueFrom(this.evo.create({
+      const nuevaEvolucion = await firstValueFrom(this.evo.create({
         descripcion: this.texto,
         fechaConsulta: fechaIso,
         diagnosticoInicial: diagnostico,
@@ -293,6 +295,14 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
         medicoId: this.medicoId,
         plantillaId: this.plantillaId
       }));
+      if (nuevaEvolucion?.id && typeof this.plantillaId === 'number' && this.plantillaId > 0) {
+        try {
+          await this.guardarValoresPlantilla(nuevaEvolucion.id);
+        } catch (err) {
+          console.error('La evolución se guardó pero falló el guardado de campos de plantilla', err);
+          window.alert('La evolución se creó, pero no se pudieron guardar los valores de la plantilla.');
+        }
+      }
       this.router.navigate(['/pages', 'pacientes', this.pacienteId, 'evoluciones']);
     } catch (err) {
       console.error('No se pudo crear la evolucion', err);
@@ -325,7 +335,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
         this.tiposCampos = items
           .map(item => ({ id: Number(item?.id ?? item?.Id), nombre: item?.nombre ?? item?.Nombre ?? '' }))
           .filter(item => Number.isFinite(item.id) && item.id > 0 && !!item.nombre);
-        if (this.plantillaId && this.plantillaId !== 0) {
+        if (typeof this.plantillaId === 'number' && this.plantillaId > 0) {
           this.applyTemplate();
         }
       },
@@ -391,12 +401,13 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       next: resp => {
         const items: Plantilla[] = resp?.estado ? (resp.valor || []) : [];
         this.plantillas = items;
-        const currentId = this.plantillaId ?? 0;
-        const exists = !!this.plantillas.find(p => p.id === currentId);
-        if (!exists) {
-          this.plantillaId = this.plantillas[0]?.id ?? 0;
+        const currentId = typeof this.plantillaId === 'number' ? this.plantillaId : null;
+        const usuarioEligioVacio = this.plantillaId === null;
+        const exists = currentId != null ? !!this.plantillas.find(p => p.id === currentId) : false;
+        if (!exists && !usuarioEligioVacio) {
+          this.plantillaId = this.plantillas[0]?.id ?? null;
         }
-        if (this.plantillaId && this.plantillaId !== 0) {
+        if (typeof this.plantillaId === 'number' && this.plantillaId > 0) {
           this.applyTemplate();
         } else {
           this.resetPlantillaPreview();
@@ -594,6 +605,72 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       }
     }
     return '';
+  }
+
+  private async guardarValoresPlantilla(evolucionId: number): Promise<void> {
+    if (!this.plantillaPreview || !this.plantillaPreview.secciones.length) {
+      return;
+    }
+    const campos = this.plantillaPreview.secciones
+      .flatMap(seccion => seccion.campos)
+      .filter(campo => campo.id > 0 && campo.tipoEntrada !== 'file');
+
+    const payloads = campos
+      .map(campo => {
+        const valor = this.serializarCampoValor(campo);
+        const debeGuardar = campo.tipoEntrada === 'checkbox'
+          ? true
+          : (valor ?? '').trim().length > 0;
+        if (!debeGuardar) {
+          return null;
+        }
+        return {
+          campoId: campo.id,
+          valor: valor ?? ''
+        };
+      })
+      .filter((item): item is { campoId: number; valor: string } => !!item);
+
+    if (!payloads.length) {
+      return;
+    }
+
+    await Promise.all(payloads.map(item =>
+      firstValueFrom(this.campoValorSrv.crear({
+        id: 0,
+        campoId: item.campoId,
+        evolucionId,
+        valor: item.valor
+      }))
+    ));
+  }
+
+  private serializarCampoValor(campo: VistaCampo): string | null {
+    switch (campo.tipoEntrada) {
+      case 'checkbox':
+        return campo.valor ? 'true' : 'false';
+      case 'multiselect':
+        if (Array.isArray(campo.valor) && campo.valor.length) {
+          return campo.valor.map((v: string) => v?.toString().trim()).filter(Boolean).join(', ');
+        }
+        return '';
+      case 'datetime-local':
+        return campo.valor ? campo.valor.toString() : '';
+      case 'number':
+      case 'decimal':
+        if (campo.valor === undefined || campo.valor === null || campo.valor === '') {
+          return '';
+        }
+        return campo.valor.toString();
+      case 'select':
+      case 'text':
+      case 'textarea':
+      case 'email':
+      case 'tel':
+        return campo.valor != null ? campo.valor.toString() : '';
+      default:
+        return campo.valor != null ? campo.valor.toString() : '';
+    }
   }
 
   private resetPlantillaPreview(): void {

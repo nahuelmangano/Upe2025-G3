@@ -20,6 +20,11 @@ export class CampoValorService {
     return this.http.get<ResponseApi>(url);
   }
 
+  listaPorEvolucion(evolucionId: number): Observable<ResponseApi> {
+    const url = `${this.urlApi}ListaPorEvolucion/${evolucionId}`;
+    return this.http.get<ResponseApi>(url);
+  }
+
   crear(request: CampoValor): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
   }
