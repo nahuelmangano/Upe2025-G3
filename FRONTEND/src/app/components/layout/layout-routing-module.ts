@@ -5,7 +5,7 @@ import { ProblemasComponent } from '../../paciente/pages/problemas.component';
 import { ProblemaFormComponent } from '../../paciente/pages/problema-form.component';
 import { EvolucionesComponent } from '../../paciente/pages/evoluciones.component';
 import { EvolucionFormComponent } from '../../paciente/pages/evolucion-form.component';
-import { ResumenUsuarioComponent } from '../../paciente/pages/resumen-usuario.component';
+import { ResumenUsuarioComponent } from '../resumen-usuario/resumen-usuario.component';
 import { PlantillaComponent } from '../plantilla/crear-plantilla/plantilla';
 import { ListaPlantillasComponent } from '../plantilla/lista-plantillas/lista-plantillas';
 import { LayoutComponent } from './layout.component';

@@ -1,0 +1,93 @@
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  background: #f9fafb;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #f5f6f8;
+}
+
+.h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: default;
+  user-select: none;
+}
+
+.estado-badge.estado-nuevo {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.estado-badge.estado-estable {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.estado-badge.estado-mejorando {
+  background: #10b981;
+  color: #fff;
+}
+
+.estado-badge.estado-recurrente {
+  background: #fbbf24;
+  color: #fff;
+}
+
+.estado-badge.estado-cronico {
+  background: #ef4444;
+  color: #fff;
+}
+
+.estado-badge.estado-default {
+  background: #d1d5db;
+  color: #374151;
+}
