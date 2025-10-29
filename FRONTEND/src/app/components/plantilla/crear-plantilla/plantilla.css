@@ -160,12 +160,12 @@
   gap: 15px;
 }
 
-.tipo-icono-grande {
+/* .tipo-icono-grande {
   font-size: 2rem;
   color: var(--color-icon);
   flex-shrink: 0;
   filter: none;
-}
+} */
 .tipo-labels {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,4 @@
-import { Component, TemplateRef, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef,NgZone, OnInit
-} from '@angular/core';
+import { Component, TemplateRef, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef,NgZone, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -18,6 +17,7 @@ import { Plantilla } from '../../../interfaces/plantilla';
 import { Campo } from '../../../interfaces/campo';
 import { ResponseApi } from '../../../interfaces/response-api';
 import { UtilidadService } from '../../../reutilizable/utilidad.service';
+import { MedicoService } from '../../../services/medico.service';
 
 @Component({
   selector: 'app-plantilla',
@@ -52,7 +52,8 @@ export class PlantillaComponent implements OnInit {
     private utilidadService: UtilidadService,
     private cdRef: ChangeDetectorRef,
     private ngZone: NgZone,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private medicoService: MedicoService
   ) {
     this.formulario = this.fb.group({
       nombrePlantilla: ['', Validators.required],
@@ -319,35 +320,51 @@ export class PlantillaComponent implements OnInit {
   }
 
   async guardar(): Promise<void> {
-    if (this.formulario.invalid) {
-      this.utilidadService.mostrarAlerta('Completá todos los datos antes de guardar.', 'Advertencia');
+  if (this.formulario.invalid) {
+    this.utilidadService.mostrarAlerta('Completá todos los datos antes de guardar.', 'Advertencia');
+    return;
+  }
+
+  try {
+    const userId = this.utilidadService.obtenerUsuarioId();
+    const resp = await firstValueFrom(this.medicoService.lista()); 
+    if (!resp.estado || !resp.valor) {
+      this.utilidadService.mostrarAlerta('Error al buscar médico', 'Error');
       return;
     }
-    try {
-      const medicoId = this.utilidadService.obtenerUsuarioId();
-      const medicoNombre = this.utilidadService.obtenerNombreCompletoUsuario();
-      const plantilla: Plantilla = {
-        id: this.plantillaId || 0,
-        activo: true,
-        descripcion: this.formulario.value.descripcion ?? '',
-        nombre: this.formulario.value.nombrePlantilla ?? '',
-        medicoId,
-        medicoNombre
-      };
-      let res = this.modoEdicion
-        ? await firstValueFrom(this.plantillaService.editar(plantilla))
-        : await firstValueFrom(this.plantillaService.crear(plantilla));
-
-      const plantillaId = this.modoEdicion ? this.plantillaId! : res.valor.id;
-      if (res.estado) {
-        await this.guardarCampos(plantillaId, plantilla.nombre ?? '');
-        this.utilidadService.mostrarAlerta(this.modoEdicion ? 'Plantilla actualizada.' : 'Plantilla creada.', 'Éxito');
-        this.router.navigate(['/pages/mis-plantillas']);
-      }
-    } catch (e) {
-      this.utilidadService.mostrarAlerta('Error al guardar.', 'Error');
+    const medico = resp.valor.find((m: any) => m.usuarioId === userId);
+    if (!medico) {
+      this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
+      return;
     }
+
+    const medicoId = medico.id;
+    const medicoNombre = `${medico.usuarioNombre} ${medico.usuarioApellido}`;
+
+    const plantilla: Plantilla = {
+      id: this.plantillaId || 0,
+      activo: true,
+      descripcion: this.formulario.value.descripcion ?? '',
+      nombre: this.formulario.value.nombrePlantilla ?? '',
+      medicoId: medicoId,
+      medicoNombre: medicoNombre
+    };
+
+    let res = this.modoEdicion
+      ? await firstValueFrom(this.plantillaService.editar(plantilla))
+      : await firstValueFrom(this.plantillaService.crear(plantilla));
+
+    const plantillaId = this.modoEdicion ? this.plantillaId! : res.valor.id;
+    if (res.estado) {
+      await this.guardarCampos(plantillaId, plantilla.nombre ?? '');
+      this.utilidadService.mostrarAlerta(this.modoEdicion ? 'Plantilla actualizada.' : 'Plantilla creada.', 'Éxito');
+      this.router.navigate(['/pages/mis-plantillas']);
+    }
+  } catch (e) {
+    this.utilidadService.mostrarAlerta('Error al guardar.', 'Error');
   }
+}
+
 
   private async guardarCampos(pid: number, pname: string): Promise<void> {
     if (this.tipoSeccionId == null) {
