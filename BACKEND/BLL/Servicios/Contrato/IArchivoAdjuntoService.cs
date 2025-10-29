@@ -11,6 +11,8 @@ namespace BLL.Servicios.Contrato
     {
         Task<List<ArchivoAdjuntoDTO>> ListaPorEstudio(int estudioId);
 
+        Task<ArchivoAdjuntoDTO> Obtener(int id);
+
         Task<ArchivoAdjuntoDTO> Crear(ArchivoAdjuntoDTO modelo);
 
         Task<bool> Editar(ArchivoAdjuntoDTO modelo);

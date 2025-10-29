@@ -76,7 +76,7 @@ namespace UpeClinica.API.Controllers
                     throw new Exception("El archivo es requerido o está vacío");
 
                 var config = HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
-                var root = config?["Storage:RootPath"] ?? "C\\UpeClinica\\files";
+                var root = config?["Storage:RootPath"] ?? "C:\\UpeClinica\\files";
 
                 var ext = Path.GetExtension(file.FileName);
                 var name = $"{Guid.NewGuid()}{ext}";
@@ -110,6 +110,27 @@ namespace UpeClinica.API.Controllers
             }
 
             return Ok(rsp);
+        }
+
+        [HttpGet]
+        [Route("Descargar/{id:int}")]
+        public async Task<IActionResult> Descargar(int id)
+        {
+            try
+            {
+                var dto = await _archivoServicio.Obtener(id);
+                if (dto == null) return NotFound();
+                var config = HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
+                var root = config?["Storage:RootPath"] ?? "C:\\UpeClinica\\files";
+                var abs = Path.Combine(root, dto.Url ?? string.Empty);
+                if (!System.IO.File.Exists(abs)) return NotFound();
+                var contentType = "application/octet-stream";
+                return PhysicalFile(abs, contentType, dto.NombreArchivo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { estado = false, mensaje = ex.Message });
+            }
         }
 
         [HttpPut]

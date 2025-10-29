@@ -35,4 +35,8 @@ export class ArchivoAdjuntoService {
   eliminar(id: number): Observable<ResponseApi> {
     return this.http.put<ResponseApi>(`${this.urlApi}Eliminar/${id}`, {});
   }
+
+  descargar(id: number) {
+    return `${this.urlApi}Descargar/${id}`;
+  }
 }
