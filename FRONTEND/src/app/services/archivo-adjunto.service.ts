@@ -11,8 +11,7 @@ import { ArchivoAdjunto } from '../interfaces/archivoAdjunto';
 export class ArchivoAdjuntoService {
   private http = inject(HttpClient);
   private apiUrl = inject(API_URL);
-
-  private urlApi = this.apiUrl + 'Archivo/';
+  private urlApi = (this.apiUrl || '/api/') + 'Archivo/';
 
   listaPorEstudio(estudioId: number): Observable<ResponseApi> {
     return this.http.get<ResponseApi>(`${this.urlApi}ListaPorEstudio/${estudioId}`);
@@ -20,6 +19,13 @@ export class ArchivoAdjuntoService {
 
   crear(request: ArchivoAdjunto): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
+  }
+
+  subir(estudioId: number, file: File): Observable<ResponseApi> {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    formData.append('estudioId', String(estudioId));
+    return this.http.post<ResponseApi>(`${this.urlApi}Subir`, formData);
   }
 
   editar(request: ArchivoAdjunto): Observable<ResponseApi> {

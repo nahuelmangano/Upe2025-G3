@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectorRef, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { SharedModule } from '../reutilizable/shared/shared-module';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription, forkJoin, of, switchMap, map } from 'rxjs';
@@ -18,7 +19,7 @@ type TipoEstudioItem = { id: number; nombre: string };
 @Component({
   standalone: true,
   selector: 'app-paciente-archivos',
-  imports: [SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule],
   templateUrl: './archivos.component.html',
   styleUrls: ['./archivos.component.css']
 })
@@ -34,6 +35,8 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   archivos = signal<(ArchivoAdjunto & { __readonly: boolean })[]>([]);
 
   selectedFiles = signal<File[]>([]);
+  evolucionSeleccionadaId = signal<number | null>(null);
+  tipoPorEvolucion: { [evolucionId: number]: number | null } = {};
 
   form = {
     evolucionId: null as number | null,
@@ -49,17 +52,32 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     private estSvc: EstudioService,
     private archSvc: ArchivoAdjuntoService,
     private tipoSvc: TipoEstudioService,
-    private pacienteSvc: PacienteService
+    private pacienteSvc: PacienteService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.pacienteId = Number(this.route.snapshot.paramMap.get('id')) || 0;
-    this.loadAll();
-    this.loadPaciente();
+    // Suscribirse a cambios de ruta por si se navega entre pacientes sin recrear el componente
+    this.sub = this.route.paramMap.subscribe(pm => {
+      const idFromPm = pm.get('id');
+      this.pacienteId = idFromPm && !Number.isNaN(Number(idFromPm)) ? Number(idFromPm) : this.resolvePacienteId();
+      this.loadAll();
+      this.loadPaciente();
+    });
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+  }
+
+  private resolvePacienteId(): number {
+    let r: ActivatedRoute | null = this.route;
+    while (r) {
+      const v = r.snapshot.paramMap.get('id');
+      if (v && !Number.isNaN(Number(v))) return Number(v);
+      r = r.parent as ActivatedRoute | null;
+    }
+    return 0;
   }
 
   // Cabecera lateral con datos del paciente, similar a otras páginas
@@ -73,18 +91,43 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.error.set('');
 
+    // Cargar tipos de estudio en paralelo e independiente de evoluciones
+    this.tipoSvc.lista().subscribe({
+      next: (res: ResponseApi) => {
+        const raw: any = res as any;
+        const valor = raw?.estado === true ? (Array.isArray(raw?.valor) ? raw.valor : (Array.isArray(raw?.Valor) ? raw.Valor : [])) : [];
+        const arr = Array.isArray(valor) ? valor : [];
+        this.tiposEstudio.set(arr.map((t: any) => ({ id: (t?.id ?? t?.Id), nombre: (t?.nombre ?? t?.Nombre) }))); 
+        console.log('[Archivos] tipos estudio', this.tiposEstudio());
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.tiposEstudio.set([]);
+        console.log('[Archivos] tipos estudio error');
+        this.cdr.detectChanges();
+      }
+    });
+
     this.sub = this.evolSvc.listaPorPaciente(this.pacienteId).pipe(
       switchMap((evoRes: ResponseApi) => {
-        const evoItems: EvolucionItem[] = (evoRes?.valor || []).map((e: any) => ({ id: e.id, descripcion: e.descripcion }));
+        const raw: any = evoRes as any;
+        const valor = raw?.estado === true ? (Array.isArray(raw?.valor) ? raw.valor : (Array.isArray(raw?.Valor) ? raw.Valor : [])) : [];
+        const arr = Array.isArray(valor) ? valor : [];
+        const evoItems: EvolucionItem[] = arr.map((e: any) => ({ id: (e?.id ?? e?.Id), descripcion: (e?.descripcion ?? e?.Descripcion ?? e?.diagnosticoInicial ?? e?.DiagnosticoInicial) }));
         this.evoluciones.set(evoItems);
-        this.tipoSvc.lista().subscribe((res: ResponseApi) => {
-          this.tiposEstudio.set((res?.valor || []).map((t: any) => ({ id: t.id, nombre: t.nombre })));
-        });
+        console.log('[Archivos] evoluciones', this.evoluciones());
+        this.cdr.detectChanges();
+        // Inicializar tipo seleccionado por cada evolución en null
+        evoItems.forEach(it => { if (this.tipoPorEvolucion[it.id] === undefined) this.tipoPorEvolucion[it.id] = null; });
         if (!evoItems.length) return of([] as Estudio[]);
         const estudioCalls = evoItems.map(e => this.estSvc.listaPorEvolucion(e.id));
         return forkJoin(estudioCalls).pipe(map((results: ResponseApi[]) => {
-          const all: Estudio[] = results.flatMap(r => (r?.valor || []) as Estudio[]);
-          return all;
+          const all = results.flatMap(r => {
+            const rr: any = r as any;
+            const v = Array.isArray(rr?.valor) ? rr.valor : (Array.isArray(rr?.Valor) ? rr.Valor : []);
+            return Array.isArray(v) ? v : [];
+          });
+          return all.map(es => ({ ...es, id: (es?.id ?? es?.Id) })) as Estudio[];
         }));
       }),
       switchMap((estudios: Estudio[]) => {
@@ -113,6 +156,26 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     this.selectedFiles.set(files);
   }
 
+  archivosSeleccionLabel(): string {
+    const n = this.selectedFiles().length;
+    if (n === 0) return 'Ningún archivo seleccionado';
+    return n === 1 ? '1 archivo seleccionado' : `${n} archivos seleccionados`;
+  }
+
+  seleccionarEvolucion(evolucionId: number | null): void {
+    this.evolucionSeleccionadaId.set(evolucionId);
+    this.form.evolucionId = evolucionId as any;
+    const tipo = (evolucionId ? this.tipoPorEvolucion[evolucionId] : null) ?? null;
+    this.form.tipoEstudioId = tipo as any;
+  }
+
+  onTipoChange(evolucionId: number, tipoId: number | null): void {
+    this.tipoPorEvolucion[evolucionId] = tipoId ?? null;
+    if (this.evolucionSeleccionadaId() === evolucionId) {
+      this.form.tipoEstudioId = tipoId as any;
+    }
+  }
+
   canUpload(): boolean {
     return !!this.form.evolucionId && !!this.form.tipoEstudioId && !!this.form.fecha && !!this.form.realizadoPor && this.selectedFiles().length > 0;
   }
@@ -120,9 +183,15 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   resetForm(): void {
     this.form = { evolucionId: null, tipoEstudioId: null, fecha: new Date().toISOString().slice(0,10), realizadoPor: '', observaciones: '' };
     this.selectedFiles.set([]);
+    this.evolucionSeleccionadaId.set(null);
   }
 
   upload(): void {
+    // Resolver selección desde la lista (radio + tipo)
+    const evoId = this.evolucionSeleccionadaId() ?? this.form.evolucionId;
+    const tipoId = (evoId ? (this.tipoPorEvolucion[evoId] ?? null) : null) ?? this.form.tipoEstudioId;
+    this.form.evolucionId = evoId as any;
+    this.form.tipoEstudioId = tipoId as any;
     if (!this.canUpload()) return;
     const estudioPayload: Estudio = {
       id: 0,
@@ -138,18 +207,7 @@ export class ArchivosComponent implements OnInit, OnDestroy {
       switchMap((res: ResponseApi) => {
         const creado: Estudio = res?.valor as Estudio;
         if (!creado || !creado.id) return of([]);
-        const calls = this.selectedFiles().map(f => {
-          const payload: ArchivoAdjunto = {
-            id: 0,
-            fechaSubida: new Date(),
-            nombreArchivo: f.name,
-            tamano: f.size,
-            url: '',
-            estudioId: creado.id,
-            activo: 1
-          } as unknown as ArchivoAdjunto;
-          return this.archSvc.crear(payload);
-        });
+        const calls = this.selectedFiles().map(f => this.archSvc.subir(creado.id, f));
         return calls.length ? forkJoin(calls) : of([]);
       })
     ).subscribe({

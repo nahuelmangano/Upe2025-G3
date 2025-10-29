@@ -6,8 +6,8 @@
 .titulo-seccion{margin-bottom:12px}
 .mensaje-error{color:#d63031}
 .entrada-ancho-completo{width:100%}
-.formulario-carga{display:grid;gap:10px}
-.cuadricula-modal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.formulario-carga{display:grid;gap:12px}
+.cuadricula-modal{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .columna-completa{grid-column:1/-1}
 .acciones-formulario{display:flex;gap:10px;justify-content:flex-end}
 
@@ -17,5 +17,49 @@
 
 /* Info paciente */
 .grid-paciente{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+/* Responsive */
+@media (max-width: 1200px){
+  .cuadricula-modal{grid-template-columns:repeat(2,1fr)}
+  .grid-paciente{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width: 768px){
+  .cuadricula-modal{grid-template-columns:1fr}
+  .acciones-formulario{justify-content:stretch}
+  .acciones-formulario button{flex:1}
+  .grid-paciente{grid-template-columns:1fr}
+}
+
+/* Lista de evoluciones */
+.lista-evoluciones{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.item-evo{display:grid;grid-template-columns:1fr 260px;gap:12px;align-items:center;padding:6px 10px;border:1px solid var(--line,#e5e7eb);border-radius:8px;background:#fff}
+.item-evo-tipo{display:flex}
+.item-evo-cabecera{font-weight:500;color:#374151;font-size:14px}
+@media (max-width: 768px){
+  .item-evo{grid-template-columns:1fr}
+}
+
+/* Selector de archivos */
+.selector-archivos{display:flex;gap:12px;align-items:center}
+.selector-archivos .mat-mdc-button .mat-icon{margin-right:6px}
+.input-file-oculto{display:none}
+.texto-archivos{color:#6b7280;font-size:12px}
+
+/* Quitar fondos suaves de los campos */
+:host ::ng-deep .mat-mdc-text-field-wrapper{background:transparent !important}
+
+/* Tabla de selección */
+.tabla-seleccion{border:1px solid var(--line,#e5e7eb);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.tabla-header{display:grid;grid-template-columns:minmax(0,48%) 34% 18%;gap:0;background:#f7f7fb;color:#374151;font-weight:600;font-size:12px;border-bottom:1px solid var(--line,#e5e7eb)}
+.tabla-header>div{padding:8px 10px}
+.tabla-body{display:block}
+.tabla-row{display:grid;grid-template-columns:minmax(0,48%) 34% 18%;gap:0;align-items:center;border-bottom:1px solid var(--line,#e5e7eb)}
+.tabla-row:last-child{border-bottom:none}
+.col-evolucion{padding:8px 10px}
+.col-evolucion{white-space:normal;overflow-wrap:anywhere}
+.col-evolucion .mdc-label{white-space:normal}
+.col-tipo,.col-fecha{padding:8px 10px}
+
+/* (eliminado submenu y estado vacío) */
 
 

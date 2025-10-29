@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using System.Linq;
 
 using BLL.Servicios.Contrato;
 using DTOs;
@@ -48,6 +51,57 @@ namespace UpeClinica.API.Controllers
             {
                 rsp.Estado = true;
                 rsp.Valor = await _archivoServicio.Crear(archivo);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
+
+        // Sube un archivo al file system y persiste metadatos
+        [HttpPost]
+        [Route("Subir")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Subir(IFormFile archivo, [FromForm] int estudioId)
+        {
+            var rsp = new Response<ArchivoAdjuntoDTO>();
+
+            try
+            {
+                var file = archivo ?? Request?.Form?.Files?.FirstOrDefault();
+                if (file == null || file.Length == 0)
+                    throw new Exception("El archivo es requerido o está vacío");
+
+                var config = HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
+                var root = config?["Storage:RootPath"] ?? "C\\UpeClinica\\files";
+
+                var ext = Path.GetExtension(file.FileName);
+                var name = $"{Guid.NewGuid()}{ext}";
+                var rel = Path.Combine("estudios", estudioId.ToString(), DateTime.UtcNow.ToString("yyyy"), DateTime.UtcNow.ToString("MM"), name).Replace("\\", "/");
+                var abs = Path.Combine(root, rel);
+
+                var dir = Path.GetDirectoryName(abs)!;
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                using (var fs = new FileStream(abs, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    await file.CopyToAsync(fs);
+                }
+
+                var dto = new ArchivoAdjuntoDTO
+                {
+                    EstudioId = estudioId,
+                    NombreArchivo = file.FileName,
+                    Tamano = (int)Math.Min(int.MaxValue, file.Length),
+                    Url = rel,
+                    FechaSubida = DateTime.UtcNow.ToString("dd/MM/yyyy"),
+                    Activo = 1
+                };
+
+                rsp.Estado = true;
+                rsp.Valor = await _archivoServicio.Crear(dto);
             }
             catch (Exception ex)
             {
