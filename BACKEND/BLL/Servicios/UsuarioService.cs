@@ -112,7 +112,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Editar(UsuarioDTO modelo)
+        public async Task<bool> Editar(UsuarioEditarDTO modelo)
         {
             try
             {
@@ -128,7 +128,6 @@ namespace BLL.Servicios
                 usuarioEncontrado.Apellido = usuarioModelo.Apellido;
                 usuarioEncontrado.Mail = usuarioModelo.Mail;
                 usuarioEncontrado.EstadoId = usuarioModelo.EstadoId;
-                usuarioEncontrado.RolId = usuarioModelo.RolId;
 
                 bool respuesta = await _usuarioRepositorio.Editar(usuarioEncontrado);
 
@@ -169,6 +168,5 @@ namespace BLL.Servicios
                 throw;
             }
         }
-
     }
 }

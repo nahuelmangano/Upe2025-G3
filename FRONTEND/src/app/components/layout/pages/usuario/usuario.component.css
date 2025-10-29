@@ -120,7 +120,26 @@
   color: #666;
   font-style: italic;
 }
+.icono-editar {
+  color: #352d77 !important;
+}
+.no-aplica {
+  color: #352d77;
+  font-weight: 600;
+}
 
+::ng-deep .mat-mdc-row:nth-child(even) {
+  background-color: #f5f6ff;
+}
+
+::ng-deep .mat-mdc-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+::ng-deep .mat-mdc-row:hover {
+  background-color: #f5f6ff;
+  transition: background-color 0.3s ease;
+}
 
 @media (max-width: 768px) {
   .page-title {

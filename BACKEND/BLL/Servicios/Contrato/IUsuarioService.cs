@@ -12,7 +12,7 @@ namespace BLL.Servicios.Contrato
         Task<List<UsuarioDTO>> Lista();
         Task<SesionDTO> ValidarCredenciales(string mail, string passwordHash);
         Task<UsuarioDTO> Crear(UsuarioDTO modelo);
-        Task<bool> Editar(UsuarioDTO modelo);
+        Task<bool> Editar(UsuarioEditarDTO modelo);
         Task<bool> Desactivar(int id);
     }
 }

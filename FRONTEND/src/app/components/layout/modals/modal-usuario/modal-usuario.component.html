@@ -50,7 +50,7 @@
         </mat-form-field>
       </mat-grid-tile>
 
-      <mat-grid-tile>
+      <mat-grid-tile *ngIf="datosUsuario == null">
         <mat-form-field appearance="outline">
           <mat-label>Rol</mat-label>
           <mat-select formControlName="rolId">
