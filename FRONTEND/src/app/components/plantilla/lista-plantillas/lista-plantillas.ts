@@ -15,6 +15,8 @@ import { CampoService } from 'src/app/services/campo.service';
 import { TipoCampoService } from 'src/app/services/tipo-campo.service';
 import { UtilidadService } from 'src/app/reutilizable/utilidad.service';
 import { ResponseApi } from 'src/app/interfaces/response-api';
+import { MedicoService } from 'src/app/services/medico.service';
+
 
 interface Seccion {
   titulo: string;
@@ -41,6 +43,7 @@ interface Seccion {
   ]
 })
 export class ListaPlantillasComponent implements OnInit {
+  private medicoService = inject(MedicoService);
   private plantillaService = inject(PlantillaService);
   private campoService = inject(CampoService);
   private tipoCampoService = inject(TipoCampoService);
@@ -71,20 +74,39 @@ export class ListaPlantillasComponent implements OnInit {
   }
 
 cargarPlantillasDelMedico(): void {
-  const medicoId = this.utilidadService.obtenerUsuarioId();
-  this.plantillaService.listaPorMedico(medicoId).subscribe({
-    next: (res: ResponseApi) => {
-      if (res.estado && Array.isArray(res.valor)) {
-        const activas = res.valor.filter(p => p.activo === true);
-        this.dataSource = activas;
-        this.todasPlantillas = activas;
+  const userId = this.utilidadService.obtenerUsuarioId();
+
+  this.medicoService.lista().subscribe({
+    next: (medicosResp: ResponseApi) => {
+      if (medicosResp.estado && Array.isArray(medicosResp.valor)) {
+        const medico = medicosResp.valor.find((m: any) => m.usuarioId === userId);
+        if (!medico) {
+          this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
+          return;
+        }
+
+        const medicoId = medico.id;
+
+        this.plantillaService.listaPorMedico(medicoId).subscribe({
+          next: (res: ResponseApi) => {
+            if (res.estado && Array.isArray(res.valor)) {
+              const activas = res.valor.filter(p => p.activo === true);
+              this.dataSource = activas;
+              this.todasPlantillas = activas;
+            }
+          },
+          error: (err) => {
+            this.utilidadService.mostrarAlerta('Error al cargar las plantillas', 'Error');
+          }
+        });
       }
     },
     error: (err) => {
-      this.utilidadService.mostrarAlerta('Error al cargar las plantillas', 'Error');
+      this.utilidadService.mostrarAlerta('Error al cargar los médicos', 'Error');
     }
   });
 }
+
 
 
   filtrarPlantillas(valor: string | null): void {
