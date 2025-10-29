@@ -25,7 +25,7 @@
         <mat-icon>add</mat-icon> Agregar Sección
       </button>
       <button mat-stroked-button color="warn" (click)="deshacer()">
-        <mat-icon>undo</mat-icon> Deshacer
+        <mat-icon>undo</mat-icon> Deshacer todo
       </button>
     </div>
     <div formArrayName="secciones">
@@ -36,7 +36,6 @@
       <mat-card *ngFor="let seccion of secciones.controls; let i = index" [formGroupName]="i" class="seccion-card">
         <div class="seccion-header">
           <mat-icon class="icon-seccion">view_agenda</mat-icon>
-
           <mat-form-field appearance="outline" class="titulo-seccion">
             <mat-label>Título de la Sección</mat-label>
             <input matInput formControlName="titulo" required />
@@ -44,7 +43,6 @@
               El título de la sección es obligatorio
             </mat-error>
           </mat-form-field>
-
           <button mat-icon-button color="warn" (click)="eliminarSeccion(i)">
             <mat-icon>delete</mat-icon>
           </button>
@@ -53,6 +51,9 @@
         <div class="campo-lista" formArrayName="campos">
           <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroupName]="j" class="campo-item">
             <mat-icon class="drag-icon">drag_indicator</mat-icon>
+            <mat-icon class="tipo-icono" matTooltip="{{ campo.get('tipoCampoNombre')?.value }}">
+              {{ getIconoTipoCampo(campo.get('tipoCampoNombre')?.value) }}
+            </mat-icon>
 
             <mat-form-field appearance="outline" class="campo-etiqueta">
               <mat-label>Etiqueta</mat-label>
@@ -70,7 +71,7 @@
                 Seleccioná un tipo de campo
               </mat-error>
             </mat-form-field>
-            <mat-form-field *ngIf="esCampoConOpciones(campo.value.tipoCampoNombre)" appearance="outline" class="campo-opciones">
+            <mat-form-field *ngIf="esCampoConOpciones(campo.get('tipoCampoNombre')?.value)" appearance="outline" class="campo-opciones">
               <mat-label>Opciones (separadas por coma)</mat-label>
               <input matInput formControlName="opciones" placeholder="Ej: Masculino, Femenino, Otro" />
             </mat-form-field>
@@ -88,46 +89,40 @@
         *ngIf="modoEdicion">
         <mat-icon>close</mat-icon> Cancelar
       </button>
-      
       <button mat-stroked-button (click)="previsualizar()" [disabled]="formulario.invalid">
         <mat-icon>visibility</mat-icon> Previsualizar
       </button>
-      
       <button mat-flat-button color="primary" (click)="guardar()" [disabled]="formulario.invalid">
         <mat-icon>{{ modoEdicion ? 'save' : 'add' }}</mat-icon>
         {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
       </button>
     </div>
   </div>
-  <aside class="panel-lateral">
-    <section>
-      <h4>Agregar Campos</h4>
-
-      <mat-form-field appearance="outline" class="select-seccion">
-        <mat-label>Seleccionar Sección</mat-label>
-        <mat-select [(value)]="seccionSeleccionadaIndex" placeholder="Elegí una sección">
-          <mat-option *ngFor="let seccion of secciones.controls; let i = index" [value]="i">
-            {{ seccion.value.titulo || ('Sección ' + (i + 1)) }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <div class="tipos-campo-lista">
-        <button *ngFor="let tipo of tiposCampos"
-                mat-flat-button class="btn-tipo"
-                matTooltip="{{ tipo.descripcion }}"
-                matTooltipPosition="right"
-                (click)="agregarCampoASeccionSeleccionada(tipo)">
-          <mat-icon>{{ tipo.icono || 'widgets' }}</mat-icon> {{ tipo.nombre }}
-        </button>
+<div class="tipos-campo-lista">
+  <h4 class="panel-titulo">Tipo de dato</h4>
+  <button *ngFor="let tipo of tiposCampos"
+          mat-stroked-button
+          class="btn-tipo"
+          [matTooltip]="getDescripcionTipoCampo(tipo.nombre)"
+          matTooltipPosition="right"
+          (click)="agregarCampoASeccionSeleccionada(tipo)">
+    <div class="tipo-contenido">
+      <mat-icon class="tipo-icono-grande">
+        {{ tipo.icono || getIconoTipoCampo(tipo.nombre) || 'widgets' }}
+      </mat-icon>
+      <div class="tipo-labels">
+        <span class="tipo-nombre">{{ tipo.nombre }}</span>
       </div>
-    </section>
-  </aside>
+    </div>
+  </button>
+</div>
+
+
+
 </div>
 
 <ng-template #previsualizacionDialog let-data>
   <h2 mat-dialog-title>Previsualización de Plantilla</h2>
-
   <mat-dialog-content class="preview-dialog-content">
     <div class="preview-titulo">
       <span class="preview-label">Nombre:</span>
@@ -142,8 +137,10 @@
 
       <form class="preview-form">
         <div *ngFor="let campo of seccion.campos; let j = index" class="preview-campo">
+          <mat-icon class="preview-tipo-icono" matTooltip="{{ campo.tipoCampoNombre }}">
+            {{ getIconoTipoCampo(campo.tipoCampoNombre) }}
+          </mat-icon>
           <label class="preview-campo-label">{{ campo.etiqueta }}</label>
-
           <ng-container [ngSwitch]="getInputType(campo.tipoCampoNombre)">
             <input *ngSwitchCase="'text'" type="text"
                    class="preview-input" placeholder="Escribe aquí..." />

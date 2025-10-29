@@ -3,6 +3,10 @@
   --color-text: #2a3560;
   --color-primary: #315adf;
   --color-surface: #ffffff;
+  --color-borde: #315adf;
+  --color-hover: #e8f0fe;
+  --color-icon: #315adf;
+  --color-hover-border: #20305a;
   --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.06);
   --shadow-dialog: 0 6px 20px rgba(28, 40, 91, 0.15);
   --radius-default: 12px;
@@ -116,21 +120,61 @@
 .tipos-campo-lista {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
 }
+
+.panel-titulo {
+ color: var(--color-primary);
+ font-size: 1.12rem;
+ font-weight: 600;
+ margin-bottom: 1rem;
+ letter-spacing: 0.5px;
+ margin-top: 0.3rem;
+}
+
 
 .btn-tipo {
-  text-align: left;
+  display: flex;
+  align-items: flex-start;
   border-radius: 10px;
-  background: #e7ecfb;
-  color: #20305a;
-  transition: all 0.25s ease;
-  padding: 0.6rem 1rem;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 2px solid var(--color-borde);
+  transition: background 0.18s, border 0.2s, color 0.2s;
+  padding: 0.8rem 1.1rem;
+  text-align: left;
+  gap: 12px;
+  min-height: 62px;
+  box-shadow: none;
+}
+.btn-tipo:hover, .btn-tipo:focus {
+  background: var(--color-hover);
+  border: 2px solid var(--color-hover-border);
+  color: var(--color-hover-border);
 }
 
-.btn-tipo:hover {
-  background: #dbe4fa;
-  transform: scale(1.03);
+.tipo-contenido {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.tipo-icono-grande {
+  font-size: 2rem;
+  color: var(--color-icon);
+  flex-shrink: 0;
+  filter: none;
+}
+.tipo-labels {
+  display: flex;
+  flex-direction: column;
+}
+
+.tipo-nombre {
+  font-weight: 600;
+  font-size: 1.07rem;
+  color: var(--color-primary);
 }
 
 .select-seccion {
