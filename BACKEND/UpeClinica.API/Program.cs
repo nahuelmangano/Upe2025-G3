@@ -27,6 +27,7 @@
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
+    // Swagger bÃ¡sico
     builder.Services.AddSwaggerGen();
     builder.Services.InyectarDependencias(builder.Configuration);
 
@@ -43,7 +44,7 @@
     var cs = app.Configuration.GetConnectionString("cadenaSQL");
     if (string.IsNullOrWhiteSpace(cs))
     {
-        app.Logger.LogError("ConnectionStrings:cadenaSQL está vacía. Verificá .env o appsettings.json.");
+        app.Logger.LogError("ConnectionStrings:cadenaSQL estï¿½ vacï¿½a. Verificï¿½ .env o appsettings.json.");
     }
 
     if (app.Environment.IsDevelopment())

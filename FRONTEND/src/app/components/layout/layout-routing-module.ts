@@ -9,6 +9,7 @@ import { ResumenUsuarioComponent } from '../resumen-usuario/resumen-usuario.comp
 import { PlantillaComponent } from '../plantilla/crear-plantilla/plantilla';
 import { ListaPlantillasComponent } from '../plantilla/lista-plantillas/lista-plantillas';
 import { LayoutComponent } from './layout.component';
+import { ArchivosComponent } from '../../Archivos/archivos.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,8 @@ const routes: Routes = [
       { path: 'pacientes/:id/evoluciones', component: EvolucionesComponent },
       { path: 'pacientes/:id/evoluciones/nueva', component: EvolucionFormComponent },
       { path: 'pacientes/:id/resumen', component: ResumenUsuarioComponent },
+      { path: 'pacientes/:id/archivos', component: ArchivosComponent },
+      { path: 'plantillas', component: PlantillaComponent },
       { path: 'mis-plantillas', component: ListaPlantillasComponent },
       { path: 'plantillas/:id', component: PlantillaComponent }, 
       { path: 'plantillas', component: PlantillaComponent }, 

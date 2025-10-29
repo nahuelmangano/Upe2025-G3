@@ -7,7 +7,10 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 // Componentes de Angular Material
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MatRadioModule } from '@angular/material/radio';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -41,9 +44,12 @@ import { MomentDateModule } from '@angular/material-moment-adapter';
   exports: [
     ReactiveFormsModule,
     FormsModule,
+    MatFormFieldModule,
     MatCardModule,
     MatInputModule,
     MatSelectModule,
+    MatRadioModule,
+    TextFieldModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
     MatGridListModule,

@@ -6,6 +6,8 @@ import { firstValueFrom, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, map as rxMap, tap } from 'rxjs/operators';
 import { EvolucionesService, EvolucionInput } from '../services/evoluciones.service';
 import { EvolucionService } from '../../services/evolucion.service';
+import { EstudioService } from '../../services/estudio.service';
+import { ArchivoAdjuntoService } from '../../services/archivo-adjunto.service';
 import { Evolucion as EvolucionModel } from '../../interfaces/evolucion';
 import { ProblemaService } from '../../services/problema.service';
 import { MedicoService } from '../../services/medico.service';
@@ -23,6 +25,12 @@ interface EvolucionRow {
   estadoId?: number;
   medicoId?: number;
   source?: any;
+}
+
+interface ArchivoRow {
+  id: number;
+  nombre: string;
+  tamano: number;
 }
 
 @Component({
@@ -50,6 +58,7 @@ interface EvolucionRow {
                 <th>Diagnostico Final</th>
                 <th>Medico</th>
                 <th>Estado</th>
+                <th>Estudios</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -60,6 +69,14 @@ interface EvolucionRow {
                 <td>{{ e.diagnosticoFinal }}</td>
                 <td>{{ e.medico }}</td>
                 <td>{{ e.estado }}</td>
+                <td>
+                  <a (click)="openEstudios(e)" title="Ver estudios" style="cursor:pointer;color:#4b5563">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <path d="M14 2v6h6"/>
+                    </svg>
+                  </a>
+                </td>
                 <td>
                   <div style="display:flex;gap:10px;align-items:center">
                     <a (click)="openEdit(e)" title="Editar" style="cursor:pointer;color:#4b5563">
@@ -134,6 +151,46 @@ interface EvolucionRow {
         </form>
       </div>
     </div>
+
+    <!-- Modal estudios por evolución -->
+    <div *ngIf="estudiosModal" class="modal-backdrop">
+      <div class="modal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 class="h3" style="margin:0">Estudios</h3>
+          <button class="btn-outline" type="button" (click)="closeEstudios()">x</button>
+        </div>
+        <div *ngIf="estudiosLoading">Cargando estudios...</div>
+        <div *ngIf="!estudiosLoading">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Archivo</th>
+                  <th>Tamaño</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of estudios">
+                  <td>{{ s.nombre }}</td>
+                  <td>{{ s.tamano | number }} bytes</td>
+                  <td>
+                    <a [href]="archivoSrv.descargar(s.id)" title="Descargar" target="_blank">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <path d="M7 10l5 5 5-5"/>
+                        <path d="M12 15V3"/>
+                      </svg>
+                    </a>
+                  </td>
+                </tr>
+                <tr *ngIf="estudios.length===0"><td colspan="3">Sin archivos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [
     `.modal-grid .full{grid-column:1/-1}
@@ -171,10 +228,16 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   private editMedicoId?: number;
   private editSource: any;
 
+  estudiosModal = false;
+  estudiosLoading = false;
+  estudios: ArchivoRow[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private evolucionesSrv: EvolucionesService,
     private evolucionSrv: EvolucionService,
+    private estudioSrv: EstudioService,
+    private archivoSrv: ArchivoAdjuntoService,
     private problemaSrv: ProblemaService,
     private medicoSrv: MedicoService,
     private estadoSrv: EstadoProblemaService,
@@ -186,6 +249,32 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       this.pacienteId = Number(pm.get('id')) || 0;
       this.fetchData();
     });
+  }
+
+  openEstudios(e: EvolucionRow): void {
+    this.estudiosModal = true;
+    this.estudiosLoading = true;
+    this.estudios = [];
+    this.estudioSrv.listaPorEvolucion(e.id).subscribe({
+      next: (resp: any) => {
+        const estudios: any[] = resp?.estado ? (resp.valor || []) : [];
+        if (!estudios.length) { this.estudiosLoading = false; return; }
+        const calls = estudios.map(es => this.archivoSrv.listaPorEstudio(es.id));
+        forkJoin(calls).subscribe({
+          next: (resps: any[]) => {
+            const all = resps.flatMap(r => (r?.valor || []) as any[]);
+            this.estudios = all.map(a => ({ id: a?.id ?? 0, nombre: a?.nombreArchivo ?? '-', tamano: a?.tamano ?? 0 }));
+            this.estudiosLoading = false;
+          },
+          error: () => { this.estudiosLoading = false; this.estudios = []; }
+        });
+      },
+      error: () => { this.estudiosLoading = false; this.estudios = []; }
+    });
+  }
+
+  closeEstudios(): void {
+    this.estudiosModal = false;
   }
   ngOnDestroy(): void {
     this.sub?.unsubscribe();

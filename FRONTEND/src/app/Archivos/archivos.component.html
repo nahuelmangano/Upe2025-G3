@@ -1,0 +1,133 @@
+<mat-card class="main-card tarjeta-superior">
+  <mat-card-title class="card-title">
+    <div class="title-content">
+      <span class="h3 titulo-seccion">Documentos y estudios</span>
+      <span class="espaciador"></span>
+    </div>
+  </mat-card-title>
+
+  <div *ngIf="loading()">Cargando archivos...</div>
+  <div *ngIf="error()" class="mensaje-error">{{ error() }}</div>
+
+  <ng-container *ngIf="!loading() && !error()">
+    <div class="table-wrap mat-elevation-z2">
+      <table mat-table [dataSource]="archivos()" class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo de documento</th>
+            <th>Fecha subida</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of archivos()">
+            <td>
+              <mat-form-field appearance="fill" class="entrada-ancho-completo">
+                <mat-label>Nombre del archivo</mat-label>
+                <input matInput [(ngModel)]="a.nombreArchivo" [readonly]="a.__readonly" />
+              </mat-form-field>
+            </td>
+            <td>{{ a.estudioTipoNombre || '—' }}</td>
+            <td>{{ a.fechaSubida || '—' }}</td>
+            <td>
+              <button mat-stroked-button color="primary" (click)="toggleEdit(a)">{{ a.__readonly ? 'Editar' : 'Cancelar' }}</button>
+              <button mat-flat-button color="primary" [disabled]="a.__readonly" (click)="saveEdit(a)">Guardar</button>
+              <button mat-stroked-button color="warn" (click)="remove(a)">Borrar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</mat-card>
+
+<!-- Panel de información del paciente removido a pedido del usuario -->
+
+<mat-card class="main-card">
+  <mat-card-title class="card-title">
+    <div class="title-content">
+      <mat-icon>cloud_upload</mat-icon>
+      <span> Cargar documento</span>
+    </div>
+  </mat-card-title>
+
+  <mat-card-content class="dashboard-card-content">
+  <!-- Tabla selección: Evolución | Tipo de estudio | Fecha -->
+  <div class="tabla-seleccion" *ngIf="evoluciones().length">
+    <div class="tabla-header">
+      <div>Evolución</div>
+      <div>Tipo de estudio</div>
+      <div>Fecha</div>
+    </div>
+    <mat-radio-group class="tabla-body" [ngModel]="evolucionSeleccionadaId()" (ngModelChange)="seleccionarEvolucion($event)">
+      <div class="tabla-row" *ngFor="let e of evoluciones()">
+        <div class="col-evolucion">
+          <mat-radio-button [value]="e.id">{{ e.descripcion || ('Evolución #' + e.id) }}</mat-radio-button>
+        </div>
+        <div class="col-tipo">
+          <mat-form-field appearance="outline" class="entrada-ancho-completo">
+            <mat-select [ngModel]="tipoPorEvolucion[e.id] || null" (ngModelChange)="onTipoChange(e.id, $event)" [ngModelOptions]="{standalone:true}">
+              <mat-option [value]="null">Seleccione…</mat-option>
+              <mat-option *ngFor="let t of tiposEstudio()" [value]="t.id">{{ t.nombre }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-fecha">
+          <mat-form-field appearance="outline" class="entrada-ancho-completo">
+            <input matInput type="date" [(ngModel)]="form.fecha" [ngModelOptions]="{standalone:true}" />
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-radio-group>
+  </div>
+
+  <form (ngSubmit)="upload()" class="formulario-carga">
+        <div class="cuadricula-modal">
+      <!-- Ya no mostramos selects aquí: se selecciona arriba con radio + tipo -->
+      <div>
+        <mat-form-field appearance="outline" class="entrada-ancho-completo">
+              <mat-label>Realizado por</mat-label>
+              <input matInput [(ngModel)]="form.realizadoPor" name="realizadoPor" required />
+            </mat-form-field>
+          </div>
+      <div class="columna-completa">
+        <mat-form-field appearance="outline" class="entrada-ancho-completo">
+          <mat-label>Observaciones</mat-label>
+          <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="3" cdkAutosizeMaxRows="8" [(ngModel)]="form.observaciones" name="observaciones" style="resize:vertical"></textarea>
+        </mat-form-field>
+          </div>
+      <div class="columna-completa">
+        <div class="selector-archivos">
+          <button mat-raised-button color="primary" type="button" (click)="fileInput.click()">
+            <mat-icon>cloud_upload</mat-icon>
+            Elegir archivos
+          </button>
+          <input #fileInput class="input-file-oculto" type="file" (change)="onFiles($event)" multiple accept=".jpg,.jpeg,.png,.pdf,.bmp,.gif" />
+          <div class="texto-archivos">{{ archivosSeleccionLabel() }}</div>
+        </div>
+      </div>
+        </div>
+
+    <div *ngIf="selectedFiles().length" class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Archivo</th><th>Tamaño</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let f of selectedFiles()"><td>{{ f.name }}</td><td>{{ f.size | number }} bytes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="acciones-formulario">
+      <button mat-stroked-button color="primary" type="button" (click)="resetForm()">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" type="button" (click)="upload()" [disabled]="!canUpload()">
+        Guardar
+      </button>
+    </div>
+  </form>
+  </mat-card-content>
+</mat-card>
+
+
