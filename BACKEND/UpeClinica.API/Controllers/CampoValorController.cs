@@ -38,6 +38,26 @@ namespace UpeClinica.API.Controllers
             return Ok(rsp);
         }
 
+        [HttpGet]
+        [Route("ListaPorEvolucion/{evolucionId:int}")]
+        public async Task<IActionResult> ListaPorEvolucion(int evolucionId)
+        {
+            var rsp = new Response<List<CampoValorDTO>>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _campoValorServicio.ListaPorEvolucion(evolucionId);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
+
         [HttpPost]
         [Route("Crear")]
         public async Task<IActionResult> Crear([FromBody] CampoValorDTO campoValor)

@@ -48,7 +48,7 @@ namespace Utility
                 )
                 .ForMember(destino =>
                     destino.PlantillaNombre,
-                    opt => opt.MapFrom(origen => origen.Plantilla.Nombre)
+                    opt => opt.MapFrom(origen => origen.Plantilla != null ? origen.Plantilla.Nombre : null)
                 )
                 .ForMember(destino =>
                 destino.Activo,
@@ -181,7 +181,7 @@ namespace Utility
                 )
                 .ForMember(destino =>
                     destino.PlantillaNombre,
-                    opt => opt.MapFrom(origen => origen.Plantilla.Nombre)
+                    opt => opt.MapFrom(origen => origen.Plantilla != null ? origen.Plantilla.Nombre : null)
                 )
                 .ForMember(destino =>
                     destino.ProblemaTitulo,
