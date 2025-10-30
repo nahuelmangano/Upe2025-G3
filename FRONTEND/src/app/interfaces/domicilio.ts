@@ -1,5 +1,5 @@
 export interface Domicilio {
-    id: number,
+    id?: number,
     altura?: string | null,
     calle?: string | null,
     ciudad?: string | null,
