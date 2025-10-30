@@ -84,7 +84,7 @@ namespace UpeClinica.API.Controllers
 
         [HttpPut]
         [Route("Editar")]
-        public async Task<IActionResult> Editar([FromBody] UsuarioDTO usuario)
+        public async Task<IActionResult> Editar([FromBody] UsuarioEditarDTO usuario)
         {
             var rsp = new Response<bool>();
 

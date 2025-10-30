@@ -63,6 +63,19 @@ namespace BLL.Servicios
             }
         }
 
+        public async Task<ArchivoAdjuntoDTO> Obtener(int id)
+        {
+            try
+            {
+                var entity = await _archivoAdjuntoRepositorio.Obtener(a => a.Id == id);
+                return _mapper.Map<ArchivoAdjuntoDTO>(entity);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public async Task<bool> Editar(ArchivoAdjuntoDTO modelo)
         {
             try

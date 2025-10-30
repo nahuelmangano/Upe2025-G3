@@ -573,8 +573,10 @@ namespace Utility
                d.Medico,
                o => o.Ignore()
                );
-            #endregion Usuario
 
+            CreateMap<UsuarioEditarDTO, Usuario>()
+               .ReverseMap();
+            #endregion Usuario
         }
     }
 }

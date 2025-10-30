@@ -6,6 +6,8 @@ import { firstValueFrom, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, map as rxMap, tap } from 'rxjs/operators';
 import { EvolucionesService, EvolucionInput } from '../services/evoluciones.service';
 import { EvolucionService } from '../../services/evolucion.service';
+import { EstudioService } from '../../services/estudio.service';
+import { ArchivoAdjuntoService } from '../../services/archivo-adjunto.service';
 import { Evolucion as EvolucionModel } from '../../interfaces/evolucion';
 import { ProblemaService } from '../../services/problema.service';
 import { MedicoService } from '../../services/medico.service';
@@ -41,6 +43,11 @@ interface PlanillaCampo {
   etiqueta: string;
   valor: string;
 }
+interface ArchivoRow {
+  id: number;
+  nombre: string;
+  tamano: number;
+}
 
 @Component({
   standalone: true,
@@ -68,6 +75,7 @@ interface PlanillaCampo {
                 <th>Medico</th>
                 <th>Estado</th>
                 <th>Planilla</th>
+                <th>Estudios</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -87,6 +95,14 @@ interface PlanillaCampo {
                   <span *ngIf="!e.tienePlanilla" style="font-size:12px;color:#6b7280">Sin plantilla</span>
                 </td>
                 <td>
+                  <a (click)="openEstudios(e)" title="Ver estudios" style="cursor:pointer;color:#4b5563;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                    </svg>
+                  </a>
+                </td>
+                <td>
                   <div style="display:flex;gap:10px;align-items:center">
                     <a (click)="openEdit(e)" title="Editar" style="cursor:pointer;color:#4b5563">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -95,7 +111,7 @@ interface PlanillaCampo {
                 </td>
               </tr>
               <tr *ngIf="e.mostrarPlanilla && e.tienePlanilla" class="planilla-row visible">
-                  <td colspan="7" style="background:#f9fafb;padding:16px 18px;border-top:1px solid #e5e7eb">
+                  <td colspan="8" style="background:#f9fafb;padding:16px 18px;border-top:1px solid #e5e7eb">
                     <div style="background:#ffffff;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,0.08);display:flex;flex-direction:column;gap:14px">
                       <div style="display:flex;justify-content:space-between;align-items:center">
                         <div style="display:flex;flex-direction:column;gap:6px">
@@ -185,6 +201,46 @@ interface PlanillaCampo {
         </form>
       </div>
     </div>
+
+    <!-- Modal estudios por evolución -->
+    <div *ngIf="estudiosModal" class="modal-backdrop">
+      <div class="modal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 class="h3" style="margin:0">Estudios</h3>
+          <button class="btn-outline" type="button" (click)="closeEstudios()">x</button>
+        </div>
+        <div *ngIf="estudiosLoading">Cargando estudios...</div>
+        <div *ngIf="!estudiosLoading">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Archivo</th>
+                  <th>Tamaño</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of estudios">
+                  <td>{{ s.nombre }}</td>
+                  <td>{{ s.tamano | number }} bytes</td>
+                  <td>
+                    <a [href]="archivoSrv.descargar(s.id)" title="Descargar" target="_blank">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <path d="M7 10l5 5 5-5"/>
+                        <path d="M12 15V3"/>
+                      </svg>
+                    </a>
+                  </td>
+                </tr>
+                <tr *ngIf="estudios.length===0"><td colspan="3">Sin archivos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [
     `.modal-grid .full{grid-column:1/-1}
@@ -222,10 +278,16 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   private editMedicoId?: number;
   private editSource: any;
 
+  estudiosModal = false;
+  estudiosLoading = false;
+  estudios: ArchivoRow[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private evolucionesSrv: EvolucionesService,
     private evolucionSrv: EvolucionService,
+    private estudioSrv: EstudioService,
+    private archivoSrv: ArchivoAdjuntoService,
     private problemaSrv: ProblemaService,
     private medicoSrv: MedicoService,
     private estadoSrv: EstadoProblemaService,
@@ -239,6 +301,32 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       this.pacienteId = Number(pm.get('id')) || 0;
       this.fetchData();
     });
+  }
+
+  openEstudios(e: EvolucionRow): void {
+    this.estudiosModal = true;
+    this.estudiosLoading = true;
+    this.estudios = [];
+    this.estudioSrv.listaPorEvolucion(e.id).subscribe({
+      next: (resp: any) => {
+        const estudios: any[] = resp?.estado ? (resp.valor || []) : [];
+        if (!estudios.length) { this.estudiosLoading = false; return; }
+        const calls = estudios.map(es => this.archivoSrv.listaPorEstudio(es.id));
+        forkJoin(calls).subscribe({
+          next: (resps: any[]) => {
+            const all = resps.flatMap(r => (r?.valor || []) as any[]);
+            this.estudios = all.map(a => ({ id: a?.id ?? 0, nombre: a?.nombreArchivo ?? '-', tamano: a?.tamano ?? 0 }));
+            this.estudiosLoading = false;
+          },
+          error: () => { this.estudiosLoading = false; this.estudios = []; }
+        });
+      },
+      error: () => { this.estudiosLoading = false; this.estudios = []; }
+    });
+  }
+
+  closeEstudios(): void {
+    this.estudiosModal = false;
   }
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
@@ -526,9 +614,12 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const problemaId = Number(rawProblemaId);
     const medicoId = Number(rawMedicoId);
     const estadoId = Number(rawEstadoId);
-    const problemaNombre = it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
-    const medicoNombre = it?.medicoNombre ?? it?.MedicoNombre ?? it?.medico ?? (Number.isFinite(medicoId) && medicoId > 0 ? this.medicoMap.get(medicoId) : undefined);
-    const estadoNombre = it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado ?? ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
+    const problemaNombre = this.sanitizeLabel(
+      it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema
+    ) ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
+    const medicoNombre = this.resolveMedicoNombre(medicoId, it);
+    const estadoNombre = this.sanitizeLabel(it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado) ??
+      ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
     const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
     const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
     const plantillaNombre = it?.plantillaNombre ?? it?.PlantillaNombre ?? (plantillaId ? `Plantilla ${plantillaId}` : undefined);
@@ -607,12 +698,11 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     items.forEach(item => {
       const id = Number(item?.id ?? item?.Id);
       if (!Number.isFinite(id) || id <= 0) { return; }
-      const nombre = [
-        item?.usuarioNombre ?? item?.UsuarioNombre ?? item?.nombre ?? item?.Nombre ?? '',
-        item?.usuarioApellido ?? item?.UsuarioApellido ?? item?.apellido ?? item?.Apellido ?? ''
-      ].filter(Boolean).join(' ').trim();
-      const email = item?.usuarioMail ?? item?.UsuarioMail ?? '';
-      const matricula = item?.matricula ?? item?.Matricula ?? '';
+      const nombre =
+        this.buildNombreCompleto(item) ??
+        this.buildNombreCompleto(item?.usuario ?? item?.Usuario);
+      const email = this.sanitizeLabel(item?.usuarioMail ?? item?.UsuarioMail);
+      const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
       const display = nombre || email || matricula || `Medico ${id}`;
       this.medicoMap.set(id, display);
     });
@@ -638,5 +728,46 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) { return undefined; }
     const text = String(value).trim();
     return text.length > 0 ? text : undefined;
+  }
+
+  private sanitizeLabel(value: unknown): string | undefined {
+    if (value === null || value === undefined) { return undefined; }
+    const text = String(value).trim();
+    if (!text) { return undefined; }
+    const invalid = ['string', 'null', 'undefined'];
+    if (invalid.includes(text.toLowerCase())) { return undefined; }
+    return text;
+  }
+
+  private resolveMedicoNombre(medicoId: number, payload: any): string | undefined {
+    const fromMap = Number.isFinite(medicoId) && medicoId > 0 ? this.sanitizeLabel(this.medicoMap.get(medicoId)) : undefined;
+    if (fromMap) { return fromMap; }
+    const nested = payload?.medico ?? payload?.Medico;
+    const nestedNombre =
+      this.buildNombreCompleto(nested) ??
+      this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario);
+    if (nestedNombre) { return nestedNombre; }
+    const direct = this.sanitizeLabel(payload?.medicoNombre)
+      ?? this.sanitizeLabel(payload?.MedicoNombre)
+      ?? this.sanitizeLabel(payload?.medico)
+      ?? this.sanitizeLabel(payload?.Medico);
+    if (direct) { return direct; }
+    if (Number.isFinite(medicoId) && medicoId > 0) {
+      return `Medico ${medicoId}`;
+    }
+    return undefined;
+  }
+
+  private buildNombreCompleto(source: any): string | undefined {
+    if (!source) { return undefined; }
+    const partes = [
+      this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre),
+      this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido)
+    ].filter((v): v is string => !!v);
+    if (partes.length) {
+      return partes.join(' ').trim();
+    }
+    const single = this.sanitizeLabel(source?.nombreCompleto ?? source?.NombreCompleto ?? source?.displayName ?? source?.DisplayName);
+    return single || undefined;
   }
 }

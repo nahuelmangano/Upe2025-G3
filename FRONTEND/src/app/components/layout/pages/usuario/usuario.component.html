@@ -19,67 +19,73 @@
 
         <div class="mat-elevation-z2">
             <div class="table-container">
-            <table mat-table [dataSource]="dataListaUsuarios" class="data-table">
+                <table mat-table [dataSource]="dataListaUsuarios" class="data-table">
 
-                <ng-container matColumnDef="nombre">
-                    <th mat-header-cell *matHeaderCellDef class="col-nombre"> Nombre </th>
-                    <td mat-cell *matCellDef="let element" class="col-nombre"> {{element.nombre}} </td>
-                </ng-container>
+                    <ng-container matColumnDef="nombre">
+                        <th mat-header-cell *matHeaderCellDef class="col-nombre"> Nombre </th>
+                        <td mat-cell *matCellDef="let element" class="col-nombre"> {{element.nombre}} </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="apellido">
-                    <th mat-header-cell *matHeaderCellDef class="col-apellido"> Apellido </th>
-                    <td mat-cell *matCellDef="let element" class="col-apellido"> {{element.apellido}} </td>
-                </ng-container>
+                    <ng-container matColumnDef="apellido">
+                        <th mat-header-cell *matHeaderCellDef class="col-apellido"> Apellido </th>
+                        <td mat-cell *matCellDef="let element" class="col-apellido"> {{element.apellido}} </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="mail">
-                    <th mat-header-cell *matHeaderCellDef class="col-mail"> Mail </th>
-                    <td mat-cell *matCellDef="let element" class="col-mail"> {{element.mail}} </td>
-                </ng-container>
+                    <ng-container matColumnDef="mail">
+                        <th mat-header-cell *matHeaderCellDef class="col-mail"> Mail </th>
+                        <td mat-cell *matCellDef="let element" class="col-mail"> {{element.mail}} </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="rolNombre">
-                    <th mat-header-cell *matHeaderCellDef class="col-rol"> Rol </th>
-                    <td mat-cell *matCellDef="let element" class="col-rol"> {{element.rolNombre}} </td>
-                </ng-container>
+                    <ng-container matColumnDef="rolNombre">
+                        <th mat-header-cell *matHeaderCellDef class="col-rol"> Rol </th>
+                        <td mat-cell *matCellDef="let element" class="col-rol"> {{element.rolNombre}} </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="estado">
-                    <th mat-header-cell *matHeaderCellDef class="col-estado"> Estado </th>
-                    <td mat-cell *matCellDef="let element" class="col-estado"> {{element.estadoNombre}} </td>
-                </ng-container>
+                    <ng-container matColumnDef="estado">
+                        <th mat-header-cell *matHeaderCellDef class="col-estado"> Estado </th>
+                        <td mat-cell *matCellDef="let element" class="col-estado"> {{element.estadoNombre}} </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="matricula">
-                    <th mat-header-cell *matHeaderCellDef class="col-matricula"> Matricula </th>
-                    <td mat-cell *matCellDef="let element" class="col-matricula"> {{element.matricula}} </td>
-                </ng-container>
+                    <ng-container matColumnDef="matricula">
+                        <th mat-header-cell *matHeaderCellDef class="col-matricula"> Matricula </th>
+                        <td mat-cell *matCellDef="let element" class="col-matricula"
+                            [class.no-aplica]="element.matricula == null || element.matricula === ''">
+                            {{ element.matricula ?? 'NO APLICA' }}
+                        </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="vencimientoMatricula">
-                    <th mat-header-cell *matHeaderCellDef class="col-vencimiento"> Vencimiento Matricula </th>
-                    <td mat-cell *matCellDef="let element" class="col-vencimiento"> {{element.fechaVencimientoMatricula}} </td>
-                </ng-container>
 
-                <ng-container matColumnDef="acciones">
-                    <th mat-header-cell *matHeaderCellDef class="actions-column"></th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="actions-container">
-                            <button mat-icon-button color="primary" class="action-button"
-                                (click)="editarUsuario(element)">
-                                <mat-icon>edit</mat-icon>
-                            </button>
-                            <button mat-icon-button color="warn" class="action-button"
-                                (click)="eliminarUsuario(element)">
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                        </div>
-                    </td>
-                </ng-container>
+                    <ng-container matColumnDef="vencimientoMatricula">
+                        <th mat-header-cell *matHeaderCellDef class="col-vencimiento"> Vencimiento Matricula </th>
+                        <td mat-cell *matCellDef="let element" class="col-vencimiento"
+                        [class.no-aplica]="element.fechaVencimientoMatricula == null || element.fechaVencimientoMatricula === ''">
+                            {{element.fechaVencimientoMatricula ?? 'NO APLICA' }} </td>
+                    </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="columnasTabla"></tr>
-                <tr mat-row *matRowDef="let row; columns: columnasTabla;"></tr>
-                <tr class="mat-row no-data-row" *matNoDataRow>
-                    <td class="mat-cell" colspan="7">
-                        No hay datos que coincidan con el filtro "{{input.value}}"
-                    </td>
-                </tr>
-            </table>
+                    <ng-container matColumnDef="acciones">
+                        <th mat-header-cell *matHeaderCellDef class="actions-column"></th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="actions-container">
+                                <button mat-icon-button color="primary" class="action-button icono-editar"
+                                    (click)="editarUsuario(element)">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn" class="action-button"
+                                    (click)="eliminarUsuario(element)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="columnasTabla"></tr>
+                    <tr mat-row *matRowDef="let row; columns: columnasTabla;"></tr>
+                    <tr class="mat-row no-data-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="7">
+                            No hay datos que coincidan con el filtro "{{input.value}}"
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
