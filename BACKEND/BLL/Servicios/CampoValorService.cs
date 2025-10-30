@@ -44,6 +44,26 @@ namespace BLL.Servicios
             }
         }
 
+        public async Task<List<CampoValorDTO>> ListaPorEvolucion(int evolucionId)
+        {
+            try
+            {
+                var queryCampoValor = await _campoValorRepositorio.Consultar(
+                    campoValor => campoValor.EvolucionId == evolucionId
+                );
+
+                var lista = queryCampoValor
+                    .Include(campo => campo.Campo)
+                    .Include(evolucion => evolucion.Evolucion);
+
+                return _mapper.Map<List<CampoValorDTO>>(lista.ToList());
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public async Task<CampoValorDTO> Crear(CampoValorDTO modelo)
         {
             try

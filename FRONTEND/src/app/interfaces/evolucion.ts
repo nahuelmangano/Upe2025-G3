@@ -6,7 +6,7 @@ export interface Evolucion {
     diagnosticoDefinitivo?: string | null,
     pacienteId: number,
     pacienteNombre?: string | null,
-    plantillaId: number,
+    plantillaId: number | null,
     plantillaNombre?: string | null,
     problemaId: number,
     problemaTitulo?: string | null,

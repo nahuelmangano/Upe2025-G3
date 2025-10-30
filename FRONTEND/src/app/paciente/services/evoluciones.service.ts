@@ -15,6 +15,8 @@ export interface Evolucion {
   estado?: string;
   estadoProblemaId?: number;
   fecha?: string; // ISO
+  plantillaId?: number | null;
+  plantillaNombre?: string | null;
 }
 
 export interface EvolucionInput {
@@ -26,7 +28,7 @@ export interface EvolucionInput {
   problemaId?: number;
   estadoProblemaId?: number;
   medicoId?: number;
-  plantillaId?: number;
+  plantillaId?: number | null;
 }
 
 interface ApiResponse<T> { estado: boolean; valor: T; mensaje?: string; }
@@ -78,7 +80,7 @@ export class EvolucionesService {
       ProblemaId: input.problemaId ?? 0,
       EstadoProblemaId: input.estadoProblemaId ?? 0,
       MedicoId: input.medicoId ?? 0,
-      PlantillaId: input.plantillaId ?? 0
+      PlantillaId: input.plantillaId ?? null
     }).pipe(map(res => this.mapItem(res.valor)));
   }
 
@@ -93,7 +95,7 @@ export class EvolucionesService {
       ProblemaId: input.problemaId ?? 0,
       EstadoProblemaId: input.estadoProblemaId ?? 0,
       MedicoId: input.medicoId ?? 0,
-      PlantillaId: input.plantillaId ?? 0
+      PlantillaId: input.plantillaId ?? null
     }).pipe(map(r => !!r?.estado));
   }
 
@@ -109,8 +111,9 @@ export class EvolucionesService {
       medico: it.medicoNombre ?? it.MedicoNombre ?? '',
       estado: it.estadoProblemaNombre ?? it.EstadoProblemaNombre ?? '',
       estadoProblemaId: it.estadoProblemaId ?? it.EstadoProblemaId,
-      fecha: it.fechaConsulta ?? it.FechaConsulta
+      fecha: it.fechaConsulta ?? it.FechaConsulta,
+      plantillaId: it.plantillaId ?? it.PlantillaId ?? null,
+      plantillaNombre: it.plantillaNombre ?? it.PlantillaNombre ?? null
     };
   };
 }
-

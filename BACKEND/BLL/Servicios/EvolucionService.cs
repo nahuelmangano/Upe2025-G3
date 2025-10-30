@@ -50,6 +50,10 @@ namespace BLL.Servicios
         {
             try
             {
+                if (modelo.PlantillaId.HasValue && modelo.PlantillaId.Value <= 0)
+                {
+                    modelo.PlantillaId = null;
+                }
                 var evolucionCreada = await _evolucionRepositorio
                     .Crear(_mapper.Map<Evolucion>(modelo));
 
@@ -91,6 +95,11 @@ namespace BLL.Servicios
 
                 evolucionEncontrada.Descripcion = evolucionModelo.Descripcion;
                 evolucionEncontrada.DiagnosticoDefinitivo = evolucionModelo.DiagnosticoDefinitivo;
+                if (evolucionModelo.PlantillaId.HasValue && evolucionModelo.PlantillaId.Value <= 0)
+                {
+                    evolucionModelo.PlantillaId = null;
+                }
+
                 evolucionEncontrada.PlantillaId = evolucionModelo.PlantillaId;
                 evolucionEncontrada.ProblemaId = evolucionModelo.ProblemaId;
                 evolucionEncontrada.EstadoProblemaId = evolucionModelo.EstadoProblemaId;

@@ -11,6 +11,8 @@ namespace BLL.Servicios.Contrato
     {
         Task<List<CampoValorDTO>> ListaPorCampoEvolucion(int campoId, int evolucionId);
 
+        Task<List<CampoValorDTO>> ListaPorEvolucion(int evolucionId);
+
         Task<CampoValorDTO> Crear(CampoValorDTO modelo);
 
         Task<bool> Editar(CampoValorDTO modelo);

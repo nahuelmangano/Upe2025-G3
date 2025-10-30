@@ -12,6 +12,8 @@ import { Evolucion as EvolucionModel } from '../../interfaces/evolucion';
 import { ProblemaService } from '../../services/problema.service';
 import { MedicoService } from '../../services/medico.service';
 import { EstadoProblemaService } from '../../services/estado-problema.service';
+import { CampoValorService } from '../../services/campo-valor.service';
+import { CampoService } from '../../services/campo.service';
 
 type PlanillaCampo = Record<string, unknown>;
 
@@ -37,6 +39,12 @@ interface EvolucionRow {
   source?: any;
 }
 
+interface PlanillaCampo {
+  id: number;
+  campoId: number;
+  etiqueta: string;
+  valor: string;
+}
 interface ArchivoRow {
   id: number;
   nombre: string;
@@ -68,22 +76,31 @@ interface ArchivoRow {
                 <th>Diagnostico Final</th>
                 <th>Medico</th>
                 <th>Estado</th>
+                <th>Planilla</th>
                 <th>Estudios</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let e of pageItems()">
+              <ng-container *ngFor="let e of pageItems()">
+              <tr>
                 <td>{{ e.problema }}</td>
                 <td>{{ e.diagnosticoInicial }}</td>
                 <td>{{ e.diagnosticoFinal }}</td>
                 <td>{{ e.medico }}</td>
                 <td>{{ e.estado }}</td>
                 <td>
-                  <a (click)="openEstudios(e)" title="Ver estudios" style="cursor:pointer;color:#4b5563">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <path d="M14 2v6h6"/>
+                  <button *ngIf="e.tienePlanilla" class="btn-outline" style="padding:4px 10px;font-size:12px"
+                    type="button" (click)="togglePlanilla(e)">
+                    {{ e.mostrarPlanilla ? 'Ocultar' : 'Ver' }}
+                  </button>
+                  <span *ngIf="!e.tienePlanilla" style="font-size:12px;color:#6b7280">Sin plantilla</span>
+                </td>
+                <td>
+                  <a (click)="openEstudios(e)" title="Ver estudios" style="cursor:pointer;color:#4b5563;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
                     </svg>
                   </a>
                 </td>
@@ -95,6 +112,31 @@ interface ArchivoRow {
                   </div>
                 </td>
               </tr>
+              <tr *ngIf="e.mostrarPlanilla && e.tienePlanilla" class="planilla-row visible">
+                  <td colspan="8" style="background:#f9fafb;padding:16px 18px;border-top:1px solid #e5e7eb">
+                    <div style="background:#ffffff;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,0.08);display:flex;flex-direction:column;gap:14px">
+                      <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div style="display:flex;flex-direction:column;gap:6px">
+                          <span style="font-weight:700;color:#111827;font-size:16px">Planilla utilizada</span>
+                          <span style="color:#4b5563;font-size:13px">Plantilla: {{ e.plantillaNombre || ('#' + e.plantillaId) }}</span>
+                        </div>
+                        <button class="btn-outline" type="button" (click)="togglePlanilla(e)">Cerrar</button>
+                      </div>
+                      <div *ngIf="e.planillaLoading" style="font-size:13px;color:#4b5563">Cargando datos de la planilla...</div>
+                      <div *ngIf="e.planillaError" style="font-size:13px;color:#b91c1c">{{ e.planillaError }}</div>
+                      <ng-container *ngIf="!e.planillaLoading && !e.planillaError">
+                        <div *ngIf="!e.planillaCampos?.length" style="font-size:13px;color:#6b7280">No se registraron valores para esta planilla.</div>
+                        <div *ngIf="e.planillaCampos?.length" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+                          <div *ngFor="let campo of e.planillaCampos" style="border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:linear-gradient(145deg,rgba(249,250,251,1) 0%,rgba(255,255,255,1) 100%);">
+                            <div style="font-size:12px;color:#6366f1;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">{{ campo.etiqueta }}</div>
+                            <div style="margin-top:6px;font-size:14px;color:#111827;white-space:pre-wrap">{{ formatPlanillaValor(campo.valor) }}</div>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </td>
+              </tr>
+              </ng-container>
             </tbody>
           </table>
         </div>
@@ -251,6 +293,8 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     private problemaSrv: ProblemaService,
     private medicoSrv: MedicoService,
     private estadoSrv: EstadoProblemaService,
+    private campoValorSrv: CampoValorService,
+    private campoSrv: CampoService,
     private router: Router
   ) {}
 
@@ -352,6 +396,41 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.fecha = '';
   }
 
+  togglePlanilla(row: EvolucionRow): void {
+    if (!row.tienePlanilla) {
+      return;
+    }
+    row.mostrarPlanilla = !row.mostrarPlanilla;
+    if (row.mostrarPlanilla && !row.planillaLoaded && !row.planillaLoading) {
+      this.loadPlanilla(row);
+    }
+  }
+
+  formatPlanillaValor(valor: string | null | undefined): string {
+    if (valor === null || valor === undefined) {
+      return '—';
+    }
+    const normalized = valor.toString().trim();
+    if (!normalized) {
+      return '—';
+    }
+    const lower = normalized.toLowerCase();
+    if (lower === 'true') {
+      return 'Sí';
+    }
+    if (lower === 'false') {
+      return 'No';
+    }
+    if (normalized.includes(',')) {
+      return normalized
+        .split(',')
+        .map(fragment => fragment.trim())
+        .filter(Boolean)
+        .join('\n');
+    }
+    return normalized;
+  }
+
   async save(): Promise<void> {
     if (this.saving) return; this.saving = true; this.modalError='';
     try {
@@ -381,6 +460,8 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       };
       if (this.editId) {
         const original = { ...(this.editSource || {}), ...(currentRow?.source || {}) } as any;
+        const plantillaIdOriginal = this.toNumberOrUndefined(original.plantillaId ?? original.PlantillaId, true);
+        const plantillaIdValue = typeof plantillaIdOriginal === 'number' && plantillaIdOriginal > 0 ? plantillaIdOriginal : null;
         const request: EvolucionModel = {
           id: this.editId,
           descripcion: base.descripcion,
@@ -389,7 +470,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
           diagnosticoDefinitivo: base.diagnosticoDefinitivo,
           pacienteId,
           pacienteNombre: original.pacienteNombre ?? original.PacienteNombre ?? '',
-          plantillaId: this.toNumberOrUndefined(original.plantillaId ?? original.PlantillaId, true) ?? 0,
+          plantillaId: plantillaIdValue,
           plantillaNombre: original.plantillaNombre ?? original.PlantillaNombre,
           problemaId: problemaId ?? this.toNumberOrUndefined(original.problemaId ?? original.ProblemaId, true) ?? 0,
           problemaTitulo: original.problemaTitulo ?? original.ProblemaTitulo ?? currentRow?.problema,
@@ -422,6 +503,112 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     } finally { this.saving = false; }
   }
 
+  private loadPlanilla(row: EvolucionRow): void {
+    row.planillaLoading = true;
+    row.planillaError = '';
+    this.fetchPlanillaValores(row)
+      .then(campos => {
+        row.planillaLoading = false;
+        row.planillaCampos = campos;
+        row.planillaLoaded = true;
+      })
+      .catch(err => {
+        console.error('No se pudieron cargar los datos de la planilla', err);
+        row.planillaLoading = false;
+        row.planillaError = 'No se pudieron cargar los datos de la planilla.';
+        row.planillaCampos = [];
+        row.planillaLoaded = true;
+      });
+  }
+
+  private async fetchPlanillaValores(row: EvolucionRow): Promise<PlanillaCampo[]> {
+    try {
+      const resp = await firstValueFrom(this.campoValorSrv.listaPorEvolucion(row.id));
+      const estadoOk = resp?.estado ?? (resp as any)?.Estado;
+      if (!estadoOk) {
+        throw new Error(resp?.mensaje ?? (resp as any)?.Mensaje ?? 'El servicio devolvió un estado inválido.');
+      }
+      const rawLista = resp?.valor ?? (resp as any)?.Valor ?? [];
+      const items: any[] = Array.isArray(rawLista) ? rawLista : [];
+      if (!items.length) {
+        return [];
+      }
+      return items
+        .map(item => this.toPlanillaCampoFromDto(item))
+        .filter((campo): campo is PlanillaCampo => !!campo);
+    } catch (err) {
+      if (!row.plantillaId) {
+        throw err;
+      }
+      return this.fetchPlanillaValoresFallback(row);
+    }
+  }
+
+  private async fetchPlanillaValoresFallback(row: EvolucionRow): Promise<PlanillaCampo[]> {
+    if (!row.plantillaId) {
+      return [];
+    }
+    const camposResp = await firstValueFrom(this.campoSrv.lista(row.plantillaId));
+    const camposRaw: any[] = camposResp?.estado ? (camposResp.valor || []) : [];
+    const camposActivos = camposRaw
+      .filter(campo => campo && (campo.activo === 1 || campo.activo === true))
+      .filter(campo => {
+        const tipoId = Number(campo?.tipoCampoId ?? campo?.TipoCampoId ?? 0);
+        return tipoId !== 1002;
+      })
+      .sort((a, b) => (a?.orden ?? 0) - (b?.orden ?? 0));
+
+    if (!camposActivos.length) {
+      return [];
+    }
+
+    const valores = await Promise.all(
+      camposActivos.map(async campo => {
+        try {
+          const resp = await firstValueFrom(this.campoValorSrv.listaPorCampoEvolucion(Number(campo.id ?? campo.Id), row.id));
+          const estadoOk = resp?.estado ?? (resp as any)?.Estado;
+          if (!estadoOk) {
+            return null;
+          }
+          const registros: any[] = Array.isArray(resp?.valor) ? resp.valor : Array.isArray((resp as any)?.Valor) ? (resp as any).Valor : [];
+          if (!registros.length) {
+            return null;
+          }
+          const dto = registros[0];
+          return this.toPlanillaCampoFromDto(dto, campo);
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    return valores.filter((campo): campo is PlanillaCampo => !!campo);
+  }
+
+  private toPlanillaCampoFromDto(dto: any, campoInfo?: any): PlanillaCampo | null {
+    if (!dto) {
+      return null;
+    }
+    const campoId = Number(dto?.campoId ?? dto?.CampoId ?? campoInfo?.id ?? campoInfo?.Id ?? 0);
+    const etiqueta =
+      dto?.campoEtiqueta ??
+      dto?.CampoEtiqueta ??
+      campoInfo?.etiqueta ??
+      campoInfo?.Etiqueta ??
+      (campoId ? `Campo ${campoId}` : 'Campo');
+    let valor: any = dto?.valor ?? dto?.Valor ?? '';
+    if (Array.isArray(valor)) {
+      valor = valor.join(', ');
+    }
+    valor = valor ?? '';
+    return {
+      id: Number(dto?.id ?? dto?.Id ?? campoId) || 0,
+      campoId,
+      etiqueta,
+      valor: valor.toString()
+    };
+  }
+
   private mapRow(it: any): EvolucionRow {
     const rawProblemaId = it?.problemaId ?? it?.ProblemaId;
     const rawMedicoId = it?.medicoId ?? it?.MedicoId;
@@ -429,17 +616,27 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const problemaId = Number(rawProblemaId);
     const medicoId = Number(rawMedicoId);
     const estadoId = Number(rawEstadoId);
+<<<<<<< HEAD
     const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
     const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
     const plantillaNombre = this.sanitizeLabel(it?.plantillaNombre ?? it?.PlantillaNombre) ??
       (typeof plantillaId === 'number' && plantillaId > 0 ? `Plantilla ${plantillaId}` : undefined);
     const tienePlanilla = typeof plantillaId === 'number' && plantillaId > 0;
+=======
+>>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
     const problemaNombre = this.sanitizeLabel(
       it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema
     ) ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
     const medicoNombre = this.resolveMedicoNombre(medicoId, it);
     const estadoNombre = this.sanitizeLabel(it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado) ??
       ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
+<<<<<<< HEAD
+=======
+    const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
+    const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
+    const plantillaNombre = it?.plantillaNombre ?? it?.PlantillaNombre ?? (plantillaId ? `Plantilla ${plantillaId}` : undefined);
+    const tienePlanilla = typeof plantillaId === 'number' && plantillaId > 0;
+>>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
     return {
       id: it?.id ?? 0,
       problema: problemaNombre || '-',
@@ -514,11 +711,20 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     items.forEach(item => {
       const id = Number(item?.id ?? item?.Id);
       if (!Number.isFinite(id) || id <= 0) { return; }
+<<<<<<< HEAD
       const nombre = this.buildNombreCompleto(item)
         ?? this.buildNombreCompleto(item?.usuario ?? item?.Usuario)
         ?? this.buildNombreCompleto(item?.persona ?? item?.Persona);
       const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
       const display = nombre || matricula || `Medico ${id}`;
+=======
+      const nombre =
+        this.buildNombreCompleto(item) ??
+        this.buildNombreCompleto(item?.usuario ?? item?.Usuario);
+      const email = this.sanitizeLabel(item?.usuarioMail ?? item?.UsuarioMail);
+      const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
+      const display = nombre || email || matricula || `Medico ${id}`;
+>>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
       this.medicoMap.set(id, display);
     });
   }
@@ -559,6 +765,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     if (fromMap) { return fromMap; }
     const nested = payload?.medico ?? payload?.Medico;
     const nestedNombre =
+<<<<<<< HEAD
       this.buildNombreCompleto(nested)
       ?? this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario)
       ?? this.buildNombreCompleto(nested?.persona ?? nested?.Persona);
@@ -567,6 +774,16 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       ?? this.sanitizeLabel(payload?.MedicoNombre)
       ?? this.buildNombreCompleto(payload?.medico ?? payload?.Medico);
     if (directRaw && !directRaw.includes('@')) { return directRaw; }
+=======
+      this.buildNombreCompleto(nested) ??
+      this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario);
+    if (nestedNombre) { return nestedNombre; }
+    const direct = this.sanitizeLabel(payload?.medicoNombre)
+      ?? this.sanitizeLabel(payload?.MedicoNombre)
+      ?? this.sanitizeLabel(payload?.medico)
+      ?? this.sanitizeLabel(payload?.Medico);
+    if (direct) { return direct; }
+>>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
     if (Number.isFinite(medicoId) && medicoId > 0) {
       return `Medico ${medicoId}`;
     }
@@ -576,8 +793,13 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   private buildNombreCompleto(source: any): string | undefined {
     if (!source) { return undefined; }
     const partes = [
+<<<<<<< HEAD
       this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre ?? source?.personaNombre ?? source?.PersonaNombre),
       this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido ?? source?.personaApellido ?? source?.PersonaApellido)
+=======
+      this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre),
+      this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido)
+>>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
     ].filter((v): v is string => !!v);
     if (partes.length) {
       return partes.join(' ').trim();
