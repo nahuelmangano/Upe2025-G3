@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace DTOs
 {
-    public class UsuarioDTO
+    public class UsuarioCrearDTO
     {
-        public int Id { get; set; }
-
         public string Nombre { get; set; } = null!;
 
         public string Apellido { get; set; } = null!;
@@ -19,16 +17,11 @@ namespace DTOs
 
         public string PasswordHash { get; set; } = null!;
 
-        public int? EstadoId { get; set; }
-
-        public string? EstadoNombre { get; set; }
-
         public int RolId { get; set; }
-
-        public string? RolNombre { get; set; }
 
         public string? Matricula { get; set; }
 
         public string? FechaVencimientoMatricula { get; set; }
     }
+
 }

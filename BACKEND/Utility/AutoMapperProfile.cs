@@ -542,7 +542,7 @@ namespace Utility
                 )
                 .ForMember(destino =>
                 destino.FechaVencimientoMatricula,
-                opt => opt.MapFrom(origen => origen.Medico.FechaVencimientoMatricula.ToString("dd/MM/yyyy"))
+                opt => opt.MapFrom(origen => origen.Medico.FechaVencimientoMatricula.ToString("yyyy-MM-dd"))
                 );
 
 
@@ -574,8 +574,15 @@ namespace Utility
                o => o.Ignore()
                );
 
-            CreateMap<UsuarioEditarDTO, Usuario>()
+            CreateMap<UsuarioCrearDTO, Usuario>()
                .ReverseMap();
+
+            CreateMap<UsuarioEditarDTO, Usuario>()
+               .ReverseMap()
+               .ForMember(destino =>
+                destino.FechaVencimientoMatricula,
+                opt => opt.MapFrom(origen => origen.Medico.FechaVencimientoMatricula.ToString("yyyy-MM-dd"))
+                );
             #endregion Usuario
         }
     }
