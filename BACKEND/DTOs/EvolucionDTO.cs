@@ -22,7 +22,7 @@ namespace DTOs
 
         public string? PacienteNombre{ get; set; } 
 
-        public int PlantillaId { get; set; }
+        public int? PlantillaId { get; set; }
 
         public string? PlantillaNombre { get; set; }
 

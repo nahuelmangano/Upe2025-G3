@@ -17,7 +17,7 @@ public partial class Evolucion
 
     public int PacienteId { get; set; }
 
-    public int PlantillaId { get; set; }
+    public int? PlantillaId { get; set; }
 
     public int ProblemaId { get; set; }
 
@@ -35,7 +35,7 @@ public partial class Evolucion
 
     public virtual Paciente Paciente { get; set; } = null!;
 
-    public virtual Plantilla Plantilla { get; set; } = null!;
+    public virtual Plantilla? Plantilla { get; set; }
 
     public virtual Problema Problema { get; set; } = null!;
 }
