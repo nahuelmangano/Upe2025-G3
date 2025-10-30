@@ -10,6 +10,7 @@ import { EstadoUsuario } from 'src/app/interfaces/estado-usuario';
 import { EstadoUsuarioService } from 'src/app/services/estado-usuario.service';
 import { SharedModule } from 'src/app/reutilizable/shared/shared-module';
 import { CommonModule } from '@angular/common';
+import { ResponseApi } from 'src/app/interfaces/response-api';
 
 @Component({
   selector: 'app-modal-usuario',
@@ -146,12 +147,12 @@ export class ModalUsuarioComponent {
     // crear usuario
     if (this.datosUsuario == null) {
       this._usuarioServicio.crear(_usuario).subscribe({
-        next: (data) => {
+        next: (data: ResponseApi) => {
           if (data.estado) {
             this._utilidadServicio.mostrarAlerta("Usuario creado con exito", "exito");
             this.modalActual.close("true");
           } else {
-            this._utilidadServicio.mostrarAlerta("No se puedo registrar el usuario", "Error");
+            this._utilidadServicio.mostrarAlerta(data.mensaje, "Error");
           }
         },
         error: () => {
@@ -166,7 +167,7 @@ export class ModalUsuarioComponent {
             this._utilidadServicio.mostrarAlerta("Usuario editado con exito", "exito");
             this.modalActual.close("true");
           } else {
-            this._utilidadServicio.mostrarAlerta("No se puedo editar el usuario", "Error");
+            this._utilidadServicio.mostrarAlerta(data.mensaje, "Error");
           }
         },
         error: () => {
