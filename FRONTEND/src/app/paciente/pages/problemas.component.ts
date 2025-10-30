@@ -52,7 +52,7 @@ interface ProblemaMeta {
               <tr>
                 <th>Nombre</th>
                 <th>Inicio</th>
-                <th>Profesional</th>
+                <th>Medico</th>
                 <th>Estado</th>
                 <th>Evoluciones</th>
               </tr>
@@ -339,11 +339,17 @@ export class ProblemasComponent implements OnInit, OnDestroy {
     const medicoIdFromEvoRaw = latest ? (latest.medicoId ?? (latest as any)?.MedicoId) : undefined;
     const medicoIdFromEvo = Number(medicoIdFromEvoRaw);
     const medicoIdValid = Number.isFinite(medicoIdFromEvo) && medicoIdFromEvo > 0 ? medicoIdFromEvo : undefined;
-    const profesional = meta?.medicoNombre
-      || (medicoIdFromMeta ? this.medicoMap.get(medicoIdFromMeta) : undefined)
-      || (medicoIdValid ? this.medicoMap.get(medicoIdValid) : undefined)
+    const nestedMedico = latest ? ((latest as any)?.medico ?? (latest as any)?.Medico ?? (latest as any)?.medicoInfo ?? (latest as any)?.MedicoInfo) : undefined;
+    let profesional = this.normalizeString(meta?.medicoNombre)
+      || (medicoIdFromMeta ? this.normalizeString(this.medicoMap.get(medicoIdFromMeta)) : undefined)
+      || (medicoIdValid ? this.normalizeString(this.medicoMap.get(medicoIdValid)) : undefined)
+      || this.normalizeString(this.extractNombreCompleto(nestedMedico))
       || this.normalizeString(latest?.medicoNombre)
-      || this.firstNonEmpty(sorted, e => this.pickString(e, ['medicoNombre','MedicoNombre','medico','Medico'], ['medico','Medico','profesional','Profesional'], 'nombre'));
+      || this.normalizeString(this.firstNonEmpty(sorted, e => this.pickString(e, ['medicoNombre','MedicoNombre','medico','Medico'], ['medico','Medico','profesional','Profesional'], 'nombre')))
+      || (medicoIdValid ? `Medico ${medicoIdValid}` : undefined);
+    if (profesional && profesional.includes('@')) {
+      profesional = medicoIdValid ? `Medico ${medicoIdValid}` : undefined;
+    }
     const inicioDate = meta?.fechaInicio ? this.parseDate(meta.fechaInicio) : this.findEarliestDate(evols);
     const inicio = inicioDate ? this.formatDate(inicioDate) : undefined;
     const id = key > 0 ? key : (fallbackId ?? key);
@@ -417,7 +423,23 @@ export class ProblemasComponent implements OnInit, OnDestroy {
   private normalizeString(value: unknown): string | undefined {
     if (value === null || value === undefined) { return undefined; }
     const text = String(value).trim();
-    return text.length > 0 ? text : undefined;
+    if (!text) { return undefined; }
+    const invalid = ['string', 'null', 'undefined'];
+    if (invalid.includes(text.toLowerCase())) { return undefined; }
+    return text;
+  }
+
+  private extractNombreCompleto(source: any): string | undefined {
+    if (!source) { return undefined; }
+    const partes = [
+      this.normalizeString(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre ?? source?.personaNombre ?? source?.PersonaNombre),
+      this.normalizeString(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido ?? source?.personaApellido ?? source?.PersonaApellido)
+    ].filter((v): v is string => !!v);
+    if (partes.length) {
+      return partes.join(' ').trim();
+    }
+    const compuesto = this.normalizeString(source?.nombreCompleto ?? source?.NombreCompleto ?? source?.displayName ?? source?.DisplayName);
+    return compuesto || undefined;
   }
 
   filtradas(): ProblemaRow[] {
@@ -442,13 +464,9 @@ export class ProblemasComponent implements OnInit, OnDestroy {
         items.forEach(item => {
           const id = Number(item?.id ?? item?.Id);
           if (!Number.isFinite(id) || id <= 0) { return; }
-          const nombre = [
-            item?.usuarioNombre ?? item?.UsuarioNombre ?? item?.nombre ?? item?.Nombre ?? '',
-            item?.usuarioApellido ?? item?.UsuarioApellido ?? item?.apellido ?? item?.Apellido ?? ''
-          ].filter(Boolean).join(' ').trim();
-          const email = item?.usuarioMail ?? item?.UsuarioMail ?? '';
-          const matricula = item?.matricula ?? item?.Matricula ?? '';
-          const display = nombre || email || matricula || `Medico ${id}`;
+          const nombre = this.normalizeString(this.extractNombreCompleto(item) ?? this.extractNombreCompleto(item?.usuario ?? item?.Usuario));
+          const matricula = this.normalizeString(item?.matricula ?? item?.Matricula);
+          const display = nombre || matricula || `Medico ${id}`;
           this.medicoMap.set(id, display);
         });
         this.medicosLoaded = true;

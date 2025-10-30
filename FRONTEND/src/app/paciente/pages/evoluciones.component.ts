@@ -13,6 +13,8 @@ import { ProblemaService } from '../../services/problema.service';
 import { MedicoService } from '../../services/medico.service';
 import { EstadoProblemaService } from '../../services/estado-problema.service';
 
+type PlanillaCampo = Record<string, unknown>;
+
 interface EvolucionRow {
   id: number;
   problema: string;
@@ -24,6 +26,14 @@ interface EvolucionRow {
   problemaId?: number;
   estadoId?: number;
   medicoId?: number;
+  plantillaId?: number | null;
+  plantillaNombre?: string;
+  tienePlanilla?: boolean;
+  planillaCampos?: PlanillaCampo[];
+  planillaLoaded?: boolean;
+  planillaLoading?: boolean;
+  planillaError?: string;
+  mostrarPlanilla?: boolean;
   source?: any;
 }
 
@@ -419,9 +429,17 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const problemaId = Number(rawProblemaId);
     const medicoId = Number(rawMedicoId);
     const estadoId = Number(rawEstadoId);
-    const problemaNombre = it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
-    const medicoNombre = it?.medicoNombre ?? it?.MedicoNombre ?? it?.medico ?? (Number.isFinite(medicoId) && medicoId > 0 ? this.medicoMap.get(medicoId) : undefined);
-    const estadoNombre = it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado ?? ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
+    const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
+    const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
+    const plantillaNombre = this.sanitizeLabel(it?.plantillaNombre ?? it?.PlantillaNombre) ??
+      (typeof plantillaId === 'number' && plantillaId > 0 ? `Plantilla ${plantillaId}` : undefined);
+    const tienePlanilla = typeof plantillaId === 'number' && plantillaId > 0;
+    const problemaNombre = this.sanitizeLabel(
+      it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema
+    ) ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
+    const medicoNombre = this.resolveMedicoNombre(medicoId, it);
+    const estadoNombre = this.sanitizeLabel(it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado) ??
+      ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
     return {
       id: it?.id ?? 0,
       problema: problemaNombre || '-',
@@ -433,6 +451,14 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       problemaId: Number.isFinite(problemaId) && problemaId > 0 ? problemaId : undefined,
       estadoId: Number.isFinite(estadoId) && estadoId >= 0 ? estadoId : undefined,
       medicoId: Number.isFinite(medicoId) && medicoId > 0 ? medicoId : undefined,
+      plantillaId: typeof plantillaId === 'number' ? plantillaId : null,
+      plantillaNombre: tienePlanilla ? plantillaNombre : undefined,
+      tienePlanilla,
+      planillaCampos: undefined,
+      planillaLoaded: false,
+      planillaLoading: false,
+      planillaError: '',
+      mostrarPlanilla: false,
       source: it
     };
   }
@@ -488,13 +514,11 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     items.forEach(item => {
       const id = Number(item?.id ?? item?.Id);
       if (!Number.isFinite(id) || id <= 0) { return; }
-      const nombre = [
-        item?.usuarioNombre ?? item?.UsuarioNombre ?? item?.nombre ?? item?.Nombre ?? '',
-        item?.usuarioApellido ?? item?.UsuarioApellido ?? item?.apellido ?? item?.Apellido ?? ''
-      ].filter(Boolean).join(' ').trim();
-      const email = item?.usuarioMail ?? item?.UsuarioMail ?? '';
-      const matricula = item?.matricula ?? item?.Matricula ?? '';
-      const display = nombre || email || matricula || `Medico ${id}`;
+      const nombre = this.buildNombreCompleto(item)
+        ?? this.buildNombreCompleto(item?.usuario ?? item?.Usuario)
+        ?? this.buildNombreCompleto(item?.persona ?? item?.Persona);
+      const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
+      const display = nombre || matricula || `Medico ${id}`;
       this.medicoMap.set(id, display);
     });
   }
@@ -519,5 +543,46 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     if (value === null || value === undefined) { return undefined; }
     const text = String(value).trim();
     return text.length > 0 ? text : undefined;
+  }
+
+  private sanitizeLabel(value: unknown): string | undefined {
+    if (value === null || value === undefined) { return undefined; }
+    const text = String(value).trim();
+    if (!text) { return undefined; }
+    const invalid = ['string', 'null', 'undefined'];
+    if (invalid.includes(text.toLowerCase())) { return undefined; }
+    return text;
+  }
+
+  private resolveMedicoNombre(medicoId: number, payload: any): string | undefined {
+    const fromMap = Number.isFinite(medicoId) && medicoId > 0 ? this.sanitizeLabel(this.medicoMap.get(medicoId)) : undefined;
+    if (fromMap) { return fromMap; }
+    const nested = payload?.medico ?? payload?.Medico;
+    const nestedNombre =
+      this.buildNombreCompleto(nested)
+      ?? this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario)
+      ?? this.buildNombreCompleto(nested?.persona ?? nested?.Persona);
+    if (nestedNombre) { return nestedNombre; }
+    const directRaw = this.sanitizeLabel(payload?.medicoNombre)
+      ?? this.sanitizeLabel(payload?.MedicoNombre)
+      ?? this.buildNombreCompleto(payload?.medico ?? payload?.Medico);
+    if (directRaw && !directRaw.includes('@')) { return directRaw; }
+    if (Number.isFinite(medicoId) && medicoId > 0) {
+      return `Medico ${medicoId}`;
+    }
+    return undefined;
+  }
+
+  private buildNombreCompleto(source: any): string | undefined {
+    if (!source) { return undefined; }
+    const partes = [
+      this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre ?? source?.personaNombre ?? source?.PersonaNombre),
+      this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido ?? source?.personaApellido ?? source?.PersonaApellido)
+    ].filter((v): v is string => !!v);
+    if (partes.length) {
+      return partes.join(' ').trim();
+    }
+    const single = this.sanitizeLabel(source?.nombreCompleto ?? source?.NombreCompleto ?? source?.displayName ?? source?.DisplayName);
+    return single || undefined;
   }
 }
