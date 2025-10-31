@@ -512,17 +512,12 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private plantillaSrv: PlantillaService,
     private medicoSrv: MedicoService,
     private campoSrv: CampoService,
-    private tipoCampoSrv: TipoCampoService
-  ) {}
-
-  ngOnInit(): void {
-    void this.ensureTiposCampo();
-
     private tipoCampoSrv: TipoCampoService,
     private campoValorSrv: CampoValorService
   ) {}
 
   ngOnInit(): void {
+    void this.ensureTiposCampo();
     this.loadTiposCampos();
 
     this.sub = this.route.paramMap.subscribe(pm => {
@@ -806,43 +801,6 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     return campo.valor === opcion;
   }
 
-  private mapCampo(raw: any): VistaCampo {
-    const tipoCampoNombre = this.resolveTipoCampoNombre(raw) || 'Texto Corto';
-    const tipoEntrada = this.getInputType(tipoCampoNombre);
-    let step: string | undefined;
-    if (tipoEntrada === 'number') {
-      step = '1';
-    } else if (tipoEntrada === 'decimal') {
-      step = '0.01';
-    }
-
-    let valor: any = raw?.valor;
-    if (tipoEntrada === 'checkbox') {
-      valor = valor === true || valor === 'true' || valor === 1;
-    } else if (tipoEntrada === 'select') {
-      if (valor === undefined || valor === null) {
-        valor = '';
-      } else {
-        valor = valor.toString();
-      }
-    } else if (tipoEntrada === 'multiselect') {
-      if (Array.isArray(valor)) {
-        valor = valor
-          .map((v: any) => (v != null ? v.toString().trim() : ''))
-          .filter(Boolean);
-      } else if (typeof valor === 'string' && valor.trim()) {
-        valor = valor.split(',').map((v: string) => v.trim());
-      } else {
-        valor = [];
-      }
-    } else if (tipoEntrada === 'file') {
-      valor = raw?.valor ?? null;
-    } else if (valor === undefined || valor === null) {
-      valor = '';
-    }
-
-  }
-
   private mapCampo(raw: any, tipoCampoNombre?: string): VistaCampo {
     const tipoNombre = (tipoCampoNombre ?? this.resolveTipoCampoNombre(raw) ?? '').toString();
     const tipoEntrada = this.getInputType(tipoNombre);
@@ -855,7 +813,9 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
         break;
       case 'multiselect':
         if (Array.isArray(valor)) {
-          valor = valor.filter((v: any) => typeof v === 'string').map((v: string) => v.trim()).filter(Boolean);
+          valor = valor
+            .map((v: any) => (v != null ? v.toString().trim() : ''))
+            .filter(Boolean);
         } else if (typeof valor === 'string' && valor.trim()) {
           valor = valor.split(/[\n;,]/).map((v: string) => v.trim()).filter(Boolean);
         } else {
@@ -867,8 +827,6 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
           valor = valor[0] ?? '';
         } else if (valor === undefined || valor === null) {
           valor = '';
-500
-
         } else {
           valor = valor.toString();
         }
@@ -887,25 +845,24 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
         break;
     }
 
-    const step = tipoEntrada === 'decimal' ? '0.01' : tipoEntrada === 'number' ? '1' : undefined;
-
-
-    const step = tipoEntrada === 'decimal' ? '0.01' : tipoEntrada === 'number' ? '1' : undefined;
+    const step =
+      tipoEntrada === 'decimal' ? '0.01' :
+      tipoEntrada === 'number' ? '1' :
+      undefined;
 
     return {
-      id: Number(raw?.id) || 0,
-      orden: raw?.orden ?? 0,
+      id: Number(raw?.id ?? raw?.Id) || 0,
+      orden: raw?.orden ?? raw?.Orden ?? 0,
       etiqueta: raw?.etiqueta || raw?.Etiqueta || 'Campo',
       valor,
-      tipoCampoNombre: tipoNombre,
       tipoEntrada,
-      opciones: tipoEntrada === 'select' || tipoEntrada === 'multiselect' ? this.parseOpciones(raw?.opciones) : undefined,
-      step,
-      tipoCampoNombre
+      tipoCampoNombre: tipoNombre || 'Texto Corto',
+      opciones: (tipoEntrada === 'select' || tipoEntrada === 'multiselect') && opciones.length ? opciones : undefined,
+      step
     };
   }
 
-  getInputType(tipo: string): VistaCampo['tipoEntrada'] {
+  private getInputType(tipo: string): VistaCampo['tipoEntrada'] {
     if (!tipo) return 'text';
     const nombre = tipo
       .toString()
@@ -943,14 +900,19 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     if (nombreDirecto) {
       return nombreDirecto.toString();
     }
-    const id = Number(raw?.tipoCampoId ?? raw?.TipoCampoId);
-    if (Number.isFinite(id) && id > 0) {
-      const nombre = this.tipoCampoMap.get(id);
-      if (nombre) {
-        return nombre;
-      }
+    const tipoId = Number(raw?.tipoCampoId ?? raw?.TipoCampoId);
+    if (!Number.isFinite(tipoId) || tipoId <= 0) {
+      return '';
     }
-    return '';
+    if (tipoId === 1002) {
+      return '__SECCION__';
+    }
+    const fromMap = this.tipoCampoMap.get(tipoId);
+    if (fromMap) {
+      return fromMap;
+    }
+    const fromLista = this.tiposCampos.find(t => t.id === tipoId);
+    return fromLista?.nombre?.toString() ?? '';
   }
 
   private ensureTiposCampo(): Promise<void> {
@@ -961,7 +923,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       return this.tiposRequest;
     }
 
-    this.tiposRequest = firstValueFrom(this.tipoCampoSrv.lista())
+    const request = firstValueFrom(this.tipoCampoSrv.lista())
       .then(res => {
         const lista: any[] = res?.estado && Array.isArray(res?.valor) ? res.valor : [];
         lista.forEach(item => {
@@ -971,34 +933,15 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
             this.tipoCampoMap.set(id, nombre);
           }
         });
-      })
-      .catch(err => {
-        this.tiposRequest = undefined;
-        throw err;
       });
 
+    this.tiposRequest = request.finally(() => {
+      this.tiposRequest = undefined;
+    });
+
     return this.tiposRequest;
-      opciones: opciones.length ? opciones : undefined,
-      multiple: tipoEntrada === 'multiselect',
-      step
-    };
   }
 
-  private resolveTipoCampoNombre(raw: any): string {
-    if (raw?.tipoCampoNombre) {
-      return raw.tipoCampoNombre;
-    }
-    const tipoId = Number(raw?.tipoCampoId);
-    if (!Number.isFinite(tipoId) || tipoId <= 0) {
-      return '';
-    }
-    if (tipoId === 1002) {
-      return '__SECCION__';
-    }
-    const tipo = this.tiposCampos.find(t => t.id === tipoId);
-    return tipo?.nombre || 'Texto Corto';
-
-  }
 
   private parseOpciones(opciones?: string | null): string[] {
     if (!opciones) return [];
@@ -1008,24 +951,6 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       .filter(Boolean);
   }
 
-  private getInputType(tipo: string): VistaCampoEntrada {
-    if (!tipo) return 'text';
-    const nombre = tipo.toLowerCase();
-    switch (nombre) {
-      case 'texto corto': return 'text';
-      case 'texto largo': return 'textarea';
-      case 'número entero': return 'number';
-      case 'número decimal': return 'decimal';
-      case 'fecha y hora': return 'datetime-local';
-      case 'archivo': return 'file';
-      case 'email': return 'email';
-      case 'teléfono': return 'tel';
-      case 'casilla de verificación': return 'checkbox';
-      case 'selección única': return 'select';
-      case 'selección múltiple': return 'multiselect';
-      default: return 'text';
-    }
-  }
 
   private formatDateTime(valor: any): string {
     if (!valor) return '';
@@ -1135,11 +1060,7 @@ interface VistaCampo {
   orden?: number | null;
   etiqueta: string;
   valor: any;
-  tipoEntrada: 'text' | 'textarea' | 'number' | 'decimal' | 'datetime-local' | 'checkbox' | 'select' | 'multiselect' | 'email' | 'tel' | 'file';
-
-  tipoCampoNombre: string;
   tipoEntrada: VistaCampoEntrada;
-
   opciones?: string[];
   step?: string;
   tipoCampoNombre: string;

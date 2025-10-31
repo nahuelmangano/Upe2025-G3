@@ -15,8 +15,6 @@ import { EstadoProblemaService } from '../../services/estado-problema.service';
 import { CampoValorService } from '../../services/campo-valor.service';
 import { CampoService } from '../../services/campo.service';
 
-type PlanillaCampo = Record<string, unknown>;
-
 interface EvolucionRow {
   id: number;
   problema: string;
@@ -628,10 +626,6 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const medicoNombre = this.resolveMedicoNombre(medicoId, it);
     const estadoNombre = this.sanitizeLabel(it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado) ??
       ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
-    const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
-    const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
-    const plantillaNombre = it?.plantillaNombre ?? it?.PlantillaNombre ?? (plantillaId ? `Plantilla ${plantillaId}` : undefined);
-    const tienePlanilla = typeof plantillaId === 'number' && plantillaId > 0;
 
     return {
       id: it?.id ?? 0,
@@ -710,15 +704,9 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       const nombre = this.buildNombreCompleto(item)
         ?? this.buildNombreCompleto(item?.usuario ?? item?.Usuario)
         ?? this.buildNombreCompleto(item?.persona ?? item?.Persona);
-      const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
-      const display = nombre || matricula || `Medico ${id}`;
-      const nombre =
-        this.buildNombreCompleto(item) ??
-        this.buildNombreCompleto(item?.usuario ?? item?.Usuario);
       const email = this.sanitizeLabel(item?.usuarioMail ?? item?.UsuarioMail);
       const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
       const display = nombre || email || matricula || `Medico ${id}`;
-
       this.medicoMap.set(id, display);
     });
   }
@@ -763,18 +751,11 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       ?? this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario)
       ?? this.buildNombreCompleto(nested?.persona ?? nested?.Persona);
     if (nestedNombre) { return nestedNombre; }
-    const directRaw = this.sanitizeLabel(payload?.medicoNombre)
-      ?? this.sanitizeLabel(payload?.MedicoNombre)
-      ?? this.buildNombreCompleto(payload?.medico ?? payload?.Medico);
-    if (directRaw && !directRaw.includes('@')) { return directRaw; }
-      this.buildNombreCompleto(nested) ??
-      this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario);
-    if (nestedNombre) { return nestedNombre; }
     const direct = this.sanitizeLabel(payload?.medicoNombre)
       ?? this.sanitizeLabel(payload?.MedicoNombre)
       ?? this.sanitizeLabel(payload?.medico)
       ?? this.sanitizeLabel(payload?.Medico);
-    if (direct) { return direct; }
+    if (direct && !direct.includes('@')) { return direct; }
 
     if (Number.isFinite(medicoId) && medicoId > 0) {
       return `Medico ${medicoId}`;
@@ -787,10 +768,6 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const partes = [
       this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre ?? source?.personaNombre ?? source?.PersonaNombre),
       this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido ?? source?.personaApellido ?? source?.PersonaApellido)
-
-      this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre),
-      this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido)
-
     ].filter((v): v is string => !!v);
     if (partes.length) {
       return partes.join(' ').trim();
