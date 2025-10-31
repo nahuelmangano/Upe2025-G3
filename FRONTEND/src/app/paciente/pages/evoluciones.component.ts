@@ -616,27 +616,23 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const problemaId = Number(rawProblemaId);
     const medicoId = Number(rawMedicoId);
     const estadoId = Number(rawEstadoId);
-<<<<<<< HEAD
     const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
     const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
     const plantillaNombre = this.sanitizeLabel(it?.plantillaNombre ?? it?.PlantillaNombre) ??
       (typeof plantillaId === 'number' && plantillaId > 0 ? `Plantilla ${plantillaId}` : undefined);
     const tienePlanilla = typeof plantillaId === 'number' && plantillaId > 0;
-=======
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
     const problemaNombre = this.sanitizeLabel(
       it?.problemaTitulo ?? it?.ProblemaTitulo ?? it?.problemaNombre ?? it?.ProblemaNombre ?? it?.problema
     ) ?? (Number.isFinite(problemaId) && problemaId > 0 ? this.problemaMap.get(problemaId) : undefined);
     const medicoNombre = this.resolveMedicoNombre(medicoId, it);
     const estadoNombre = this.sanitizeLabel(it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado) ??
       ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
-<<<<<<< HEAD
-=======
     const rawPlantillaId = it?.plantillaId ?? it?.PlantillaId;
     const plantillaId = this.toNumberOrUndefined(rawPlantillaId);
     const plantillaNombre = it?.plantillaNombre ?? it?.PlantillaNombre ?? (plantillaId ? `Plantilla ${plantillaId}` : undefined);
     const tienePlanilla = typeof plantillaId === 'number' && plantillaId > 0;
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
     return {
       id: it?.id ?? 0,
       problema: problemaNombre || '-',
@@ -711,20 +707,18 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     items.forEach(item => {
       const id = Number(item?.id ?? item?.Id);
       if (!Number.isFinite(id) || id <= 0) { return; }
-<<<<<<< HEAD
       const nombre = this.buildNombreCompleto(item)
         ?? this.buildNombreCompleto(item?.usuario ?? item?.Usuario)
         ?? this.buildNombreCompleto(item?.persona ?? item?.Persona);
       const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
       const display = nombre || matricula || `Medico ${id}`;
-=======
       const nombre =
         this.buildNombreCompleto(item) ??
         this.buildNombreCompleto(item?.usuario ?? item?.Usuario);
       const email = this.sanitizeLabel(item?.usuarioMail ?? item?.UsuarioMail);
       const matricula = this.sanitizeLabel(item?.matricula ?? item?.Matricula);
       const display = nombre || email || matricula || `Medico ${id}`;
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
       this.medicoMap.set(id, display);
     });
   }
@@ -765,7 +759,6 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     if (fromMap) { return fromMap; }
     const nested = payload?.medico ?? payload?.Medico;
     const nestedNombre =
-<<<<<<< HEAD
       this.buildNombreCompleto(nested)
       ?? this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario)
       ?? this.buildNombreCompleto(nested?.persona ?? nested?.Persona);
@@ -774,7 +767,6 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       ?? this.sanitizeLabel(payload?.MedicoNombre)
       ?? this.buildNombreCompleto(payload?.medico ?? payload?.Medico);
     if (directRaw && !directRaw.includes('@')) { return directRaw; }
-=======
       this.buildNombreCompleto(nested) ??
       this.buildNombreCompleto(nested?.usuario ?? nested?.Usuario);
     if (nestedNombre) { return nestedNombre; }
@@ -783,7 +775,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       ?? this.sanitizeLabel(payload?.medico)
       ?? this.sanitizeLabel(payload?.Medico);
     if (direct) { return direct; }
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
     if (Number.isFinite(medicoId) && medicoId > 0) {
       return `Medico ${medicoId}`;
     }
@@ -793,13 +785,12 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   private buildNombreCompleto(source: any): string | undefined {
     if (!source) { return undefined; }
     const partes = [
-<<<<<<< HEAD
       this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre ?? source?.personaNombre ?? source?.PersonaNombre),
       this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido ?? source?.personaApellido ?? source?.PersonaApellido)
-=======
+
       this.sanitizeLabel(source?.nombre ?? source?.Nombre ?? source?.usuarioNombre ?? source?.UsuarioNombre),
       this.sanitizeLabel(source?.apellido ?? source?.Apellido ?? source?.usuarioApellido ?? source?.UsuarioApellido)
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
     ].filter((v): v is string => !!v);
     if (partes.length) {
       return partes.join(' ').trim();

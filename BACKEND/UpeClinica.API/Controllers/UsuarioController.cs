@@ -64,7 +64,7 @@ namespace UpeClinica.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("Crear")]
-        public async Task<IActionResult> Crear([FromBody] UsuarioDTO usuario)
+        public async Task<IActionResult> Crear([FromBody] UsuarioCrearDTO usuario)
         {
             var rsp = new Response<UsuarioDTO>();
 

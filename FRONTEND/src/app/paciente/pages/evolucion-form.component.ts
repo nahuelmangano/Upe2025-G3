@@ -11,8 +11,6 @@ import { Plantilla } from '../../interfaces/plantilla';
 import { MedicoService } from '../../services/medico.service';
 import { CampoService } from '../../services/campo.service';
 import { TipoCampoService } from '../../services/tipo-campo.service';
-<<<<<<< HEAD
-=======
 import { CampoValorService } from '../../services/campo-valor.service';
 
 type VistaCampoEntrada =
@@ -27,7 +25,7 @@ type VistaCampoEntrada =
   | 'email'
   | 'tel'
   | 'file';
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
 
 @Component({
   standalone: true,
@@ -263,7 +261,6 @@ type VistaCampoEntrada =
               </div>
             </div>
             <div style="grid-column:1/7" *ngIf="plantillaPreview && !previewLoading">
-<<<<<<< HEAD
               <div class="preview-card">
                 <div class="preview-head">
                   <span class="preview-title">Previsualización de Plantilla</span>
@@ -396,7 +393,6 @@ type VistaCampoEntrada =
                       </div>
                     </div>
                   </div>
-=======
               <div style="border-radius:18px;padding:1px;background:linear-gradient(135deg,rgba(99,102,241,0.35) 0%,rgba(99,102,241,0.05) 100%);box-shadow:0 18px 40px rgba(79,70,229,0.18);">
                 <div style="background:#ffffff;border-radius:17px;padding:22px 26px;display:flex;flex-direction:column;gap:22px;">
                   <div style="display:flex;flex-direction:column;gap:4px">
@@ -449,7 +445,7 @@ type VistaCampoEntrada =
                       </div>
                     </div>
                   </ng-container>
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
                 </div>
               </div>
             </div>
@@ -501,12 +497,11 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   previewError = '';
 
   private camposSub?: Subscription;
-<<<<<<< HEAD
   private tipoCampoMap = new Map<number, string>();
   private tiposRequest?: Promise<void>;
-=======
+
   private tiposCampos: { id: number; nombre: string }[] = [];
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
 
   constructor(
     private route: ActivatedRoute,
@@ -517,20 +512,19 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private plantillaSrv: PlantillaService,
     private medicoSrv: MedicoService,
     private campoSrv: CampoService,
-<<<<<<< HEAD
     private tipoCampoSrv: TipoCampoService
   ) {}
 
   ngOnInit(): void {
     void this.ensureTiposCampo();
-=======
+
     private tipoCampoSrv: TipoCampoService,
     private campoValorSrv: CampoValorService
   ) {}
 
   ngOnInit(): void {
     this.loadTiposCampos();
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
     this.sub = this.route.paramMap.subscribe(pm => {
       this.pacienteId = Number(pm.get('id')) || 0;
       this.loadProblemas();
@@ -800,7 +794,6 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     return secciones;
   }
 
-<<<<<<< HEAD
   countCampos(secciones: { titulo: string; campos: VistaCampo[] }[]): number {
     return secciones.reduce((total, seccion) => total + seccion.campos.length, 0);
   }
@@ -846,7 +839,10 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       valor = raw?.valor ?? null;
     } else if (valor === undefined || valor === null) {
       valor = '';
-=======
+    }
+
+  }
+
   private mapCampo(raw: any, tipoCampoNombre?: string): VistaCampo {
     const tipoNombre = (tipoCampoNombre ?? this.resolveTipoCampoNombre(raw) ?? '').toString();
     const tipoEntrada = this.getInputType(tipoNombre);
@@ -871,6 +867,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
           valor = valor[0] ?? '';
         } else if (valor === undefined || valor === null) {
           valor = '';
+500
+
         } else {
           valor = valor.toString();
         }
@@ -887,8 +885,10 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
           valor = '';
         }
         break;
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
     }
+
+    const step = tipoEntrada === 'decimal' ? '0.01' : tipoEntrada === 'number' ? '1' : undefined;
+
 
     const step = tipoEntrada === 'decimal' ? '0.01' : tipoEntrada === 'number' ? '1' : undefined;
 
@@ -899,7 +899,6 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       valor,
       tipoCampoNombre: tipoNombre,
       tipoEntrada,
-<<<<<<< HEAD
       opciones: tipoEntrada === 'select' || tipoEntrada === 'multiselect' ? this.parseOpciones(raw?.opciones) : undefined,
       step,
       tipoCampoNombre
@@ -979,7 +978,6 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       });
 
     return this.tiposRequest;
-=======
       opciones: opciones.length ? opciones : undefined,
       multiple: tipoEntrada === 'multiselect',
       step
@@ -999,7 +997,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     }
     const tipo = this.tiposCampos.find(t => t.id === tipoId);
     return tipo?.nombre || 'Texto Corto';
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
   }
 
   private parseOpciones(opciones?: string | null): string[] {
@@ -1137,12 +1135,11 @@ interface VistaCampo {
   orden?: number | null;
   etiqueta: string;
   valor: any;
-<<<<<<< HEAD
   tipoEntrada: 'text' | 'textarea' | 'number' | 'decimal' | 'datetime-local' | 'checkbox' | 'select' | 'multiselect' | 'email' | 'tel' | 'file';
-=======
+
   tipoCampoNombre: string;
   tipoEntrada: VistaCampoEntrada;
->>>>>>> 93b21b3733ea3f5fe781f20f276d5ea8fc1c3c9e
+
   opciones?: string[];
   step?: string;
   tipoCampoNombre: string;
