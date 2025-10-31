@@ -1,0 +1,12 @@
+# Build artifacts
+**/bin
+**/obj
+
+# User secrets / local settings
+*.user
+*.suo
+
+# Misc
+.git
+Dockerfile
+docker-compose.*
