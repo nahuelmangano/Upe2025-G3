@@ -173,7 +173,7 @@ namespace Utility
             CreateMap<Evolucion, EvolucionDTO>()
                 .ForMember(destino =>
                 destino.FechaConsulta,
-                opt => opt.MapFrom(origen => origen.FechaConsulta.ToString("dd/MM/yyyy"))
+                opt => opt.MapFrom(origen => origen.FechaConsulta)
                 )
                 .ForMember(destino =>
                     destino.PacienteNombre,
@@ -325,16 +325,16 @@ namespace Utility
             #region Paciente
             CreateMap<Paciente, PacienteDTO>()
                 .ForMember(destino =>
-                destino.FechaNac,
-                opt => opt.MapFrom(origen => origen.FechaNac.ToString("dd/MM/yyyy"))
+                    destino.FechaNac,
+                    opt => opt.MapFrom(origen => origen.FechaNac)
                 )
                 .ForMember(destino =>
-                destino.DomicilioCiudad,
-                opt => opt.MapFrom(origen => origen.Domicilio.Ciudad)
+                    destino.DomicilioCiudad,
+                    opt => opt.MapFrom(origen => origen.Domicilio != null ? origen.Domicilio.Ciudad : null)
                 )
                 .ForMember(destino =>
-                destino.SexoNombre,
-                opt => opt.MapFrom(origen => origen.Sexo.Nombre)
+                    destino.SexoNombre,
+                    opt => opt.MapFrom(origen => origen.Sexo != null ? origen.Sexo.Nombre : null)
                 )
                 .ForMember(destino =>
                 destino.Activo,

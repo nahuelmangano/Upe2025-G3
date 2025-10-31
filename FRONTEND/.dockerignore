@@ -1,0 +1,11 @@
+# Dependencies
+node_modules
+
+# Angular build output
+dist
+.angular
+
+# Misc
+npm-debug.log
+yarn-error.log
+.git
