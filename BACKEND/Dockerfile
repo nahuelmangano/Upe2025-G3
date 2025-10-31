@@ -26,9 +26,10 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Listen on port 8080 inside the container by default
-ENV ASPNETCORE_URLS=http://+:8080
+# Render exige escuchar en el puerto que define $PORT
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
+# EXPOSE es informativo; podés dejarlo o quitarlo. Si querés, exponé uno "típico":
+EXPOSE 10000
 
-EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "UpeClinica.API.dll"]
