@@ -72,11 +72,10 @@ if (string.IsNullOrWhiteSpace(cs))
     app.Logger.LogError("ConnectionStrings:cadenaSQL está vacía. Verificá .env o appsettings.json.");
 }
 
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.UseCors("NuevaPolitica");
 app.UseAuthorization();
