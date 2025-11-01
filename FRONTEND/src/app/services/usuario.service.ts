@@ -5,6 +5,8 @@ import { API_URL } from '../app.config'; // token de configuración
 import { ResponseApi } from '../interfaces/response-api';
 import { Login } from '../interfaces/login';
 import { Usuario } from '../interfaces/usuario';
+import { UsuarioCambiarPasswordPorMail } from '../interfaces/UsuarioCambiarPasswordPorMail';
+import { UsuarioCambiarPassword } from '../interfaces/UsuarioCambiarPassword';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +21,14 @@ export class UsuarioService {
   iniciarSesion(request: Login): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}IniciarSesion`, request);
   }
+
+  enviarMailCambiarPassword(request: UsuarioCambiarPasswordPorMail): Observable<ResponseApi> {
+    return this.http.post<ResponseApi>(`${this.urlApi}EnviarMailCambiarPassword`, request);
+  }
+
+  cambiarPassword(request: UsuarioCambiarPassword): Observable<ResponseApi>{
+    return this.http.post<ResponseApi>(`${this.urlApi}CambiarPassword`, request);
+  } 
 
   lista(): Observable<ResponseApi> {
     return this.http.get<ResponseApi>(`${this.urlApi}Lista`);

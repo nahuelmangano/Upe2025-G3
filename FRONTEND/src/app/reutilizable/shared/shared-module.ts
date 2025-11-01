@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -49,6 +50,7 @@ import { MomentDateModule } from '@angular/material-moment-adapter';
     MatInputModule,
     MatSelectModule,
     MatRadioModule,
+    MatCheckboxModule,
     TextFieldModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,

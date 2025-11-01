@@ -17,8 +17,6 @@ namespace DTOs
 
         public string Mail { get; set; } = null!;
 
-        public string PasswordHash { get; set; } = null!;
-
         public int RolId { get; set; }
 
         public int? EstadoId { get; set; }

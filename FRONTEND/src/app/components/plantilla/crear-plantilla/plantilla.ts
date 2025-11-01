@@ -332,7 +332,12 @@ export class PlantillaComponent implements OnInit {
       this.utilidadService.mostrarAlerta('Error al buscar médico', 'Error');
       return;
     }
+
+    console.log(userId);
+    
+
     const medico = resp.valor.find((m: any) => m.usuarioId === userId);
+    console.log(medico);
     if (!medico) {
       this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
       return;
