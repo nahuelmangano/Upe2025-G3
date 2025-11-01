@@ -1,7 +1,14 @@
 /* @import '@angular/material/prebuilt-themes/magenta-violet.css'; */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body { 
+  height: 100%; 
+  margin: 0;
+  padding: 0;
+}
+
+body { 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 /* Global utility styles for simple pages (cards, tables, buttons) */
 :root{
@@ -29,5 +36,3 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
 .modal-grid label{ display:flex; flex-direction:column; gap:6px; }
 .modal-grid input, .modal-grid textarea, .modal-grid select{ width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

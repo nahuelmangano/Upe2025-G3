@@ -1,0 +1,122 @@
+<div class="body">
+    <div class="login-container">
+        <!-- Sección izquierda: Bienvenida -->
+        <div class="welcome-section">
+            <div class="medical-icons">
+                <mat-icon class="icon-medical icon-1">local_hospital</mat-icon>
+                <mat-icon class="icon-medical icon-2">favorite</mat-icon>
+                <mat-icon class="icon-medical icon-3">medical_services</mat-icon>
+                <mat-icon class="icon-medical icon-4">healing</mat-icon>
+                <mat-icon class="icon-medical icon-5">vaccines</mat-icon>
+                <mat-icon class="icon-medical icon-6">monitor_heart</mat-icon>
+            </div>
+            <div class="welcome-content">
+                <div class="title-container">
+                    <mat-icon class="title-icon">person_add</mat-icon>
+                    <h1 class="welcome-title">Crear Nueva Cuenta</h1>
+                </div>
+                <p class="welcome-text">
+                    <mat-icon class="text-icon">account_circle</mat-icon>
+                    Únete a UPE Clínica y accede a todas las herramientas
+                    de gestión médica que necesitas para tu práctica profesional.
+                </p>
+                <p class="welcome-text">
+                    <mat-icon class="text-icon">lock</mat-icon>
+                    Completa el formulario con tus datos y crea una cuenta
+                    segura para comenzar a gestionar historias clínicas.
+                </p>
+            </div>
+        </div>
+
+        <!-- Sección derecha: Formulario de Registro -->
+        <div class="login-section">
+            <mat-card class="loginCard" style="background-color: white;">
+                <div class="header">
+                    <mat-icon class="header-icon">person_add</mat-icon>
+                    <h2>Registro de Usuario</h2>
+                    <p class="header-subtitle">Completa tus datos para crear una cuenta</p>
+                </div>
+                <mat-card-content style="padding-bottom: 15px;">
+
+                    <form [formGroup]="formularioRegistro" (ngSubmit)="completarRegistro()">
+
+                        <mat-form-field class="full-width" appearance="outline">
+                            <mat-label>Email</mat-label>
+                            <input matInput formControlName="email" autocomplete="email" type="email" />
+                            <mat-icon matSuffix>mail</mat-icon>
+                            <mat-error *ngIf="formularioRegistro.get('email')?.hasError('required')">
+                                El email es requerido
+                            </mat-error>
+                            <mat-error *ngIf="formularioRegistro.get('email')?.hasError('email')">
+                                Email inválido
+                            </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field class="full-width" appearance="outline">
+                            <mat-label>Contraseña Antigua</mat-label>
+                            <input [type]="ocultarPasswordOld ? 'password' : 'text'" matInput formControlName="passwordHashAntigua"
+                                autocomplete="off" />
+                            <button mat-icon-button matSuffix (click)="ocultarPasswordOld = !ocultarPasswordOld" type="button">
+                                <mat-icon>{{ocultarPasswordOld ? 'visibility_off' : 'visibility'}}</mat-icon>
+                            </button>
+                            <mat-error *ngIf="formularioRegistro.get('passwordOld')?.hasError('required')">
+                                La contraseña antigua es requerida
+                            </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field class="full-width" appearance="outline">
+                            <mat-label>Contraseña Nueva</mat-label>
+                            <input [type]="ocultarPasswordNew ? 'password' : 'text'" matInput formControlName="nuevaPassword"
+                                autocomplete="new-password" />
+                            <button mat-icon-button matSuffix (click)="ocultarPasswordNew = !ocultarPasswordNew" type="button">
+                                <mat-icon>{{ocultarPasswordNew ? 'visibility_off' : 'visibility'}}</mat-icon>
+                            </button>
+                            <mat-error *ngIf="formularioRegistro.get('passwordNew')?.hasError('required')">
+                                La contraseña nueva es requerida
+                            </mat-error>
+                            <mat-error *ngIf="formularioRegistro.get('passwordNew')?.hasError('minlength')">
+                                La contraseña debe tener al menos 6 caracteres
+                            </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field class="full-width" appearance="outline">
+                            <mat-label>Repetir Contraseña</mat-label>
+                            <input [type]="ocultarPasswordConfirm ? 'password' : 'text'" matInput formControlName="repetirNuevaPassword"
+                                autocomplete="new-password" />
+                            <button mat-icon-button matSuffix (click)="ocultarPasswordConfirm = !ocultarPasswordConfirm" type="button">
+                                <mat-icon>{{ocultarPasswordConfirm ? 'visibility_off' : 'visibility'}}</mat-icon>
+                            </button>
+                            <mat-error *ngIf="formularioRegistro.get('passwordConfirm')?.hasError('required')">
+                                Por favor confirma tu contraseña
+                            </mat-error>
+                            <mat-error *ngIf="getPasswordMismatchError()">
+                                Las contraseñas no coinciden
+                            </mat-error>
+                        </mat-form-field>
+
+                        <button mat-raised-button color="primary" class="submit-button" type="submit"
+                            [disabled]="formularioRegistro.invalid">
+                            <mat-icon>check_circle</mat-icon>
+                            <span>Completar Registro</span>
+                        </button>
+
+                        <div class="links-container">
+                            <a class="link-back" (click)="volverAlLogin()" mat-button tabindex="0">
+                                <mat-icon>arrow_back</mat-icon>
+                                Volver al Login
+                            </a>
+                        </div>
+                    </form>
+
+                </mat-card-content>
+
+                <mat-card-footer>
+                    @if (mostrarLoading) {
+                    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                    }
+                </mat-card-footer>
+            </mat-card>
+        </div>
+    </div>
+</div>
+

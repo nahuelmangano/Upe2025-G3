@@ -48,6 +48,8 @@ namespace BLL.Servicios
             }
         }
 
+
+
         public async Task<SesionDTO> ValidarCredenciales(string mail, string passwordHash)
         {
             try
@@ -64,6 +66,18 @@ namespace BLL.Servicios
                 else if (string.IsNullOrWhiteSpace(passwordHash))
                     throw new Exception("Debe ingresar un password");
 
+                // si no debe ingresar
+
+                var queryUsuario1 = await _usuarioRepositorio.Consultar(usuario =>
+                        usuario.Mail == mail
+                    );
+
+                Usuario devolverUsuario = queryUsuario1.Include(rol => rol.Rol).First();
+
+                if (devolverUsuario.EstadoId == 1 || devolverUsuario.EstadoId == 3 || devolverUsuario.EstadoId == 4)
+                    throw new Exception("Tiene prohibido el acceso");
+
+                // si ya esta registrado
                 passwordHash = Recursos.ConvertirSha256(passwordHash);
 
                 var queryUsuario = await _usuarioRepositorio.Consultar(usuario =>
@@ -72,16 +86,114 @@ namespace BLL.Servicios
                     );
 
                 if (queryUsuario.FirstOrDefault() == null)
-                    throw new TaskCanceledException("El usuario no existe");
+                    throw new Exception("El usuario no existe");
 
-                Usuario devolverUsuario = queryUsuario.Include(rol => rol.Rol).First();
+                Usuario devolverUsuario2 = queryUsuario.Include(rol => rol.Rol).First();
 
-                return _mapper.Map<SesionDTO>(devolverUsuario);
+                if (devolverUsuario.EstadoId == 1 || devolverUsuario2.EstadoId == 3 || devolverUsuario2.EstadoId == 4)
+                    throw new Exception("Tiene prohibido el acceso");
+
+                return _mapper.Map<SesionDTO>(devolverUsuario2);
             }
-            catch
+            catch (Exception)
             {
                 throw;
             }
+        }
+
+        public async Task<SesionDTO> CambiarPassword(string mail, string passwordAntigua, string nuevaPassword, string repetirNuevaPassword)
+        {
+
+            if (string.IsNullOrWhiteSpace(mail) && string.IsNullOrWhiteSpace(passwordAntigua) && string.IsNullOrWhiteSpace(nuevaPassword) && string.IsNullOrWhiteSpace(repetirNuevaPassword))
+                throw new Exception("Debe ingresar datos!");
+
+            else if (string.IsNullOrWhiteSpace(mail))
+                throw new Exception("Debe ingresar un mail");
+
+            else if (!Recursos.EsMailValido(mail))
+                throw new Exception("Debe ingresar un mail valido");
+
+            else if (string.IsNullOrWhiteSpace(passwordAntigua))
+                throw new Exception("Debe ingresar la antigua password");
+
+            else if (string.IsNullOrWhiteSpace(nuevaPassword))
+                throw new Exception("Debe ingresar una nueva password");
+
+            else if (nuevaPassword.Length < 7)
+                throw new Exception("Debe ingresar una contraseña de al menos 7 caracteres");
+
+            else if (string.IsNullOrWhiteSpace(repetirNuevaPassword))
+                throw new Exception("Debe repeter la nueva password");
+
+            else if (nuevaPassword != repetirNuevaPassword)
+                throw new Exception("Las passwords ingresadas no son iguales");
+
+            try
+            {
+                var buscarUsuario = await _usuarioRepositorio.Consultar(usuario =>
+                usuario.Mail == mail &&
+                usuario.PasswordHash == passwordAntigua);
+
+                if (buscarUsuario.FirstOrDefault() == null)
+                    throw new Exception("El usuario no existe");
+
+                Usuario devolverUsuarioBuscado = buscarUsuario.Include(rol => rol.Rol).First();
+
+                if (devolverUsuarioBuscado.PasswordHash != passwordAntigua)
+                    throw new Exception("EL password antiguo no es correcto");
+
+                devolverUsuarioBuscado.PasswordHash = Recursos.ConvertirSha256(nuevaPassword);
+                devolverUsuarioBuscado.EstadoId = 2;
+
+                await _usuarioRepositorio.Editar(devolverUsuarioBuscado);
+
+                return _mapper.Map<SesionDTO>(devolverUsuarioBuscado);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<SesionDTO> EnviarMailParaCambiarPassword(string mail)
+        {
+            if (string.IsNullOrWhiteSpace(mail))
+                throw new Exception("Debe ingresar un mail");
+
+            else if (!Recursos.EsMailValido(mail))
+                throw new Exception("Debe ingresar un mail valido");
+
+            try
+            {
+                var buscarUsuario = await _usuarioRepositorio.Consultar(usuario =>
+                usuario.Mail == mail);
+
+                if (buscarUsuario.FirstOrDefault() == null)
+                    throw new Exception("El usuario no existe");
+
+                Usuario devolverUsuarioBuscado = buscarUsuario.Include(rol => rol.Rol).First();
+
+                if (devolverUsuarioBuscado.EstadoId == 1 || devolverUsuarioBuscado.EstadoId == 3 || devolverUsuarioBuscado.EstadoId == 4)
+                    throw new Exception("No se puede enviar el Mail porque tiene prohibido el acceso");
+
+                devolverUsuarioBuscado.EstadoId = 1;
+                devolverUsuarioBuscado.PasswordHash = Recursos.GenerarPassword();
+
+                string asunto = "Creación de Cuenta";
+                string mensajeCorreo = "<h3>Su cuenta fue creada correctamente</h3></br><p>Su contraseña para acceder es: !clave!</p>";
+                mensajeCorreo = mensajeCorreo.Replace("!clave!", devolverUsuarioBuscado.PasswordHash);
+
+                bool respuesta = Recursos.EnviarCorreo(mail, asunto, mensajeCorreo);
+
+                await _usuarioRepositorio.Editar(devolverUsuarioBuscado);
+
+                return _mapper.Map<SesionDTO>(devolverUsuarioBuscado);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
         }
 
         public async Task<UsuarioDTO> Crear(UsuarioCrearDTO modelo)
@@ -105,12 +217,6 @@ namespace BLL.Servicios
             else if (!Recursos.EsMailValido(modelo.Mail))
                 throw new Exception("Debe ingresar un mail valido");
 
-            else if (string.IsNullOrWhiteSpace(modelo.PasswordHash))
-                throw new Exception("Debe ingresar una password");
-
-            else if (modelo.PasswordHash.Length < 7)
-                throw new Exception("Debe ingresar una contraseña de al menos 7 caracteres");
-
             else if (string.IsNullOrWhiteSpace(modelo.RolId.ToString()))
                 throw new Exception("Debe ingresar un rol");
 
@@ -129,8 +235,14 @@ namespace BLL.Servicios
             try
             {
                 var usuarioEntidad = _mapper.Map<Usuario>(modelo);
-                usuarioEntidad.PasswordHash = Recursos.ConvertirSha256(modelo.PasswordHash);
-                usuarioEntidad.EstadoId = 2;
+                usuarioEntidad.PasswordHash = Recursos.GenerarPassword();
+                usuarioEntidad.EstadoId = 1;
+
+                string asunto = "Creación de Cuenta";
+                string mensajeCorreo = "<h3>Su cuenta fue creada correctamente</h3></br><p>Su contraseña para acceder es: !clave!</p>";
+                mensajeCorreo = mensajeCorreo.Replace("!clave!", usuarioEntidad.PasswordHash);
+
+                bool respuesta = Recursos.EnviarCorreo(usuarioEntidad.Mail, asunto, mensajeCorreo);
 
                 var usuarioCreado = await _usuarioRepositorio.Crear(usuarioEntidad);
 
@@ -191,12 +303,6 @@ namespace BLL.Servicios
             else if (!Recursos.EsMailValido(modelo.Mail))
                 throw new Exception("Debe ingresar un mail valido");
 
-            else if (string.IsNullOrWhiteSpace(modelo.PasswordHash))
-                throw new Exception("Debe ingresar una password");
-
-            else if (modelo.PasswordHash.Length < 7)
-                throw new Exception("Debe ingresar una contraseña de al menos 7 caracteres");
-
             else if (string.IsNullOrWhiteSpace(modelo.RolId.ToString()))
                 throw new Exception("Debe ingresar un rol");
 
@@ -207,10 +313,10 @@ namespace BLL.Servicios
             {
                 if (string.IsNullOrWhiteSpace(modelo.Matricula) || string.IsNullOrWhiteSpace(modelo.FechaVencimientoMatricula))
                     throw new Exception("Debe ingresar los datos de Matricula y Fecha si el usuario es un Medico");
-                
+
                 if (!DateOnly.TryParseExact(modelo.FechaVencimientoMatricula, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out fechaVencimiento))
                     throw new Exception("Fecha de vencimiento inválida");
-                
+
                 if (fechaVencimiento.ToDateTime(new TimeOnly(0, 0)).Date <= DateTime.Today) throw new Exception("La fecha de vencimiento debe ser mayor al día de hoy");
             }
 
@@ -231,9 +337,22 @@ namespace BLL.Servicios
                 // Editar
                 usuarioEncontrado.Nombre = modelo.Nombre;
                 usuarioEncontrado.Apellido = modelo.Apellido;
+
+                // si quiere cambiar el mail se manda una nueva password para iniciar con un nuevo mail y password
+                if (modelo.Mail != usuarioEncontrado.Mail)
+                {
+                    usuarioEncontrado.PasswordHash = Recursos.GenerarPassword();
+
+                    string asunto = "Cambio de Cuenta MAIL";
+                    string mensajeCorreo = "<h3>Esta a 1 paso de cambiar su mail...</h3></br><p>Su contraseña para acceder es: !clave!</p>";
+                    mensajeCorreo = mensajeCorreo.Replace("!clave!", usuarioEncontrado.PasswordHash);
+
+                    Recursos.EnviarCorreo(modelo.Mail, asunto, mensajeCorreo);
+
+                    modelo.EstadoId = 1;
+                }
                 usuarioEncontrado.Mail = modelo.Mail;
-                if (!string.IsNullOrWhiteSpace(modelo.PasswordHash))
-                    usuarioEncontrado.PasswordHash = Recursos.ConvertirSha256(modelo.PasswordHash);
+
                 if (modelo.EstadoId.HasValue)
                     usuarioEncontrado.EstadoId = modelo.EstadoId.Value;
 
@@ -291,5 +410,6 @@ namespace BLL.Servicios
                 throw;
             }
         }
+
     }
 }

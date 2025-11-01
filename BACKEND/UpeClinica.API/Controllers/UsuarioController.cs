@@ -57,6 +57,46 @@ namespace UpeClinica.API.Controllers
 
             return Ok(rsp);
         }
+
+        [HttpPost]
+        [Route("CambiarPassword")]
+        public async Task<IActionResult> CambiarPassword([FromBody] UsuarioCambiarPasswordDTO login)
+        {
+            var rsp = new Response<SesionDTO>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _usuarioServicio.CambiarPassword(login.Mail, login.PasswordHashAntigua, login.NuevaPassword, login.RepetirNuevaPassword);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
+
+        [HttpPost]
+        [Route("EnviarMailCambiarPassword")]
+        public async Task<IActionResult> EnviarMailCambiarPassword([FromBody] UsuarioCambiarPasswordPorMailDTO login)
+        {
+            var rsp = new Response<SesionDTO>();
+
+            try
+            {
+                rsp.Estado = true;
+                rsp.Valor = await _usuarioServicio.EnviarMailParaCambiarPassword(login.Mail);
+            }
+            catch (Exception ex)
+            {
+                rsp.Estado = false;
+                rsp.Mensaje = ex.Message;
+            }
+
+            return Ok(rsp);
+        }
         /// <summary>
         /// Falta que al crearlo asigne el ultimo accesso
         /// </summary>

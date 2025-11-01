@@ -6,7 +6,9 @@ import { Routes } from '@angular/router';
 // import { EvolucionesComponent } from './paciente/pages/evoluciones.component';
 // import { EvolucionFormComponent } from './paciente/pages/evolucion-form.component';
 // import { ProblemaFormComponent } from './paciente/pages/problema-form.component';
-import { LoginComponent } from './components/login/login.component';
+import { LoginComponent } from './components/login/login/login.component';
+import { ForgotPasswordComponent } from './components/login/forgot-password/forgot-password.component';
+import { RegistroComponent } from './components/login/registro/registro.component';
 
 export const routes: Routes = [
   // { path: '', redirectTo: 'pacientes', pathMatch: 'full' },
@@ -22,6 +24,8 @@ export const routes: Routes = [
   // { path: '**', redirectTo: '' }
 
   { path: 'login', component: LoginComponent },
+  { path: 'cambiar-password', component: ForgotPasswordComponent },
+  { path: 'crear-cuenta', component: RegistroComponent },
 
   {
     path: 'pages',
