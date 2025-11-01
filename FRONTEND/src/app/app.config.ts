@@ -13,6 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(),
-    { provide: API_URL, useValue: 'https://upe2025-g3-backend.onrender.com/api/' } 
+    { provide: API_URL, useValue: 'http://72.61.37.244:5259/api//' } 
   ]
 };
