@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { EvolucionService } from '../../services/evolucion.service';
-import { Evolucion } from '../../interfaces/evolucion';
-import { ProblemaService } from '../../services/problema.service';
-import { MedicoService } from '../../services/medico.service';
-import { EstadoProblemaService } from '../../services/estado-problema.service';
+import { EvolucionService } from '../../../services/evolucion.service';
+import { Evolucion } from '../../../interfaces/evolucion';
+import { ProblemaService } from '../../../services/problema.service';
+import { MedicoService } from '../../../services/medico.service';
+import { EstadoProblemaService } from '../../../services/estado-problema.service';
 
 interface ProblemaRow {
   id: number;
@@ -31,128 +31,8 @@ interface ProblemaMeta {
   standalone: true,
   selector: 'app-paciente-problemas',
   imports: [CommonModule, FormsModule, RouterModule],
-  template: `
-    <div class="card card-problemas">
-      <h3 class="h3">Problema</h3>
-      <div class="toolbar">
-       <button class="btn" type="button" (click)="nuevo()">
-  <span>Nuevo Problema</span>
-  <span class="material-icons">add_circle</span>
-</button>
-        <input [(ngModel)]="q" placeholder="Buscar..." />
-      </div>
-
-      <div *ngIf="loading" class="status">Cargando problemas...</div>
-      <div *ngIf="error" class="status error">{{ error }}</div>
-
-      <ng-container *ngIf="!loading && !error">
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Inicio</th>
-                <th>Medico</th>
-                <th>Estado</th>
-                <th>Evoluciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let p of pageItems()">
-                <td>{{ p.titulo }}</td>
-                <td>{{ p.inicio || '-' }}</td>
-                <td>{{ p.profesional || '-' }}</td>
-                <td>{{ p.estadoNombre || '-' }}</td>
-                <td>
-                  <a (click)="verEvoluciones()" title="Ver" class="link">Ver</a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="pager">
-          <div class="page-size">
-            <small>Items per page:</small>
-            <select [(ngModel)]="pageSize">
-              <option [ngValue]="5">5</option>
-              <option [ngValue]="10">10</option>
-            </select>
-          </div>
-          <div class="page-nav">
-            <small>{{ rangeLabel() }}</small>
-            <button class="btn-outline" (click)="prev()" [disabled]="page===0"><</button>
-            <button class="btn-outline" (click)="next()" [disabled]="(page+1)>=pagesCount()">></button>
-          </div>
-        </div>
-      </ng-container>
-    </div>
-  `,
-  styles: [`
-    .card-problemas{
-      margin-bottom:12px;
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-    .toolbar{
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-    .toolbar input{
-      flex:1;
-      border:1px solid var(--line);
-      border-radius:6px;
-      padding:8px 12px;
-    }
-    .status{
-      font-size:14px;
-      color:#4b5563;
-    }
-    .status.error{
-      color:#d63031;
-    }
-    .link{
-      cursor:pointer;
-      color:#4b5563;
-      text-decoration:underline;
-    }
-    .pager{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-top:auto;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-    .page-size, .page-nav{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    select{
-      border:1px solid var(--line);
-      border-radius:6px;
-      padding:6px 10px;
-    }
-      .btn{
-  display: inline-flex;
-  align-items: center;   /* centra verticalmente texto + icono */
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-}
-.material-icons{
-  font-size: 20px;       /* ajustá al tamaño que uses */
-  line-height: 1;        /* evita desalineo por altura de línea */
-}
-  /* Rayado de filas: una blanca, una gris */
-.table tbody tr:nth-child(odd)  { background: #ffffff; }
-.table tbody tr:nth-child(even) { background: #f5f6f8; }
-
-
-  `]
+  templateUrl: './problemas.component.html',
+  styleUrls: ['./problemas.component.css']
 })
 export class ProblemasComponent implements OnInit, OnDestroy {
   pacienteId = 0;

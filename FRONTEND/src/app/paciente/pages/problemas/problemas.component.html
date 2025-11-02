@@ -1,0 +1,55 @@
+<div class="card card-problemas">
+  <h3 class="h3">Problema</h3>
+  <div class="toolbar">
+    <button class="btn" type="button" (click)="nuevo()">
+      <span>Nuevo Problema</span>
+      <span class="material-icons">add_circle</span>
+    </button>
+    <input [(ngModel)]="q" placeholder="Buscar..." />
+  </div>
+
+  <div *ngIf="loading" class="status">Cargando problemas...</div>
+  <div *ngIf="error" class="status error">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Inicio</th>
+            <th>Medico</th>
+            <th>Estado</th>
+            <th>Evoluciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pageItems()">
+            <td>{{ p.titulo }}</td>
+            <td>{{ p.inicio || '-' }}</td>
+            <td>{{ p.profesional || '-' }}</td>
+            <td>{{ p.estadoNombre || '-' }}</td>
+            <td>
+              <a (click)="verEvoluciones()" title="Ver" class="link">Ver</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <div class="page-size">
+        <small>Items per page:</small>
+        <select [(ngModel)]="pageSize">
+          <option [ngValue]="5">5</option>
+          <option [ngValue]="10">10</option>
+        </select>
+      </div>
+      <div class="page-nav">
+        <small>{{ rangeLabel() }}</small>
+        <button class="btn-outline" (click)="prev()" [disabled]="page === 0"><</button>
+        <button class="btn-outline" (click)="next()" [disabled]="(page + 1) >= pagesCount()">></button>
+      </div>
+    </div>
+  </ng-container>
+</div>

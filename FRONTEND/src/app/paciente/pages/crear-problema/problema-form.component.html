@@ -1,0 +1,35 @@
+<div class="card card-problema-form">
+  <h3 class="h3">Problemas</h3>
+  <div class="modal-grid">
+    <label>
+      <span>Título</span>
+      <input
+        [(ngModel)]="titulo"
+        name="titulo"
+        type="text"
+        placeholder="Escribí el nombre del problema"
+        list="sugerencias-problema"
+      />
+      <datalist id="sugerencias-problema">
+        <option *ngFor="let p of opcionesTitulo" [value]="p.titulo || ''"></option>
+      </datalist>
+    </label>
+    <label>
+      <span>Estado</span>
+      <select [(ngModel)]="estadoId" name="estadoId">
+        <option *ngFor="let e of estados" [ngValue]="e.id">{{ e.nombre }}</option>
+      </select>
+    </label>
+    <div class="full form-edit">
+      <a href="#" (click)="$event.preventDefault()">Editar</a>
+    </div>
+    <label class="full form-description">
+      <span>Descripcion</span>
+      <textarea rows="6" [(ngModel)]="descripcion" name="descripcion"></textarea>
+    </label>
+  </div>
+  <div class="form-actions">
+    <button class="btn-outline" type="button" (click)="cancelar()">Cancelar</button>
+    <button class="btn" type="button" (click)="crear()">Crear</button>
+  </div>
+</div>

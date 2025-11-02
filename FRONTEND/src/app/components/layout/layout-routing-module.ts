@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { UsuarioComponent } from './pages/usuario/usuario.component';
-import { ProblemasComponent } from '../../paciente/pages/problemas.component';
-import { ProblemaFormComponent } from '../../paciente/pages/problema-form.component';
-import { EvolucionesComponent } from '../../paciente/pages/evoluciones.component';
-import { EvolucionFormComponent } from '../../paciente/pages/evolucion-form.component';
+import { ProblemasComponent } from '../../paciente/pages/problemas/problemas.component';
+import { ProblemaFormComponent } from '../../paciente/pages/crear-problema/problema-form.component';
+import { EvolucionesComponent } from '../../paciente/pages/evoluciones/evoluciones.component';
+import { EvolucionFormComponent } from '../../paciente/pages/crear-evolucion/evolucion-form.component';
 import { ResumenUsuarioComponent } from '../resumen-usuario/resumen-usuario.component';
 import { PlantillaComponent } from '../plantilla/crear-plantilla/plantilla';
 import { ListaPlantillasComponent } from '../plantilla/lista-plantillas/lista-plantillas';
