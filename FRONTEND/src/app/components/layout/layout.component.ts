@@ -47,8 +47,8 @@ export class LayoutComponent implements OnDestroy {
   }
 
   private updateViewportFlags(){
-    this.isDesktop = window.innerWidth >= 960; // md breakpoint
-    this.isExpanded = this.isDesktop && this.isPacienteCtx ? true : false;
+    this.isDesktop = window.innerWidth >= 960;
+    this.isExpanded = this.isDesktop ? true : false;
   }
 
   toggleSidenav(){
@@ -73,15 +73,15 @@ export class LayoutComponent implements OnDestroy {
   }
 
   pacienteRoute(seg: string): any[] {
-    return this.pacienteId ? ['/pages', 'pacientes', this.pacienteId, seg] : ['/pages'];
+    return this.pacienteId ? ['/pages', 'paciente', this.pacienteId, seg] : ['/pages'];
   }
 
   private updateContext(url: string): void {
-    const match = url.match(/\/pages\/pacientes\/(\d+)/);
+    const match = url.match(/\/pages\/paciente\/(\d+)/);
     const id = match ? Number(match[1]) : null;
-    const isCtx = /\/pages\/pacientes\/\d+\//.test(url);
+    const isCtx = /\/pages\/paciente\/\d+\//.test(url);
     this.isPacienteCtx = !!(isCtx && id);
-    this.isExpanded = this.isDesktop && this.isPacienteCtx ? true : false;
+    this.isExpanded = this.isDesktop ? true : false;
     if (!id) {
       this.resetPaciente();
       return;
@@ -99,9 +99,6 @@ export class LayoutComponent implements OnDestroy {
     this.pacienteDni = '';
     this.pacienteHC = '';
     this.pacienteIniciales = '';
-    if (!this.isPacienteCtx) {
-      this.isExpanded = false;
-    }
   }
 
   private loadPaciente(id: number): void {

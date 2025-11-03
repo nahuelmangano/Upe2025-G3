@@ -47,32 +47,46 @@
           <span class="nav-link disabled"><span class="material-icons">dashboard</span>Resumen</span>
           <span class="nav-link disabled"><span class="material-icons">assignment</span>Indicaciones</span>
           <a class="nav-link" [routerLink]="pacienteRoute('problemas')" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">medical_information</span> Problemas</a>
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span
+              class="material-icons">medical_information</span> Problemas</a>
           <a class="nav-link" [routerLink]="pacienteRoute('evoluciones')" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">timeline</span>Evoluciones</a>
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span
+              class="material-icons">timeline</span>Evoluciones</a>
           <span class="nav-link disabled"><span class="material-icons">description</span>Documentos y estudios</span>
           <a class="nav-link" [routerLink]="['/pages', 'mis-plantillas']" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span class="material-icons">content_copy</span>Plantillas</a>
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span
+              class="material-icons">content_copy</span>Plantillas</a>
         </nav>
       </div>
     </ng-container>
 
     <ng-template #defaultNav>
-      <mat-nav-list class="default-nav">
-        <mat-list-item>
-          <a routerLink="/pages/usuario" routerLinkActive="active" class="basic-link" (click)="onNavClick(sidenav)"
-            [routerLinkActiveOptions]="{ exact: true }">
-            <mat-icon class="icono-usuario">group</mat-icon>
-            <span>Usuarios</span>
-          </a>
-        </mat-list-item>
-        <mat-list-item>
-          <a routerLink="/pages/mis-plantillas" class="basic-link" (click)="onNavClick(sidenav)">
-            <mat-icon class="icono-usuario">description</mat-icon>
-            <span>Plantillas</span>
-          </a>
-        </mat-list-item>
-      </mat-nav-list>
+      <nav class="nav default-nav">
+        <span class="nav-link" [style.display]="!isPacienteCtx ? '' : 'none'">
+          <span class="material-icons">person</span> Pacientes
+        </span>
+        <span class="nav-link" [style.display]="isPacienteCtx ? '' : 'none'">
+          <span class="material-icons">dashboard</span> Resumen
+        </span>
+        <span class="nav-link" [style.display]="isPacienteCtx ? '' : 'none'">
+          <span class="material-icons">assignment</span> Indicaciones
+        </span>
+        <a class="nav-link" [routerLink]="pacienteRoute('problemas')" [style.display]="isPacienteCtx ? '' : 'none'"
+          [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">
+          <span class="material-icons">medical_information</span> Problemas
+        </a>
+        <a class="nav-link" [routerLink]="pacienteRoute('evoluciones')" [style.display]="isPacienteCtx ? '' : 'none'"
+          [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">
+          <span class="material-icons">timeline</span> Evoluciones
+        </a>
+        <span class="nav-link" [style.display]="isPacienteCtx ? '' : 'none'">
+          <span class="material-icons">description</span> Documentos y estudios
+        </span>
+        <a class="nav-link" [routerLink]="['/pages', 'mis-plantillas']" routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">
+          <span class="material-icons">content_copy</span> Plantillas
+        </a>
+      </nav>
     </ng-template>
   </mat-sidenav>
 

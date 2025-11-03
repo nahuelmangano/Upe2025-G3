@@ -1,5 +1,5 @@
 export interface ObraSocial {
-    id: number,
+    id?: number,
     nombre: string,
     activo: number
 }
