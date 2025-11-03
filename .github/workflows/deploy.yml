@@ -30,7 +30,7 @@ jobs:
   build-frontend:
     name: Build & Push Frontend
     needs: filter
-    if: needs.filter.outputs.frontend == 'true'
+    if: ${{ needs.filter.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
   build-backend:
     name: Build & Push Backend
     needs: filter
-    if: needs.filter.outputs.backend == 'true'
+    if: ${{ needs.filter.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,34 +76,35 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/upe2025-backend:${{ github.sha }}
 
   deploy:
-  name: Deploy en VPS
-  needs: [filter, build-frontend, build-backend]
-  if: ${{ always() && (needs.filter.outputs.frontend == 'true' || needs.filter.outputs.backend == 'true') }}
-  runs-on: ubuntu-latest
-  steps:
-    - name: Preparar known_hosts
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-        chmod 644 ~/.ssh/known_hosts
+    name: Deploy en VPS
+    needs: [filter, build-frontend, build-backend]
+    # Ejecuta el deploy aunque algún build haya quedado "skipped",
+    # pero solo si cambió FRONTEND o BACKEND.
+    if: ${{ always() && (needs.filter.outputs.frontend == 'true' || needs.filter.outputs.backend == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preparar known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
-    - name: Deploy por SSH
-      uses: appleboy/ssh-action@v1.1.0
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          set -e
-          cd /opt/upe/compose
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Deploy por SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/upe/compose
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
-          SERVICES=""
-          if [ "${{ needs.filter.outputs.frontend }}" = "true" ]; then SERVICES="$SERVICES frontend"; fi
-          if [ "${{ needs.filter.outputs.backend }}" = "true" ]; then SERVICES="$SERVICES backend"; fi
+            SERVICES=""
+            if [ "${{ needs.filter.outputs.frontend }}" = "true" ]; then SERVICES="$SERVICES frontend"; fi
+            if [ "${{ needs.filter.outputs.backend }}" = "true" ]; then SERVICES="$SERVICES backend"; fi
 
-          echo "Actualizando servicios: $SERVICES"
-          docker compose pull $SERVICES
-          docker compose up -d $SERVICES
-          docker image prune -f
-
+            echo "Actualizando servicios: $SERVICES"
+            docker compose pull $SERVICES
+            docker compose up -d $SERVICES
+            docker image prune -f
