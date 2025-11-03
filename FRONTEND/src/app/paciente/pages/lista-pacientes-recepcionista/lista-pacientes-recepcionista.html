@@ -1,0 +1,70 @@
+<mat-card class="main-card">
+    <mat-card-content class="dashboard-card-content">
+        <h2 class="page-title color-primario">Listado de Pacientes</h2>
+        <mat-divider></mat-divider>
+        <div class="card-header">
+            <mat-card-title class="card-title">
+                <div class="title-content">
+                    <button mat-raised-button color="primary" (click)="nuevoPaciente()">
+                        <mat-icon mat-list-icon>add</mat-icon> Nuevo Paciente
+                    </button>
+                </div>
+            </mat-card-title>
+
+            <mat-form-field appearance="fill" class="search-field">
+                <mat-label>Buscar</mat-label>
+                <input matInput (keyup)="aplicarFiltroTabla($event)" #input>
+            </mat-form-field>
+        </div>
+        <div class="mat-elevation-z2">
+            <div class="table-container">
+                <table mat-table [dataSource]="dataListaPacientes" class="table">
+
+                    <ng-container matColumnDef="dni">
+                        <th mat-header-cell *matHeaderCellDef class="centrado">DNI</th>
+                        <td mat-cell *matCellDef="let paciente" class="centrado">{{ paciente.dni }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="nombreCompleto" class="col-nombre">
+                        <th mat-header-cell *matHeaderCellDef class="centrado">Nombre Completo</th>
+                        <td mat-cell *matCellDef="let paciente" class="centrado">{{ paciente.nombre }} {{ paciente.apellido }}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="telefono1">
+                        <th mat-header-cell *matHeaderCellDef class="centrado">Teléfono</th>
+                        <td mat-cell *matCellDef="let paciente" class="centrado">{{ paciente.telefono1 }}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="email">
+                        <th mat-header-cell *matHeaderCellDef class="centrado">Email</th>
+                        <td mat-cell *matCellDef="let paciente" class="centrado">{{ paciente.email || 'No registrado' }}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="domicilioCiudad">
+                        <th mat-header-cell *matHeaderCellDef class="centrado">Ciudad</th>
+                        <td mat-cell *matCellDef="let paciente" class="centrado">{{ paciente.domicilioCiudad || 'No registrado' }}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="editar">
+                        <th mat-header-cell *matHeaderCellDef class="centrado">Editar</th>
+                        <td mat-cell *matCellDef="let paciente" class="centrado">
+                            <button mat-icon-button color="primary" (click)="editarPaciente(paciente)"
+                                aria-label="Editar Paciente">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="6">No se encontraron pacientes.</td>
+                    </tr>
+                </table>
+            </div>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons [pageSize]="10" [length]="100"></mat-paginator>
+
+        </div>
+    </mat-card-content>
+</mat-card>

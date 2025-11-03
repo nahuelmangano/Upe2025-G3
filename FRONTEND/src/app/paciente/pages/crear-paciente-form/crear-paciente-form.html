@@ -1,0 +1,199 @@
+<mat-card class="main-card">
+    <mat-card-content class="dashboard-card-content">
+        <h1 class="page-title">{{tituloAccion}}</h1>
+
+        <form [formGroup]="formularioPaciente" class="patient-form">
+            <mat-divider></mat-divider>
+
+            <mat-card class="form-section">
+                <mat-card-title class="card-title">Datos Personales</mat-card-title>
+                <mat-card-content>
+                    <div class="form-grid datos-personales">
+
+                        <div class="nombre-completo">
+                            <mat-form-field appearance="outline" class="nombre">
+                                <mat-label>Nombre</mat-label>
+                                <input matInput formControlName="nombre">
+                                <mat-icon matSuffix>person</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="apellido">
+                                <mat-label>Apellido</mat-label>
+                                <input matInput formControlName="apellido">
+                                <mat-icon matSuffix>person</mat-icon>
+                            </mat-form-field>
+                        </div>
+                        <div class="form-grid">
+                            <mat-form-field appearance="outline">
+                                <mat-label>DNI</mat-label>
+                                <input matInput formControlName="dni">
+                                <mat-icon matSuffix>badge</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="flex-grow">
+                                <mat-label>Sexo</mat-label>
+                                <mat-select formControlName="sexoId">
+                                    <mat-option *ngFor="let item of listaSexos"
+                                        [value]="item.id">{{item.nombre}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Email</mat-label>
+                                <input matInput formControlName="email" type="email">
+                                <mat-icon matSuffix>email</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Nacionalidad</mat-label>
+                                <mat-select formControlName="nacionalidad">
+                                    <mat-option *ngFor="let item of listaNacionalidades"
+                                        [value]="item">{{item}}</mat-option>
+                                </mat-select>
+                                <mat-icon matSuffix>flag</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Grupo Sanguíneo</mat-label>
+                                <mat-select formControlName="grupoSanguineo">
+                                    <mat-option *ngFor="let item of listaGruposSanguineos"
+                                        [value]="item">{{item}}</mat-option>
+                                </mat-select>
+                                <mat-icon matSuffix>bloodtype</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Fecha de Nacimiento</mat-label>
+                                <input matInput [matDatepicker]="picker" formControlName="fechaNac">
+                                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Teléfono Principal</mat-label>
+                                <input matInput formControlName="telefono1">
+                                <mat-icon matSuffix>phone</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Teléfono Secundario</mat-label>
+                                <input matInput formControlName="telefono2">
+                                <mat-icon matSuffix>phone</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Ocupación</mat-label>
+                                <input matInput formControlName="ocupacion">
+                                <mat-icon matSuffix>work</mat-icon>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+            <mat-divider></mat-divider>
+
+            <mat-card class="form-section">
+                <mat-card-title class="card-title">Domicilio</mat-card-title>
+                <mat-card-content>
+                    <div class="form-grid">
+
+                        <div class="field-with-actions">
+                            <mat-form-field appearance="outline" class="flex-grow">
+                                <mat-label>País</mat-label>
+                                <mat-select formControlName="pais">
+                                    <mat-option *ngFor="let pais of listaPaises" [value]="pais">{{ pais.country_name_es }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="field-with-actions">
+                            <mat-form-field appearance="outline" class="flex-grow">
+                                <mat-label>Provincia</mat-label>
+                                <mat-select formControlName="provincia">
+                                    <mat-option *ngFor="let provincia of listaProvincias" [value]="provincia">{{ provincia.state_name }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="field-with-actions">
+                            <mat-form-field appearance="outline" class="flex-grow">
+                                <mat-label>Ciudad</mat-label>
+                                <mat-select formControlName="ciudad">
+                                    <mat-option *ngFor="let ciudad of listaCiudades" [value]="ciudad">{{ ciudad }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="field-with-actions">
+                            <mat-form-field appearance="outline" class="flex-grow">
+                                <mat-label>Calle</mat-label>
+                                <mat-select formControlName="calle">
+                                    <mat-option *ngFor="let calle of listaCalles" [value]="calle">{{ calle
+                                        }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <button class="button-domicilio" mat-icon-button color="primary"
+                                (click)="abrirModalSimple('Calle', 'Nombre de la Calle')" matTooltip="Agregar Calle" [disabled]="formularioPaciente.disabled">
+                                <mat-icon>add</mat-icon>
+                            </button>
+                        </div>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Altura</mat-label>
+                            <input matInput formControlName="altura" type="number">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Piso</mat-label>
+                            <input matInput formControlName="piso">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Departamento</mat-label>
+                            <input matInput formControlName="departamento">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Código Postal</mat-label>
+                            <input matInput formControlName="codigoPostal">
+                        </mat-form-field>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+            <mat-divider></mat-divider>
+
+            <mat-card class="form-section">
+                <mat-card-title class="card-title">Obra Social</mat-card-title>
+                <mat-card-content>
+                    <div class="form-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Obra Social</mat-label>
+                            <mat-select formControlName="obraSocialId">
+                                <mat-option *ngFor="let item of listaObrasSociales"
+                                    [value]="item.id">{{item.nombre}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Número de Afiliado</mat-label>
+                            <input matInput formControlName="numeroAfiliado">
+                        </mat-form-field>
+                    </div>
+                    <div class="field-with-actions botones-obra-social">
+                        <button mat-stroked-button color="primary" (click)="abrirModalObraSocial()" [disabled]="formularioPaciente.disabled">Agregar Obra
+                            Social</button>
+                        <button mat-stroked-button color="accent" (click)="abrirModalObraSocialSeleccionada()"
+                            [disabled]="!getObraSocialSeleccionada() || formularioPaciente.disabled">
+                            Editar Obra Social
+                        </button>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <mat-divider></mat-divider>
+
+            <div class="actions title-content">
+                <button mat-raised-button color="warn" type="button"
+                    (click)="cancelarGuardarPaciente()" [disabled]="formularioPaciente.disabled">Cancelar</button>
+                <button mat-raised-button color="primary" (click)="guardarPaciente()" [disabled]="formularioPaciente.disabled">Guardar Paciente</button>
+            </div>
+
+        </form>
+    </mat-card-content>
+</mat-card>

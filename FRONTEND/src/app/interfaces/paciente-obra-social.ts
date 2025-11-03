@@ -1,5 +1,5 @@
 export interface PacienteObraSocial {
-    id: number,
+    id?: number,
     vigenteDesde?: Date | null,
     activo: number,
     pacienteId: number,

@@ -11,18 +11,24 @@ export class PacienteService {
   private apiUrl = inject(API_URL);
   private urlApi = this.apiUrl + 'Paciente/';
 
-  lista(): Observable<ResponseApi> {
-    return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
-  }
-
-  obtener(id: number): Observable<Paciente | null> {
-    return this.lista().pipe(
-      map((res: ResponseApi) => {
-        const items: Paciente[] = (res?.valor || []) as Paciente[];
-        return items.find(p => p.id === id) || null;
-      })
-    );
-  }
+    lista(): Observable<ResponseApi> {
+        return this.http.get<ResponseApi>(this.urlApi + 'Lista');
+    }
+    obtener(id: number): Observable<Paciente | null> {
+      return this.lista().pipe(
+        map((res: ResponseApi) => {
+          const items: Paciente[] = (res?.valor || []) as Paciente[];
+          return items.find(p => p.id === id) || null;
+        })
+      );
+    }
+    crear(request: Paciente): Observable<ResponseApi> {
+        return this.http.post<ResponseApi>(this.urlApi + 'Crear', request);
+    }
+    editar(request: Paciente): Observable<ResponseApi> {
+        return this.http.put<ResponseApi>(this.urlApi + 'Editar', request);
+    }
+    eliminar(id: number): Observable<ResponseApi> {
+        return this.http.put<ResponseApi>(this.urlApi + 'Eliminar/' + id, {});
+    } 
 }
-
-
