@@ -8,5 +8,6 @@
 
 # Misc
 .git
-Dockerfile
+.gitignore
+Dockerfile*
 docker-compose.*
