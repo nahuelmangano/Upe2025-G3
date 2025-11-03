@@ -52,48 +52,37 @@ namespace BLL.Servicios
 
         public async Task<SesionDTO> ValidarCredenciales(string mail, string passwordHash)
         {
+
+            if (string.IsNullOrWhiteSpace(mail) && string.IsNullOrWhiteSpace(passwordHash))
+                throw new Exception("Debe ingresar datos!");
+
+            else if (string.IsNullOrWhiteSpace(mail))
+                throw new Exception("Debe ingresar un mail");
+
+            else if (!Recursos.EsMailValido(mail))
+                throw new Exception("Debe ingresar un mail valido");
+
+            else if (string.IsNullOrWhiteSpace(passwordHash))
+                throw new Exception("Debe ingresar un password");
+
             try
             {
-                if (string.IsNullOrWhiteSpace(mail) && string.IsNullOrWhiteSpace(passwordHash))
-                    throw new Exception("Debe ingresar datos!");
-
-                else if (string.IsNullOrWhiteSpace(mail))
-                    throw new Exception("Debe ingresar un mail");
-
-                else if (!Recursos.EsMailValido(mail))
-                    throw new Exception("Debe ingresar un mail valido");
-
-                else if (string.IsNullOrWhiteSpace(passwordHash))
-                    throw new Exception("Debe ingresar un password");
-
-                // si no debe ingresar
-
-                var queryUsuario1 = await _usuarioRepositorio.Consultar(usuario =>
-                        usuario.Mail == mail
-                    );
-
-                Usuario devolverUsuario = queryUsuario1.Include(rol => rol.Rol).First();
-
-                if (devolverUsuario.EstadoId == 1 || devolverUsuario.EstadoId == 3 || devolverUsuario.EstadoId == 4)
-                    throw new Exception("Tiene prohibido el acceso");
-
-                // si ya esta registrado
-                passwordHash = Recursos.ConvertirSha256(passwordHash);
-
                 var queryUsuario = await _usuarioRepositorio.Consultar(usuario =>
-                        usuario.Mail == mail &&
-                        usuario.PasswordHash == passwordHash
-                    );
+                        usuario.Mail == mail
+                );
 
                 if (queryUsuario.FirstOrDefault() == null)
                     throw new Exception("El usuario no existe");
 
-                Usuario devolverUsuario2 = queryUsuario.Include(rol => rol.Rol).First();
+                Usuario devolverUsuario = queryUsuario.Include(rol => rol.Rol).First();
 
-                if (devolverUsuario.EstadoId == 1 || devolverUsuario2.EstadoId == 3 || devolverUsuario2.EstadoId == 4)
+                if (devolverUsuario.EstadoId == 1 || devolverUsuario.EstadoId == 3 || devolverUsuario.EstadoId == 4)
                     throw new Exception("Tiene prohibido el acceso");
 
-                return _mapper.Map<SesionDTO>(devolverUsuario2);
+                //si ya esta registrado
+                passwordHash = Recursos.ConvertirSha256(devolverUsuario.PasswordHash);
+
+                return _mapper.Map<SesionDTO>(devolverUsuario);
             }
             catch (Exception)
             {
@@ -173,7 +162,7 @@ namespace BLL.Servicios
 
                 Usuario devolverUsuarioBuscado = buscarUsuario.Include(rol => rol.Rol).First();
 
-                if (devolverUsuarioBuscado.EstadoId == 1 || devolverUsuarioBuscado.EstadoId == 3 || devolverUsuarioBuscado.EstadoId == 4)
+                if (devolverUsuarioBuscado.EstadoId == 3 || devolverUsuarioBuscado.EstadoId == 4)
                     throw new Exception("No se puede enviar el Mail porque tiene prohibido el acceso");
 
                 devolverUsuarioBuscado.EstadoId = 1;
