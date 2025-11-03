@@ -27,8 +27,8 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Listen on port 8080 inside the container by default
-ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_URLS=http://+:5259
 
-EXPOSE 8080
+EXPOSE 5259
 
 ENTRYPOINT ["dotnet", "UpeClinica.API.dll"]
