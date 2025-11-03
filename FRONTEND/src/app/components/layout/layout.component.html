@@ -4,6 +4,11 @@
     <button mat-icon-button (click)="toggleSidenav()">
       <mat-icon class="barra">menu</mat-icon>
     </button>
+    <span class="toolbar-spacer"></span>
+    <button mat-stroked-button color="primary" class="logout-btn" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Cerrar sesión
+    </button>
   </mat-toolbar-row>
 </mat-toolbar>
 
@@ -17,7 +22,7 @@
           <div class="avatar" aria-hidden="true">{{ pacienteIniciales || 'P' }}</div>
           <div class="patient-name">{{ pacienteNombre || 'Nombre del paciente' }}</div>
           <div class="actions">
-            <button class="btn-outline light" type="button"><span class="material-icons">
+            <button class="btn-outline light" type="button" (click)="logout()"><span class="material-icons">
                 logout
               </span></button>
             <button class="btn-outline light" type="button">Datos</button>

@@ -194,3 +194,14 @@
   min-height: calc(100vh - 64px);
   background: #f5f6ff;
 }
+
+.toolbar-spacer{
+  flex:1 1 auto;
+}
+
+.logout-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-weight:500;
+}
