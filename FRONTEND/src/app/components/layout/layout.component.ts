@@ -7,6 +7,7 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { PacientesService } from '../../services-old/pacientes.service';
 import { MatSidenav } from '@angular/material/sidenav';
+import { UtilidadService } from '../../reutilizable/utilidad.service';
 
 @Component({
   selector: 'app-layout',
@@ -28,7 +29,11 @@ export class LayoutComponent implements OnDestroy {
   private routerSub?: Subscription;
   private pacienteSub?: Subscription;
 
-  constructor(private router: Router, private pacientesSrv: PacientesService){
+  constructor(
+    private router: Router,
+    private pacientesSrv: PacientesService,
+    private utilidadSrv: UtilidadService
+  ){
     this.updateViewportFlags();
     this.updateContext(this.router.url);
     this.routerSub = this.router.events
@@ -48,6 +53,11 @@ export class LayoutComponent implements OnDestroy {
 
   toggleSidenav(){
     this.isExpanded = !this.isExpanded;
+  }
+
+  logout(): void {
+    this.utilidadSrv.eliminarSesionUsuario();
+    this.router.navigate(['/login']);
   }
 
   ngOnDestroy(): void {
