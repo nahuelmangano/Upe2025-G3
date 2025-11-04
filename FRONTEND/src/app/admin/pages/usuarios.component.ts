@@ -55,7 +55,7 @@ import { firstValueFrom } from 'rxjs';
 
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px">
           <div style="display:flex; gap:8px; align-items:center">
-            <small>Items per page:</small>
+            <small>Items por página:</small>
             <select [(ngModel)]="pageSize">
               <option [ngValue]="5">5</option>
               <option [ngValue]="10">10</option>
@@ -177,7 +177,7 @@ export class UsuariosComponent implements OnInit {
   }
   pagesCount(): number { return Math.max(1, Math.ceil(this.filtradas().length / this.pageSize)); }
   pageItems(): Usuario[] { const s = this.page * this.pageSize; return this.filtradas().slice(s, s + this.pageSize); }
-  rangeLabel(): string { const t = this.filtradas().length; const s = t ? this.page * this.pageSize + 1 : 0; const e = Math.min(t, (this.page + 1) * this.pageSize); return `${s} - ${e} of ${t}`; }
+  rangeLabel(): string { const t = this.filtradas().length; const s = t ? this.page * this.pageSize + 1 : 0; const e = Math.min(t, (this.page + 1) * this.pageSize); return `${s} - ${e} de ${t}`; }
   prev(): void { if (this.page>0) this.page--; }
   next(): void { if ((this.page+1) < this.pagesCount()) this.page++; }
 

@@ -3,7 +3,7 @@ export interface Usuario {
     nombre: string,
     apellido: string,
     mail: string,
-    passwordHash: string,
+    passwordHash?: string | null,
     estadoId?: number | null,
     estadoNombre?: string | null,
     rolId: number,
