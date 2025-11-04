@@ -1,19 +1,22 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, InjectionToken} from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-
+import { API_URL } from './core/tokens/api-url.token';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 import { routes } from './app.routes';
+import { environment } from '@env/environment';
 
-// creamos un injection token para la url de la api
-export const API_URL = new InjectionToken<string>('API_URL');
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
-    //{ provide: API_URL, useValue: 'http://localhost:5259/api/' }
-    { provide: API_URL, useValue: '/api/' } 
+    provideHttpClient(withInterceptorsFromDi()),
+
+    { provide: API_URL, useValue: environment.apiUrl },
+    { provide: MAT_DATE_LOCALE, useValue: 'es' },
+
+    provideMomentDateAdapter()
   ]
 };

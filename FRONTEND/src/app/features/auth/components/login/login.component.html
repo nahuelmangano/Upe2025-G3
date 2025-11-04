@@ -1,0 +1,111 @@
+<div class="body">
+    <div class="login-container">
+        <!-- Sección izquierda: Bienvenida -->
+        <div class="welcome-section">
+            <div class="medical-icons">
+                <mat-icon class="icon-medical icon-1">local_hospital</mat-icon>
+                <mat-icon class="icon-medical icon-2">favorite</mat-icon>
+                <mat-icon class="icon-medical icon-3">medical_services</mat-icon>
+                <mat-icon class="icon-medical icon-4">healing</mat-icon>
+                <mat-icon class="icon-medical icon-5">vaccines</mat-icon>
+                <mat-icon class="icon-medical icon-6">monitor_heart</mat-icon>
+            </div>
+            <div class="welcome-content">
+                <div class="title-container">
+                    <mat-icon class="title-icon">local_hospital</mat-icon>
+                    <h1 class="welcome-title">Bienvenido a UPE Clínica</h1>
+                </div>
+                <p class="welcome-text">
+                    <mat-icon class="text-icon">medical_information</mat-icon>
+                    Sistema integral de gestión médica diseñado para facilitar 
+                    el seguimiento y cuidado de tus pacientes.
+                </p>
+                <p class="welcome-text">
+                    <mat-icon class="text-icon">description</mat-icon>
+                    Accede a todas las herramientas necesarias para administrar 
+                    evoluciones, problemas clínicos y documentación médica de 
+                    forma eficiente y segura.
+                </p>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <mat-icon>history_edu</mat-icon>
+                        <span>Historia Clínica</span>
+                    </div>
+                    <div class="feature-item">
+                        <mat-icon>assignment</mat-icon>
+                        <span>Evoluciones</span>
+                    </div>
+                    <div class="feature-item">
+                        <mat-icon>health_and_safety</mat-icon>
+                        <span>Problemas Clínicos</span>
+                    </div>
+                    <div class="feature-item">
+                        <mat-icon>lock</mat-icon>
+                        <span>Datos Seguros</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección derecha: Formulario de Login -->
+        <div class="login-section">
+            <mat-card class="loginCard" style="background-color: white;">
+                <div class="header">
+                    <mat-icon class="header-icon">lock_person</mat-icon>
+                    <h2>Iniciar Sesión</h2>
+                    <p class="header-subtitle">Accede a tu historia clínica</p>
+                </div>
+                <mat-card-content style="padding-bottom: 15px;">
+
+                    <form [formGroup]="formularioLogin" (ngSubmit)="iniciarSesion()">
+
+                        <mat-form-field class="full-width" appearance="outline">
+                            <mat-label>Email</mat-label>
+                            <input matInput formControlName="email" autocomplete="off" />
+                            <mat-icon matSuffix>mail</mat-icon>
+                        </mat-form-field>
+
+                        <mat-form-field class="full-width" appearance="outline">
+                            <mat-label>Constraseña</mat-label>
+                            <input [type]="ocultarPassword ? 'password' : 'text'" matInput formControlName="password"
+                                autocomplete="off" />
+
+                            <button mat-icon-button matSuffix (click)="ocultarPassword = !ocultarPassword" type="button">
+                                <mat-icon matSuffix>{{ocultarPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                            </button>
+                        </mat-form-field>
+
+                        <div class="remember-password-container">
+                            <mat-checkbox formControlName="recordar" class="remember-checkbox">
+                                Recordar
+                            </mat-checkbox>
+                            <span class="spacer"></span>
+                            <a class="link-password" routerLink="/cambiar-password" mat-button tabindex="0">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+
+                        <button mat-raised-button color="primary" class="submit-button" type="submit"
+                            [disabled]="formularioLogin.invalid">
+                            <mat-icon>login</mat-icon>
+                            <span>Ingresar</span>
+                        </button>
+
+                        <div class="links-container">
+                            <a class="link-register" routerLink="/crear-cuenta" mat-button tabindex="0">
+                                ¿No tenes una cuenta? Regístrate
+                            </a>
+                        </div>
+                    </form>
+
+                </mat-card-content>
+
+                <mat-card-footer>
+                    @if (mostrarLoading) {
+                    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                    }
+                </mat-card-footer>
+            </mat-card>
+        </div>
+    </div>
+</div>
