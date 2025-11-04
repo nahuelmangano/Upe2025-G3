@@ -12,11 +12,7 @@
     </div>
     <mat-form-field appearance="outline" class="descripcion-plantilla">
       <mat-label>Descripción de la Plantilla</mat-label>
-      <textarea
-        matInput
-        formControlName="descripcion"
-        placeholder="Breve descripción de la plantilla"
-        rows="2">
+      <textarea matInput formControlName="descripcion" placeholder="Breve descripción de la plantilla" rows="2">
       </textarea>
       <mat-hint>Explicá para qué sirve la plantilla (opcional)</mat-hint>
     </mat-form-field>
@@ -49,7 +45,8 @@
         </div>
 
         <div class="campo-lista" formArrayName="campos">
-          <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroupName]="j" class="campo-item">
+          <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroupName]="j"
+            class="campo-item">
             <mat-icon class="drag-icon">drag_indicator</mat-icon>
             <mat-icon class="tipo-icono" matTooltip="{{ campo.get('tipoCampoNombre')?.value }}">
               {{ getIconoTipoCampo(campo.get('tipoCampoNombre')?.value) }}
@@ -64,14 +61,16 @@
             </mat-form-field>
             <mat-form-field appearance="outline" class="campo-tipo">
               <mat-label>Tipo de Campo</mat-label>
-              <mat-select formControlName="tipoCampoId" (selectionChange)="onTipoCampoChange(i, j, $event.value)" required>
+              <mat-select formControlName="tipoCampoId" (selectionChange)="onTipoCampoChange(i, j, $event.value)"
+                required>
                 <mat-option *ngFor="let tipo of tiposCampos" [value]="tipo.id">{{ tipo.nombre }}</mat-option>
               </mat-select>
               <mat-error *ngIf="campo.get('tipoCampoId')?.hasError('required')">
                 Seleccioná un tipo de campo
               </mat-error>
             </mat-form-field>
-            <mat-form-field *ngIf="esCampoConOpciones(campo.get('tipoCampoNombre')?.value)" appearance="outline" class="campo-opciones">
+            <mat-form-field *ngIf="esCampoConOpciones(campo.get('tipoCampoNombre')?.value)" appearance="outline"
+              class="campo-opciones">
               <mat-label>Opciones (separadas por coma)</mat-label>
               <input matInput formControlName="opciones" placeholder="Ej: Masculino, Femenino, Otro" />
             </mat-form-field>
@@ -83,10 +82,7 @@
       </mat-card>
     </div>
     <div class="botones-finales">
-      <button 
-        mat-stroked-button 
-        (click)="cancelar()" 
-        *ngIf="modoEdicion">
+      <button mat-stroked-button (click)="cancelar()" *ngIf="modoEdicion">
         <mat-icon>close</mat-icon> Cancelar
       </button>
       <button mat-stroked-button (click)="previsualizar()" [disabled]="formulario.invalid">
@@ -98,24 +94,30 @@
       </button>
     </div>
   </div>
-<div class="tipos-campo-lista">
-  <h4 class="panel-titulo">Tipo de dato</h4>
-  <button *ngFor="let tipo of tiposCampos"
-          mat-stroked-button
-          class="btn-tipo"
-          [matTooltip]="getDescripcionTipoCampo(tipo.nombre)"
-          matTooltipPosition="right"
-          (click)="agregarCampoASeccionSeleccionada(tipo)">
-    <div class="tipo-contenido">
-      <mat-icon class="tipo-icono-grande">
-        {{ tipo.icono || getIconoTipoCampo(tipo.nombre) || 'widgets' }}
-      </mat-icon>
-      <div class="tipo-labels">
-        <span class="tipo-nombre">{{ tipo.nombre }}</span>
+  <div class="tipos-campo-lista">
+    <h4 class="panel-titulo">Tipo de dato</h4>
+    <mat-form-field appearance="outline" class="select-seccion">
+      <mat-label>Seleccionar Sección</mat-label>
+      <mat-select [(value)]="seccionSeleccionadaIndex" placeholder="Elegí una sección">
+        <mat-option *ngFor="let seccion of secciones.controls; let i = index" [value]="i">
+          {{ seccion.value.titulo || ('Sección ' + (i + 1)) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button *ngFor="let tipo of tiposCampos" mat-stroked-button class="btn-tipo"
+      [matTooltip]="getDescripcionTipoCampo(tipo.nombre)" matTooltipPosition="right"
+      (click)="agregarCampoASeccionSeleccionada(tipo)">
+      <div class="tipo-contenido">
+        <mat-icon class="tipo-icono-grande">
+          {{ tipo.icono || getIconoTipoCampo(tipo.nombre) || 'widgets' }}
+        </mat-icon>
+        <div class="tipo-labels">
+          <span class="tipo-nombre">{{ tipo.nombre }}</span>
+        </div>
       </div>
-    </div>
-  </button>
-</div>
+    </button>
+  </div>
 
 
 
@@ -142,16 +144,12 @@
           </mat-icon>
           <label class="preview-campo-label">{{ campo.etiqueta }}</label>
           <ng-container [ngSwitch]="getInputType(campo.tipoCampoNombre)">
-            <input *ngSwitchCase="'text'" type="text"
-                   class="preview-input" placeholder="Escribe aquí..." />
-            <textarea *ngSwitchCase="'textarea'" rows="3"
-                      class="preview-textarea" placeholder="Escribe aquí..."></textarea>
-            <input *ngSwitchCase="'number'" type="number"
-                   class="preview-input" placeholder="0" />
-            <input *ngSwitchCase="'decimal'" type="number" step="0.01"
-                   class="preview-input" placeholder="0.00" />
-            <input *ngSwitchCase="'datetime-local'" type="datetime-local"
-                   class="preview-input" />
+            <input *ngSwitchCase="'text'" type="text" class="preview-input" placeholder="Escribe aquí..." />
+            <textarea *ngSwitchCase="'textarea'" rows="3" class="preview-textarea"
+              placeholder="Escribe aquí..."></textarea>
+            <input *ngSwitchCase="'number'" type="number" class="preview-input" placeholder="0" />
+            <input *ngSwitchCase="'decimal'" type="number" step="0.01" class="preview-input" placeholder="0.00" />
+            <input *ngSwitchCase="'datetime-local'" type="datetime-local" class="preview-input" />
             <select *ngSwitchCase="'select'" class="preview-select">
               <option *ngFor="let opt of campo.opciones?.split(',')" [value]="opt.trim()">
                 {{ opt.trim() }}
@@ -166,14 +164,10 @@
               <input type="checkbox" class="preview-checkbox" />
               <span>Seleccionar</span>
             </label>
-            <input *ngSwitchCase="'file'" type="file"
-                   class="preview-input" />
-            <input *ngSwitchCase="'email'" type="email"
-                   class="preview-input" placeholder="correo@ejemplo.com" />
-            <input *ngSwitchCase="'tel'" type="tel"
-                   class="preview-input" placeholder="Ej: 1123456789" />
-            <input *ngSwitchDefault type="text"
-                   class="preview-input" placeholder="Campo estándar" />
+            <input *ngSwitchCase="'file'" type="file" class="preview-input" />
+            <input *ngSwitchCase="'email'" type="email" class="preview-input" placeholder="correo@ejemplo.com" />
+            <input *ngSwitchCase="'tel'" type="tel" class="preview-input" placeholder="Ej: 1123456789" />
+            <input *ngSwitchDefault type="text" class="preview-input" placeholder="Campo estándar" />
           </ng-container>
         </div>
       </form>
