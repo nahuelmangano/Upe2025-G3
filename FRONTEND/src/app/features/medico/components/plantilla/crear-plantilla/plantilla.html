@@ -99,23 +99,32 @@
     </div>
   </div>
 <div class="tipos-campo-lista">
-  <h4 class="panel-titulo">Tipo de dato</h4>
-  <button *ngFor="let tipo of tiposCampos"
-          mat-stroked-button
-          class="btn-tipo"
-          [matTooltip]="getDescripcionTipoCampo(tipo.nombre)"
-          matTooltipPosition="right"
-          (click)="agregarCampoASeccionSeleccionada(tipo)">
-    <div class="tipo-contenido">
-      <mat-icon class="tipo-icono-grande">
-        {{ tipo.icono || getIconoTipoCampo(tipo.nombre) || 'widgets' }}
-      </mat-icon>
-      <div class="tipo-labels">
-        <span class="tipo-nombre">{{ tipo.nombre }}</span>
-      </div>
-    </div>
-  </button>
+ <h4 class="panel-titulo">Tipo de dato</h4>
+ <mat-form-field appearance="outline" class="select-seccion">
+  <mat-label>Seleccionar Sección</mat-label>
+  <mat-select [(value)]="seccionSeleccionadaIndex" placeholder="Elegí una sección">
+   <mat-option *ngFor="let seccion of secciones.controls; let i = index" [value]="i">
+    {{ seccion.value.titulo || ('Sección ' + (i + 1)) }}
+   </mat-option>
+  </mat-select>
+ </mat-form-field>
+ <button *ngFor="let tipo of tiposCampos"
+     mat-stroked-button
+     class="btn-tipo"
+     [matTooltip]="getDescripcionTipoCampo(tipo.nombre)"
+     matTooltipPosition="right"
+     (click)="agregarCampoASeccionSeleccionada(tipo)">
+  <div class="tipo-contenido">
+   <mat-icon class="tipo-icono-grande">
+    {{ tipo.icono || getIconoTipoCampo(tipo.nombre) || 'widgets' }}
+   </mat-icon>
+   <div class="tipo-labels">
+    <span class="tipo-nombre">{{ tipo.nombre }}</span>
+   </div>
+  </div>
+ </button>
 </div>
+
 
 
 

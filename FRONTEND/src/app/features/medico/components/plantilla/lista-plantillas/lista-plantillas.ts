@@ -111,7 +111,7 @@ cargarPlantillasDelMedico(): void {
           .filter(c => c.activo === 1 || c.activo === true)
           .sort((a, b) => a.orden - b.orden);
 
-        const SECCION_TIPO_ID = 1002;
+        const SECCION_TIPO_ID = 12;
 
         const secciones: any[] = [];
         let seccionActual: any | null = null;
