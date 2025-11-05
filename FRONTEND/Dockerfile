@@ -9,7 +9,7 @@ RUN npm install
 
 # Copy the rest of the sources and build
 COPY . .
-RUN npm run build
+RUN npm run build --configuration=production
 
 ## Stage 2 - Serve the compiled app with NGINX
 FROM nginx:1.27-alpine AS runtime
