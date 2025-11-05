@@ -1,0 +1,35 @@
+<mat-toolbar class="panel" color="primary">
+  <mat-toolbar-row>
+    <span class="color-primario mr titulo">SALUD - UPE</span>
+    <button mat-icon-button (click)="toggleSidenav()">
+      <mat-icon class="barra">menu</mat-icon>
+    </button>
+    <span class="toolbar-spacer"></span>
+    <button mat-stroked-button color="primary" class="logout-btn" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Cerrar sesión
+    </button>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<mat-sidenav-container class="test">
+  <mat-sidenav #sidenav [opened]="isExpanded" class="contenedor-marco" [mode]="isDesktop ? 'side' : 'over'"
+    [fixedInViewport]="!isDesktop" [fixedTopGap]="isDesktop ? 64 : 56" (closedStart)="isExpanded=false"
+    (openedStart)="isExpanded=true">
+    <ng-container>
+      <div class="side-panel">
+        <nav class="nav default-nav">
+          <a class="nav-link" [routerLink]="['/admin', 'usuarios']" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span
+              class="material-icons">person</span>Usuarios</a>
+        </nav>
+      </div>
+    </ng-container>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div class="layout-content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

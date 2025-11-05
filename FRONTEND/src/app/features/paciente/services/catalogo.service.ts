@@ -1,0 +1,22 @@
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { API_URL } from '@core/tokens/api-url.token';
+
+export interface Opcion { id: number; nombre: string; }
+interface ApiResponse<T> { estado: boolean; valor: T; }
+
+@Injectable({ providedIn: 'root' })
+export class PacienteCatalogoService {
+  private http = inject(HttpClient);
+  private apiUrl = inject(API_URL);
+  private base = `${this.apiUrl}Catalogo`;
+
+  estadosProblema(): Observable<Opcion[]> {
+    return this.http.get<ApiResponse<Opcion[]>>(`${this.base}/EstadoProblema`).pipe(
+      map(r => (r?.estado ? (r.valor || []) : []))
+    );
+  }
+}

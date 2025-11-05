@@ -1,10 +1,13 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
+    "baseUrl": "src",
     "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
     "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
     "moduleResolution": "node",
     "target": "ES2022",
     "module": "ES2022",
@@ -17,9 +20,26 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "paths": {
-      "src/*": ["src/*"]
+      "@core/*": [
+        "app/core/*"
+      ],
+      "@shared/*": [
+        "app/shared/*"
+      ],
+      "@features/*": [
+        "app/features/*"
+      ],
+      "@assets/*": [
+        "assets/*"
+      ],
+      "@env/*": [
+        "environments/*"
+      ]
     },
-    "useDefineForClassFields": false,
-    "lib": ["ES2022", "dom"]
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "dom"
+    ]
   }
 }

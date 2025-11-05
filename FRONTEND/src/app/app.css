@@ -1,4 +1,3 @@
-/* Baseline styles shared by simple standalone components */
 :root{
   --primary: #574bff;
   --text: #111827;
@@ -19,7 +18,6 @@
 .table thead th{ text-align:left; padding:10px; font-weight:600; color:#374151; border-bottom:1px solid var(--line); background:#f9f9ff; }
 .table tbody td{ padding:10px; border-bottom:1px solid var(--line); color:#374151; }
 
-/* Simple modal helpers used across old templates */
 .modal-backdrop{ position:fixed; inset:0; background:rgba(17,24,39,.5); display:flex; align-items:center; justify-content:center; }
 .modal-card{ width:min(720px, 92vw); background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
 .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
