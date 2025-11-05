@@ -26,7 +26,7 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Listen on port 8080 inside the container by default
+# Listen on port 5259 inside the container
 ENV ASPNETCORE_URLS=http://+:5259
 
 EXPOSE 5259

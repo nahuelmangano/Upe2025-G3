@@ -17,5 +17,5 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       CADENA_SQL: "Server=upe2025g3.duckdns.org,1433;Database=UPECLINICA;User Id=SA;Password=Upe2025G3$;TrustServerCertificate=True;Encrypt=False;"
     ports:
-      - "5259:8080"
+      - "5259:5259"
     restart: unless-stopped
