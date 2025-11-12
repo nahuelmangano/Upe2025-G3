@@ -122,7 +122,18 @@ namespace UpeClinica.API.Controllers
                 if (dto == null) return NotFound();
                 var config = HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
                 var root = config?["Storage:RootPath"] ?? "/data/upeclinica/files";
-                var abs = Path.Combine(root, dto.Url ?? string.Empty);
+
+                // Normalizar URL 
+                var url = (dto.Url ?? string.Empty).Replace('\\', '/');
+                var idx = url.IndexOf("/estudios/", StringComparison.OrdinalIgnoreCase);
+                if (idx >= 0)
+                {
+                    // Nos quedamos con la ruta relativa a partir de /estudios/
+                    url = url.Substring(idx + 1);
+                }
+                if (url.StartsWith("/")) url = url.Substring(1);
+
+                var abs = Path.Combine(root, url);
                 if (!System.IO.File.Exists(abs)) return NotFound();
                 var contentType = "application/octet-stream";
                 return PhysicalFile(abs, contentType, dto.NombreArchivo);
