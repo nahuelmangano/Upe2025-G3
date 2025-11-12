@@ -135,8 +135,19 @@ namespace UpeClinica.API.Controllers
 
                 var abs = Path.Combine(root, url);
                 if (!System.IO.File.Exists(abs)) return NotFound();
+
+                // Detectar content-type por extensión (fallback a octet-stream)
                 var contentType = "application/octet-stream";
-                return PhysicalFile(abs, contentType, dto.NombreArchivo);
+                try
+                {
+                    var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+                    if (!provider.TryGetContentType(abs, out contentType))
+                        contentType = "application/octet-stream";
+                }
+                catch { /* ignore */ }
+
+                var stream = new FileStream(abs, FileMode.Open, FileAccess.Read, FileShare.Read);
+                return File(stream, contentType, dto.NombreArchivo, enableRangeProcessing: true);
             }
             catch (Exception ex)
             {
