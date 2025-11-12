@@ -9,12 +9,12 @@ namespace BLL.Servicios.Contrato
 {
     public interface IRolPermisoService
     {
-        Task<List<RolPermisoDTO>> ListaPorRolPermiso(int rolId, int permisoId);
+        Task<List<RolPermisoDTO>> Lista();
 
-        Task<RolPermisoDTO> Crear(RolPermisoDTO modelo);
+        Task<RolPermisoDTO> Crear(RolPermisoCrearDTO modelo);
 
-        Task<bool> Editar(RolPermisoDTO modelo);
+        Task<bool> Editar(RolPermisoEditarDTO modelo);
 
-        //Task<bool> Eliminar(int id); no se si tiene logica eliminarlo
+        Task<bool> Desactivar(int id);
     }
 }

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_URL } from '@core/tokens/api-url.token';
 import { ResponseApi } from '@core/interfaces/response-api';
 import { Permiso } from '@core/interfaces/permiso';
+import { PermisoCrear } from '@core/interfaces/permiso-crear';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class PermisoService {
     return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
   }
 
-  crear(request: Permiso): Observable<ResponseApi> {
+  crear(request: PermisoCrear): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
   }
   editar(request: Permiso): Observable<ResponseApi> {

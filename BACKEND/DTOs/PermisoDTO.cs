@@ -14,6 +14,6 @@ namespace DTOs
 
         public string Descripcion { get; set; }
 
-        public int Activo { get; set; }
+        public bool Activo { get; set; }
     }
 }
