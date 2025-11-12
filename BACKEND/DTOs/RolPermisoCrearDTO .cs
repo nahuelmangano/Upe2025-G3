@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace DTOs
 {
-    public class RolPermisoDTO
+    public class RolPermisoCrearDTO
     {
-        public int Id { get; set; }
 
         public int RolId { get; set; }
 
@@ -17,9 +16,5 @@ namespace DTOs
         public int PermisoId { get; set; }
 
         public string? PermisoNombre { get; set; }
-
-        public int Activo { get; set; }
-
-        public string? ActivoNombre { get; set; }
     }
 }

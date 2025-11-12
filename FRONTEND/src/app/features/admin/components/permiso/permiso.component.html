@@ -1,0 +1,70 @@
+<h1 class="page-title color-primario">Permisos</h1>
+
+<mat-card class="main-card">
+    <mat-card-title class="card-title">
+        <div class="title-content">
+            <button mat-raised-button color="primary" (click)="nuevoRolPermiso()">
+                <mat-icon mat-list-icon>add</mat-icon> Asignar Permiso
+            </button>
+        </div>
+    </mat-card-title>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-content class="dashboard-card-content">
+        <mat-form-field appearance="fill" class="search-field">
+            <mat-label>Buscar permiso</mat-label>
+            <input matInput (keyup)="aplicarFiltroTabla($event)" #input>
+        </mat-form-field>
+
+        <div class="mat-elevation-z2">
+            <div class="table-container">
+                <table mat-table [dataSource]="dataListaPermisosRoles" class="data-table">
+
+                    <ng-container matColumnDef="rol">
+                        <th mat-header-cell *matHeaderCellDef class="col-rol"> Rol </th>
+                        <td mat-cell *matCellDef="let element" class="col-rol"> {{element.rolNombre}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="permiso">
+                        <th mat-header-cell *matHeaderCellDef class="col-permiso"> Permiso </th>
+                        <td mat-cell *matCellDef="let element" class="col-permiso"> {{element.permisoNombre}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="estado">
+                        <th mat-header-cell *matHeaderCellDef class="col-estado"> Estado </th>
+                        <td mat-cell *matCellDef="let element" class="col-estado"> {{element.activoNombre}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="acciones">
+                        <th mat-header-cell *matHeaderCellDef class="actions-column"></th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="actions-container">
+                                <button mat-icon-button color="primary" class="action-button icono-editar"
+                                    (click)="editarRolPermiso(element)">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn" class="action-button"
+                                    (click)="eliminarRolPermiso(element)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="columnasTabla"></tr>
+                    <tr mat-row *matRowDef="let row; columns: columnasTabla;"></tr>
+                    <tr class="mat-row no-data-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="7">
+                            No hay datos que coincidan con el filtro "{{input.value}}"
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+
+        </div>
+
+    </mat-card-content>
+</mat-card>

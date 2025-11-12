@@ -3,5 +3,7 @@ export interface RolPermiso {
     rolId: number,
     rolNombre?: string | null,
     permisoId: number,
-    permisoNombre?: string | null
+    permisoNombre?: string | null,
+    activo: number,
+    activoNombre?: string | null
 }

@@ -22,6 +22,12 @@
           <a class="nav-link" [routerLink]="['/admin', 'usuarios']" routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span
               class="material-icons">person</span>Usuarios</a>
+          <a class="nav-link" [routerLink]="['/admin', 'permisos']" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">
+            <span class="material-icons">admin_panel_settings</span>
+            Permisos
+          </a>
+
         </nav>
       </div>
     </ng-container>

@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>{{tituloAccion}} Permiso</h2>
+
+<mat-dialog-content class="modal-content">
+  <form [formGroup]="formularioPermiso" class="form-container">
+    
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Rol</mat-label>
+      <mat-select formControlName="rolId">
+        <mat-option *ngFor="let item of listaRoles" [value]="item.id">
+          {{item.nombre}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Permiso</mat-label>
+      <mat-select formControlName="permisoId">
+        <mat-option *ngFor="let item of listaPermisos" [value]="item.id">
+          {{item.nombre}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button *ngIf="!formularioPermiso.get('permisoId')?.value" 
+            mat-raised-button 
+            type="button" 
+            class="btn-crear-permiso" 
+            (click)="crearPermiso()">
+      <mat-icon>add</mat-icon>
+      Crear Permiso
+    </button>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button mat-dialog-close color="warn">Volver</button>
+  <button mat-raised-button color="primary" [disabled]="formularioPermiso.invalid"
+    (click)="guardarEditarRolPermiso()">{{botonAccion}}</button>
+</mat-dialog-actions>

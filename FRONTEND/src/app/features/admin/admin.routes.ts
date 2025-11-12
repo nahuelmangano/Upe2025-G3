@@ -17,6 +17,13 @@ export const ADMIN_ROUTES: Routes = [
                         m => m.UsuarioComponent
                     )
             },
+            {
+                path: 'permisos',
+                loadComponent: () =>
+                    import('./components/permiso/permiso.component').then(
+                        m => m.PermisoComponent
+                    )
+            },
             { path: '', redirectTo: 'usuarios', pathMatch: 'full' }
         ]
     }

@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { API_URL } from '@core/tokens/api-url.token';
 import { ResponseApi } from '@core/interfaces/response-api';
 import { RolPermiso } from '@core/interfaces/rol-permiso';
+import { RolPermisoCrear } from '@core/interfaces/rol-permiso-crear';
+import { RolPermisoEditar } from '@core/interfaces/rol-permiso-editar';
 @Injectable({
   providedIn: 'root'
 })
@@ -13,14 +15,20 @@ export class RolPermisoService {
 
   private urlApi = this.apiUrl + 'RolPermiso/';
 
-    listaPorRolPermiso(rolId: number, permisoId: number): Observable<ResponseApi> {
-    return this.http.get<ResponseApi>(`${this.urlApi}ListaPorRolPermiso/${rolId}/${permisoId}`);
-    }
+  lista(): Observable<ResponseApi> {
+    return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
+  }
 
-    crear(request: RolPermiso): Observable<ResponseApi> {
+  crear(request: RolPermisoCrear): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
-    }
-    editar(request: RolPermiso): Observable<ResponseApi> {
+  }
+  
+  editar(request: RolPermisoEditar): Observable<ResponseApi> {
     return this.http.put<ResponseApi>(`${this.urlApi}Editar`, request);
-    }
+  }
+
+  eliminar(id: number): Observable<ResponseApi> {
+    return this.http.put<ResponseApi>(`${this.urlApi}Eliminar/${id}`, {});
+  }
+
 }
