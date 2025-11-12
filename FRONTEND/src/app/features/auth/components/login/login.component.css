@@ -320,6 +320,7 @@
 .header {
     text-align: center;
   margin-bottom: 2rem;
+  padding-top: 20px; 
 }
 
 .header-icon {
@@ -763,6 +764,73 @@
     width: 40px !important;
     height: 40px !important;
     opacity: 0.08;
+  }
+}
+
+
+@media (max-width: 968px) {
+  .body {
+    align-items: center;
+    justify-content: center;
+  }
+  .login-container {
+    margin: 0 auto;
+    max-width: 520px;
+    width: calc(100% - 32px); 
+    display: grid;             
+    place-items: center;
+    padding: 16px;            
+  }
+  .login-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  .loginCard {
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .remember-password-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .remember-checkbox {
+    width: auto;
+    align-self: center;
+  }
+  .link-password {
+    width: auto;
+    text-align: right;
+  }
+  .login-container {
+    width: calc(100% - 24px); 
+    padding: 12px;            
+    place-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .remember-password-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .remember-checkbox {
+    width: auto;
+  }
+  .link-password {
+    width: auto;
+    text-align: right;
+  }
+  .login-container {
+    width: calc(100% - 20px); 
+    padding: 10px;
+    place-items: center;
   }
 }
 
