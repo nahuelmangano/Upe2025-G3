@@ -34,6 +34,7 @@ export class ListaPlantillasComponent implements OnInit {
   private router = inject(Router);
 
   @ViewChild('previsualizacionDialog') previsualizacionDialog!: TemplateRef<any>;
+  @ViewChild('confirmarEliminar') confirmarEliminarDialog!: TemplateRef<any>;
 
   filtro: string = '';
   dataSource: any[] = [];
@@ -202,29 +203,38 @@ cargarPlantillasDelMedico(): void {
     });
   }
 
-eliminarPlantilla(plantilla: any): void {
-  const confirmar = confirm(`¿Seguro que deseas eliminar la plantilla "${plantilla.nombre}"?`);
-  if (!confirmar) return;
-  const plantillaInactiva = { ...plantilla, activo: false };
 
-  this.plantillaService.editar(plantillaInactiva).subscribe({
-    next: (res: ResponseApi) => {
-      if (res.estado) {
-        this.utilidadService.mostrarAlerta(
-          `La plantilla "${plantilla.nombre}" fue eliminada correctamente.`,
-          'Éxito'
-        );
-        this.dataSource = this.dataSource.filter(p => p.id !== plantilla.id);
-      } else {
-        this.utilidadService.mostrarAlerta(
-          res.mensaje || 'No se pudo eliminar la plantilla.',
-          'Error'
-        );
+
+eliminarPlantilla(plantilla: any): void {
+  const dialogRef = this.dialog.open(this.confirmarEliminarDialog, {
+    data: plantilla,
+    width: '370px'
+  });
+
+  dialogRef.afterClosed().subscribe(confirmado => {
+    if (!confirmado) return;
+
+    const plantillaInactiva = { ...plantilla, activo: false };
+
+    this.plantillaService.editar(plantillaInactiva).subscribe({
+      next: (res: ResponseApi) => {
+        if (res.estado) {
+          this.utilidadService.mostrarAlerta(
+            `La plantilla "${plantilla.nombre}" fue eliminada correctamente.`,
+            'Éxito'
+          );
+          this.dataSource = this.dataSource.filter(p => p.id !== plantilla.id);
+        } else {
+          this.utilidadService.mostrarAlerta(
+            res.mensaje || 'No se pudo eliminar la plantilla.',
+            'Error'
+          );
+        }
+      },
+      error: (err) => {
+        this.utilidadService.mostrarAlerta('Error al eliminar la plantilla.', 'Error');
       }
-    },
-    error: (err) => {
-      this.utilidadService.mostrarAlerta('Error al eliminar la plantilla.', 'Error');
-    }
+    });
   });
 }
 

@@ -136,22 +136,32 @@
 
 .btn-tipo {
   display: flex;
-  align-items: flex-start;
-  border-radius: 10px;
-  background: var(--color-surface);
-  color: var(--color-primary);
-  border: 2px solid var(--color-borde);
-  transition: background 0.18s, border 0.2s, color 0.2s;
-  padding: 0.8rem 1.1rem;
-  text-align: left;
-  gap: 12px;
-  min-height: 62px;
+  align-items: center;
+  border-radius: 8px;
+  background: #fff;
+  color: #315adf;
+  border: 1px solid #e0e6f3;    
+  padding: 0.45rem 0.7rem;       
+  gap: 10px;
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+  min-height: 40px;
+  min-width: 0;
   box-shadow: none;
+  transition: background 0.18s, border 0.2s, color 0.2s;
 }
+
 .btn-tipo:hover, .btn-tipo:focus {
-  background: var(--color-hover);
-  border: 2px solid var(--color-hover-border);
-  color: var(--color-hover-border);
+  background: #e8f0fe; 
+  border: 1px solid #315adf; 
+  color: #20305a;
+}
+
+.tipo-icono-grande {
+  font-size: 1.35rem;         
+  color: #315adf;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
 }
 
 .tipo-contenido {
@@ -166,9 +176,10 @@
 }
 
 .tipo-nombre {
-  font-weight: 600;
-  font-size: 1.07rem;
-  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 1rem;
+  color: inherit;
+  letter-spacing: 0.02em;
 }
 
 .select-seccion {

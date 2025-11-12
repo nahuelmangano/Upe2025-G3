@@ -49,22 +49,75 @@
 .zona-vacia {
   text-align: center;
   color: #95a1b6;
-  padding: 3rem 1rem;
-  background: #ebf1fa;
-  border: 2px dashed #c0cdf0;
-  border-radius: 12px;
+  padding: 2.2rem 1.2rem 2.2rem 1.2rem;
+  background: #f0f4fa;
+  border: 1.4px dashed #bdd4f6;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 230px;
+  transition: box-shadow 0.18s;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 12px 0 rgba(49,90,223,0.03);
+}
+
+.zona-vacia:hover {
+  box-shadow: 0 6px 24px 0 rgba(49,90,223,0.06);
 }
 
 .zona-vacia mat-icon {
-  font-size: 3rem;
-  width: 3rem;
-  height: 3rem;
-  color: #c0cdf0;
+  font-size: 2.35rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  color: #bdd4f6;
   margin-bottom: 1rem;
 }
 
+.zona-vacia span {
+  font-size: 1.11rem;
+  color: #77819c;
+}
+
 .btn-crear-primera {
-  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7em;
+  padding: 1rem 2.2rem;
+  font-size: 1.13rem;
+  font-weight: 700;
+  border-radius: 30px !important;
+  min-width: 0;
+  background: #4272e3; 
+  color: #fff !important;
+  box-shadow: 0 2px 10px 0 rgba(49,90,223,.06);
+  border: 1.5px solid #3562b6;
+  letter-spacing: 0.02em;
+  transition: background 0.13s, box-shadow 0.12s, border 0.13s, color 0.12s;
+}
+
+.btn-crear-primera:hover, .btn-crear-primera:focus {
+  background: #315adf !important; 
+  color: #fff !important;
+  border-color: #244179;
+  box-shadow: 0 7px 22px 0 rgba(49,90,223,0.11);
+}
+
+.btn-crear-primera mat-icon {
+  font-size: 1.25rem !important;
+  height: 1em !important;
+  width: 1em !important;
+  margin: 0;    
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  transform: translateY(1px);  
+  color:  #fff !important;
 }
 
 .lista-plantillas {
@@ -208,6 +261,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.plantilla-destacada {
+  font-weight: 600;
+  color: #315adf;
+}
+
+.mat-dialog-content {
+  font-size: 1.08rem;
 }
 
 @media (max-width: 640px) {
