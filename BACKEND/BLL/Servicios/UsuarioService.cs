@@ -65,10 +65,14 @@ namespace BLL.Servicios
             else if (string.IsNullOrWhiteSpace(passwordHash))
                 throw new Exception("Debe ingresar un password");
 
+            passwordHash = Recursos.ConvertirSha256(passwordHash);
+
             try
             {
                 var queryUsuario = await _usuarioRepositorio.Consultar(usuario =>
-                        usuario.Mail == mail
+                        usuario.Mail == mail &&
+                        usuario.PasswordHash == passwordHash
+                 
                 );
 
                 if (queryUsuario.FirstOrDefault() == null)
