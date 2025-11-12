@@ -87,10 +87,10 @@
       <!-- Ya no mostramos selects aquí: se selecciona arriba con radio + tipo -->
       <div>
         <mat-form-field appearance="outline" class="entrada-ancho-completo">
-              <mat-label>Realizado por</mat-label>
-              <input matInput [(ngModel)]="form.realizadoPor" name="realizadoPor" required />
-            </mat-form-field>
-          </div>
+          <mat-label>Realizado por</mat-label>
+          <input matInput [(ngModel)]="form.realizadoPor" name="realizadoPor" required readonly />
+        </mat-form-field>
+      </div>
       <div class="columna-completa">
         <mat-form-field appearance="outline" class="entrada-ancho-completo">
           <mat-label>Observaciones</mat-label>

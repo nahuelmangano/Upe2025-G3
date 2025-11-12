@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { UtilidadService } from '@core/services/utilidad.service';
 import { firstValueFrom, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, map as rxMap, tap } from 'rxjs/operators';
 import { EvolucionesService, EvolucionInput } from '@features/paciente/services/evoluciones.service';
@@ -99,7 +100,8 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     private estadoSrv: EstadoProblemaService,
     private campoValorSrv: CampoValorService,
     private campoSrv: CampoService,
-    private router: Router
+    private router: Router,
+    private util: UtilidadService
   ) {}
 
   ngOnInit(): void {
@@ -133,6 +135,15 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
 
   closeEstudios(): void {
     this.estudiosModal = false;
+  }
+
+  download(archivoId: number, ev?: Event): void {
+    ev?.preventDefault();
+    const url = this.archivoSrv.descargar(archivoId);
+    // Abrimos en nueva pestaña para no bloquear la SPA
+    window.open(url, '_blank');
+    // Aviso de éxito (inicio de descarga)
+    this.util.mostrarAlerta('Descarga iniciada', 'Ok');
   }
   ngOnDestroy(): void {
     this.sub?.unsubscribe();

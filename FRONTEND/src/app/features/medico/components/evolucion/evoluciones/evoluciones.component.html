@@ -169,7 +169,7 @@
                   <td>{{ s.nombre }}</td>
                   <td>{{ s.tamano | number }} bytes</td>
                   <td>
-                    <a [href]="archivoSrv.descargar(s.id)" title="Descargar" target="_blank">
+                    <a [href]="archivoSrv.descargar(s.id)" title="Descargar" target="_blank" (click)="download(s.id, $event)">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <path d="M7 10l5 5 5-5"/>

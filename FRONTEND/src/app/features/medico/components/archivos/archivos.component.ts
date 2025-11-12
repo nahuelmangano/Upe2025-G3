@@ -11,6 +11,7 @@ import { ArchivoAdjunto } from '@features/paciente/interfaces/archivoAdjunto';
 import { Estudio } from '@features/estudio/interfaces/estudio';
 import { PacienteService } from '@features/paciente/services/paciente.service';
 import { Paciente } from '@features/paciente/interfaces/paciente';
+import { UtilidadService } from '@core/services/utilidad.service';
 
 type EvolucionItem = { id: number; descripcion?: string };
 type TipoEstudioItem = { id: number; nombre: string };
@@ -52,10 +53,13 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     private archSvc: ArchivoAdjuntoService,
     private tipoSvc: TipoEstudioService,
     private pacienteSvc: PacienteService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private util: UtilidadService
   ) {}
 
   ngOnInit(): void {
+    // Prefijar "Realizado por" con el nombre del usuario actual y mantenerlo luego de cada carga
+    this.form.realizadoPor = this.util.obtenerNombreCompletoUsuario() || '';
     // Suscribirse a cambios de ruta por si se navega entre pacientes sin recrear el componente
     this.sub = this.route.paramMap.subscribe(pm => {
       const idFromPm = pm.get('id');
@@ -180,7 +184,9 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
-    this.form = { evolucionId: null, tipoEstudioId: null, fecha: new Date().toISOString().slice(0,10), realizadoPor: '', observaciones: '' };
+    // Mantener el "Realizado por" con el usuario actual para evitar validación en rojo
+    const realizadoPor = this.util.obtenerNombreCompletoUsuario() || this.form.realizadoPor || '';
+    this.form = { evolucionId: null, tipoEstudioId: null, fecha: new Date().toISOString().slice(0,10), realizadoPor, observaciones: '' };
     this.selectedFiles.set([]);
     this.evolucionSeleccionadaId.set(null);
   }
@@ -213,6 +219,7 @@ export class ArchivosComponent implements OnInit, OnDestroy {
       next: () => {
         this.resetForm();
         this.loadAll();
+        this.util.mostrarAlerta('Archivo(s) cargado(s) con éxito', 'Ok');
       },
       error: () => {
         this.error.set('No se pudo cargar el documento');
