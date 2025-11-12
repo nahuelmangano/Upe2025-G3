@@ -50,7 +50,7 @@ export class ModalPermisoComponent {
     this._rolServicio.lista().subscribe({
       next: (data) => {
         if (data.estado) {
-          this.listaRoles = data.valor;
+          this.listaRoles = data.valor.filter((rol: any) => rol.id !== 1);
         } else {
           this._utilidadServicio.mostrarAlerta("No se encontraron registros", "Opps!");
         }
