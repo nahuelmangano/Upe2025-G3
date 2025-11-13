@@ -20,7 +20,7 @@
   align-items: flex-start;
   background-color: var(--color-bg);
   min-height: 100vh;
-  max-width: 1400px;
+  max-width: none;
   margin: 0 auto;
   transition: all 0.3s ease;
 }
@@ -81,6 +81,7 @@
   box-shadow: var(--shadow-light);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
+  border: 1px solid #e0e6f3; 
 }
 
 .icon-seccion {
@@ -295,6 +296,54 @@
   margin-right: 0.5rem;
 }
 
+.mat-horizontal-stepper {
+  width: 95vw;          
+  max-width: 1800px;      
+  margin: 0 auto;
+  background: var(--color-surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-light);
+}
+
+.step-content-row {
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.col-secciones-campos {
+  flex: 2 1 0;
+  min-width: 0;
+}
+
+.col-tipos-campo {
+  flex: 1 1 0;
+  min-width: 300px;
+  max-width: 440px;
+  background: #f7f8fd;
+  padding: 1.7rem 1rem 1.7rem 1rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(50, 50, 93, 0.07);
+  height: fit-content;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.col-tipos-campo .panel-titulo {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.col-tipos-campo .btn-tipo {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.col-tipos-campo .select-seccion {
+  margin-bottom: 1.5rem;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -336,5 +385,15 @@
 
   .preview-campo {
     min-width: 100%;
+  }
+
+  .step-content-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .col-tipos-campo {
+    max-width: none;
+    width: 100%;
+    margin-top: 0;
   }
 }

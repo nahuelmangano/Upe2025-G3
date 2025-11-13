@@ -1,4 +1,4 @@
-import { Component, TemplateRef, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef,NgZone, OnInit} from '@angular/core';
+import { Component, TemplateRef, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, NgZone, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -12,6 +12,7 @@ import { ResponseApi } from '@core/interfaces/response-api';
 import { UtilidadService } from '@core/services/utilidad.service';
 import { MedicoService } from '@features/medico/services/medico.service';
 import { SHARED_IMPORTS } from '@shared/shared-imports';
+import { MatStepperModule } from '@angular/material/stepper';
 
 @Component({
   selector: 'app-plantilla',
@@ -19,13 +20,14 @@ import { SHARED_IMPORTS } from '@shared/shared-imports';
   templateUrl: './plantilla.html',
   styleUrls: ['./plantilla.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ ...SHARED_IMPORTS, RouterModule ],
+  imports: [ ...SHARED_IMPORTS, RouterModule, MatStepperModule ],
   providers: [FormBuilder]
 })
 export class PlantillaComponent implements OnInit {
   @ViewChild('previsualizacionDialog') previsualizacionDialog!: TemplateRef<any>;
 
-  formulario: FormGroup;
+  formInfoBasica: FormGroup;
+  formSecciones: FormGroup;
   tiposCampos: any[] = [];
   seccionSeleccionadaIndex: number | null = null;
   plantillaId: number | null = null;
@@ -45,15 +47,17 @@ export class PlantillaComponent implements OnInit {
     private dialog: MatDialog,
     private medicoService: MedicoService
   ) {
-    this.formulario = this.fb.group({
+    this.formInfoBasica = this.fb.group({
       nombrePlantilla: ['', Validators.required],
-      descripcion: [''],
+      descripcion: ['']
+    });
+    this.formSecciones = this.fb.group({
       secciones: this.fb.array([])
     });
   }
 
   get secciones(): FormArray {
-    return this.formulario.get('secciones') as FormArray;
+    return this.formSecciones.get('secciones') as FormArray;
   }
 
   ngOnInit(): void {
@@ -64,7 +68,7 @@ export class PlantillaComponent implements OnInit {
         this.modoEdicion = true;
         const plantilla = history.state?.plantilla;
         if (plantilla && Array.isArray(plantilla.secciones)) {
-          this.formulario.patchValue({
+          this.formInfoBasica.patchValue({
             nombrePlantilla: plantilla.nombre,
             descripcion: plantilla.descripcion
           });
@@ -101,36 +105,36 @@ export class PlantillaComponent implements OnInit {
   }
 
   private cargarCamposParaEditar(plantillaId: number): void {
-  this.campoService.lista(plantillaId).subscribe({
-    next: (res: ResponseApi) => {
-      if (res.estado && Array.isArray(res.valor)) {
-        const campos = res.valor
-          .filter((c: any) => c.activo)
-          .sort((a: any, b: any) => a.orden - b.orden);
-        let seccionActual: FormGroup | null = null;
-        campos.forEach((campo: any) => {
-          if (
-            campo.tipoCampoNombre === '__SECCION__' ||
-            campo.tipoCampoId === this.tipoSeccionId
-          ) {
-            seccionActual = this.fb.group({
-              titulo: [campo.etiqueta, Validators.required],
-              campos: this.fb.array([])
-            });
-            this.secciones.push(seccionActual);
-          } else if (seccionActual) {
-            const camposArray = seccionActual.get('campos') as FormArray;
-            camposArray.push(this.crearCampoFormGroup(campo));
-          }
-        });
-        this.cdRef.detectChanges();
+    this.campoService.lista(plantillaId).subscribe({
+      next: (res: ResponseApi) => {
+        if (res.estado && Array.isArray(res.valor)) {
+          const campos = res.valor
+            .filter((c: any) => c.activo)
+            .sort((a: any, b: any) => a.orden - b.orden);
+          let seccionActual: FormGroup | null = null;
+          campos.forEach((campo: any) => {
+            if (
+              campo.tipoCampoNombre === '__SECCION__' ||
+              campo.tipoCampoId === this.tipoSeccionId
+            ) {
+              seccionActual = this.fb.group({
+                titulo: [campo.etiqueta, Validators.required],
+                campos: this.fb.array([])
+              });
+              this.secciones.push(seccionActual);
+            } else if (seccionActual) {
+              const camposArray = seccionActual.get('campos') as FormArray;
+              camposArray.push(this.crearCampoFormGroup(campo));
+            }
+          });
+          this.cdRef.detectChanges();
+        }
+      },
+      error: () => {
+        this.utilidadService.mostrarAlerta('Error al cargar los campos', 'Error');
       }
-    },
-    error: (err) => {
-      this.utilidadService.mostrarAlerta('Error al cargar los campos', 'Error');
-    }
-  });
-}
+    });
+  }
 
   private cargarPlantillaParaEditar(id: number): void {
     const medicoId = this.utilidadService.obtenerUsuarioId();
@@ -138,7 +142,7 @@ export class PlantillaComponent implements OnInit {
       next: (res: ResponseApi) => {
         const plantilla = res.valor?.find((p: any) => p.id === id);
         if (plantilla) {
-          this.formulario.patchValue({
+          this.formInfoBasica.patchValue({
             nombrePlantilla: plantilla.nombre,
             descripcion: plantilla.descripcion
           });
@@ -271,22 +275,22 @@ export class PlantillaComponent implements OnInit {
   }
 
   getDescripcionTipoCampo(tipo: string | null | undefined): string {
-  if (!tipo) return '';
-  switch (tipo.toLowerCase()) {
-    case 'texto corto': return 'Texto breve, una sola línea.';
-    case 'texto largo': return 'Texto largo, varias líneas, por ejemplo observaciones.';
-    case 'número entero': return 'Números sin decimales. Ej: edad, cantidad.';
-    case 'número decimal': return 'Números decimales, con coma o punto. Ej: peso, altura.';
-    case 'fecha y hora': return 'Fecha y/o hora seleccionable.';
-    case 'archivo': return 'Permite cargar un archivo.';
-    case 'email': return 'Dirección de correo electrónico.';
-    case 'teléfono': return 'Número de teléfono.';
-    case 'casilla de verificación': return 'Opción seleccionable tipo check.';
-    case 'selección única': return 'Lista de opciones, sólo una respuesta posible.';
-    case 'selección múltiple': return 'Lista de opciones, permite múltiples respuestas.';
-    default: return '';
+    if (!tipo) return '';
+    switch (tipo.toLowerCase()) {
+      case 'texto corto': return 'Texto breve, una sola línea.';
+      case 'texto largo': return 'Texto largo, varias líneas, por ejemplo observaciones.';
+      case 'número entero': return 'Números sin decimales. Ej: edad, cantidad.';
+      case 'número decimal': return 'Números decimales, con coma o punto. Ej: peso, altura.';
+      case 'fecha y hora': return 'Fecha y/o hora seleccionable.';
+      case 'archivo': return 'Permite cargar un archivo.';
+      case 'email': return 'Dirección de correo electrónico.';
+      case 'teléfono': return 'Número de teléfono.';
+      case 'casilla de verificación': return 'Opción seleccionable tipo check.';
+      case 'selección única': return 'Lista de opciones, sólo una respuesta posible.';
+      case 'selección múltiple': return 'Lista de opciones, permite múltiples respuestas.';
+      default: return '';
+    }
   }
-}
 
   getIconoTipoCampo(tipo: string | null | undefined): string {
     if (!tipo) return 'help_outline';
@@ -308,56 +312,51 @@ export class PlantillaComponent implements OnInit {
   }
 
   async guardar(): Promise<void> {
-  if (this.formulario.invalid) {
-    this.utilidadService.mostrarAlerta('Completá todos los datos antes de guardar.', 'Advertencia');
-    return;
-  }
-
-  try {
-    const userId = this.utilidadService.obtenerUsuarioId();
-    const resp = await firstValueFrom(this.medicoService.lista()); 
-    if (!resp.estado || !resp.valor) {
-      this.utilidadService.mostrarAlerta('Error al buscar médico', 'Error');
+    if (this.formInfoBasica.invalid || this.formSecciones.invalid) {
+      this.utilidadService.mostrarAlerta('Completá todos los datos antes de guardar.', 'Advertencia');
       return;
     }
 
-    console.log(userId);
-    
+    try {
+      const userId = this.utilidadService.obtenerUsuarioId();
+      const resp = await firstValueFrom(this.medicoService.lista());
+      if (!resp.estado || !resp.valor) {
+        this.utilidadService.mostrarAlerta('Error al buscar médico', 'Error');
+        return;
+      }
 
-    const medico = resp.valor.find((m: any) => m.usuarioId === userId);
-    console.log(medico);
-    if (!medico) {
-      this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
-      return;
+      const medico = resp.valor.find((m: any) => m.usuarioId === userId);
+      if (!medico) {
+        this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
+        return;
+      }
+
+      const medicoId = medico.id;
+      const medicoNombre = `${medico.usuarioNombre} ${medico.usuarioApellido}`;
+
+      const plantilla: Plantilla = {
+        id: this.plantillaId || 0,
+        activo: true,
+        descripcion: this.formInfoBasica.value.descripcion ?? '',
+        nombre: this.formInfoBasica.value.nombrePlantilla ?? '',
+        medicoId: medicoId,
+        medicoNombre: medicoNombre
+      };
+
+      let res = this.modoEdicion
+        ? await firstValueFrom(this.plantillaService.editar(plantilla))
+        : await firstValueFrom(this.plantillaService.crear(plantilla));
+
+      const plantillaId = this.modoEdicion ? this.plantillaId! : res.valor.id;
+      if (res.estado) {
+        await this.guardarCampos(plantillaId, plantilla.nombre ?? '');
+        this.utilidadService.mostrarAlerta(this.modoEdicion ? 'Plantilla actualizada.' : 'Plantilla creada.', 'Éxito');
+        this.router.navigate(['/medico/mis-plantillas']);
+      }
+    } catch (e) {
+      this.utilidadService.mostrarAlerta('Error al guardar.', 'Error');
     }
-
-    const medicoId = medico.id;
-    const medicoNombre = `${medico.usuarioNombre} ${medico.usuarioApellido}`;
-
-    const plantilla: Plantilla = {
-      id: this.plantillaId || 0,
-      activo: true,
-      descripcion: this.formulario.value.descripcion ?? '',
-      nombre: this.formulario.value.nombrePlantilla ?? '',
-      medicoId: medicoId,
-      medicoNombre: medicoNombre
-    };
-
-    let res = this.modoEdicion
-      ? await firstValueFrom(this.plantillaService.editar(plantilla))
-      : await firstValueFrom(this.plantillaService.crear(plantilla));
-
-    const plantillaId = this.modoEdicion ? this.plantillaId! : res.valor.id;
-    if (res.estado) {
-      await this.guardarCampos(plantillaId, plantilla.nombre ?? '');
-      this.utilidadService.mostrarAlerta(this.modoEdicion ? 'Plantilla actualizada.' : 'Plantilla creada.', 'Éxito');
-      this.router.navigate(['/medico/mis-plantillas']);
-    }
-  } catch (e) {
-    this.utilidadService.mostrarAlerta('Error al guardar.', 'Error');
   }
-}
-
 
   private async guardarCampos(pid: number, pname: string): Promise<void> {
     if (this.tipoSeccionId == null) {
@@ -413,24 +412,21 @@ export class PlantillaComponent implements OnInit {
   }
 
   async previsualizar() {
-    if (this.formulario.invalid) {
+    if (this.formInfoBasica.invalid || this.formSecciones.invalid) {
       this.utilidadService.mostrarAlerta('Completa todos los campos antes de previsualizar.', 'Advertencia');
       return;
     }
+    const datosPreview = {
+      ...this.formInfoBasica.value,
+      ...this.formSecciones.value
+    };
     const dialogRef = this.dialog.open(this.previsualizacionDialog, {
       width: '750px',
       autoFocus: false,
-      data: this.formulario.getRawValue()
+      data: datosPreview
     });
-    this.formulario.valueChanges.subscribe(valor => {
-      if (dialogRef?.componentInstance) {
-        this.ngZone.run(() => {
-          dialogRef.componentInstance.data = valor;
-          this.cdRef.markForCheck();
-          this.cdRef.detectChanges();
-        });
-      }
-    });
+    this.formInfoBasica.valueChanges.subscribe(() => this.cdRef.markForCheck());
+    this.formSecciones.valueChanges.subscribe(() => this.cdRef.markForCheck());
   }
 
   cancelar(): void {
