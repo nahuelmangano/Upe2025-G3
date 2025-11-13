@@ -30,12 +30,10 @@
     </div>
     <div formArrayName="secciones">
       <div *ngIf="secciones.length === 0" class="zona-instruccion">
-        <mat-icon>pan_tool</mat-icon>
         <span>Agregá una sección para comenzar</span>
       </div>
       <mat-card *ngFor="let seccion of secciones.controls; let i = index" [formGroupName]="i" class="seccion-card">
         <div class="seccion-header">
-          <mat-icon class="icon-seccion">view_agenda</mat-icon>
           <mat-form-field appearance="outline" class="titulo-seccion">
             <mat-label>Título de la Sección</mat-label>
             <input matInput formControlName="titulo" required />
@@ -50,7 +48,6 @@
 
         <div class="campo-lista" formArrayName="campos">
           <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroupName]="j" class="campo-item">
-            <mat-icon class="drag-icon">drag_indicator</mat-icon>
             <mat-icon class="tipo-icono" matTooltip="{{ campo.get('tipoCampoNombre')?.value }}">
               {{ getIconoTipoCampo(campo.get('tipoCampoNombre')?.value) }}
             </mat-icon>
