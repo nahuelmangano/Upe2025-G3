@@ -409,7 +409,6 @@ export class PlantillaComponent implements OnInit {
   }
 
   deshacer(): void {
-    this.formulario.reset();
     this.secciones.clear();
     this.seccionSeleccionadaIndex = null;
     this.cdRef.detectChanges();
