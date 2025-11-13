@@ -176,9 +176,7 @@ export class PlantillaComponent implements OnInit {
         campos: this.fb.array([])
       })
     );
-    if (this.seccionSeleccionadaIndex === null) {
-      this.seccionSeleccionadaIndex = this.secciones.length - 1;
-    }
+    this.seccionSeleccionadaIndex = this.secciones.length - 1;
     this.cdRef.detectChanges();
   }
 
