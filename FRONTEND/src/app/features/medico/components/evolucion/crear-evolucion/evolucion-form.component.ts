@@ -159,11 +159,13 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     }
 
     const fechaIso = this.fechaHora ? new Date(this.fechaHora).toISOString() : new Date().toISOString();
-    const diagnostico = this.texto.trim() ? this.texto.trim().slice(0, 250) : 'Sin detalle';
+    const textoPlano = this.texto.trim();
+    const diagnostico = textoPlano ? textoPlano.slice(0, 250) : 'Sin detalle';
 
     try {
       const nuevaEvolucion = await firstValueFrom(this.evo.create({
-        descripcion: this.texto,
+        // Dejamos la descripción vacía; sólo se persiste el diagnóstico inicial
+        descripcion: undefined,
         fechaConsulta: fechaIso,
         diagnosticoInicial: diagnostico,
         diagnosticoDefinitivo: undefined,
@@ -703,6 +705,19 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   onFileChange(event: Event, campo: VistaCampo): void {
     const input = event.target as HTMLInputElement;
     campo.valor = input.files && input.files.length ? input.files[0] : null;
+  }
+
+  toggleMultiSelectOption(event: MouseEvent, campo: VistaCampo, opcion: string): void {
+    event.preventDefault();
+    if (!campo) { return; }
+    const current = Array.isArray(campo.valor) ? [...campo.valor] : [];
+    const idx = current.indexOf(opcion);
+    if (idx >= 0) {
+      current.splice(idx, 1);
+    } else {
+      current.push(opcion);
+    }
+    campo.valor = current;
   }
 }
 

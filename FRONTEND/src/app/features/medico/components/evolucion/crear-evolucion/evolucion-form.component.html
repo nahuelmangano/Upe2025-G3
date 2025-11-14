@@ -132,10 +132,14 @@
                         *ngSwitchCase="'multiselect'"
                         class="preview-control preview-control--multi"
                         multiple
-                        [(ngModel)]="campo.valor"
-                        [ngModelOptions]="{standalone:true}"
                       >
-                        <option *ngFor="let opt of (campo.opciones || [])" [ngValue]="opt">{{ opt }}</option>
+                        <option
+                          *ngFor="let opt of (campo.opciones || [])"
+                          [selected]="campo.valor?.includes(opt)"
+                          (mousedown)="toggleMultiSelectOption($event, campo, opt)"
+                        >
+                          {{ opt }}
+                        </option>
                       </select>
                       <label *ngSwitchCase="'checkbox'" class="preview-checkbox">
                         <input type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" />

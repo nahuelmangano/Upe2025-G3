@@ -1,4 +1,4 @@
-<mat-toolbar class="panel" color="primary">
+﻿<mat-toolbar class="panel" color="primary">
   <mat-toolbar-row>
     <span class="color-primario mr titulo">SALUD - UPE</span>
     <button mat-icon-button (click)="toggleSidenav()">
@@ -6,12 +6,12 @@
     </button>
     <span class="toolbar-spacer"></span>
     <div class="medico-pill">
-      <span class="medico-pill__label">Médico</span>
+      <span class="medico-pill__label">M&eacute;dico</span>
       <span class="medico-pill__name">{{ medicoNombre }}</span>
     </div>
     <button mat-stroked-button color="primary" class="logout-btn" (click)="logout()">
       <mat-icon>logout</mat-icon>
-      Cerrar sesión
+      Cerrar sesi&oacute;n
     </button>
   </mat-toolbar-row>
 </mat-toolbar>
@@ -22,30 +22,26 @@
     (openedStart)="isExpanded=true">
     <ng-container *ngIf="isPacienteCtx; else defaultNav">
       <div class="side-panel">
+        <div class="side-panel__actions">
+          <button class="back-link" type="button" (click)="salirDelPacienteContexto()">
+            <span class="material-icons">arrow_back</span>
+            Volver
+          </button>
+        </div>
+
         <div class="patient-card">
           <div class="avatar" aria-hidden="true">{{ pacienteIniciales || 'P' }}</div>
           <div class="patient-name">{{ pacienteNombre || 'Nombre del paciente' }}</div>
-          <div class="actions">
-            <button class="btn-outline light" type="button" (click)="salirDelPacienteContexto()"><span
-                class="material-icons">
-                logout
-              </span></button>
-            <button class="btn-outline light" type="button">Datos</button>
+          <div class="patient-stats">
+            <div class="stat">
+              <span class="label">EDAD</span>
+              <span class="value">{{ pacienteEdad ?? '--' }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">DNI</span>
+              <span class="value">{{ pacienteDni || '--' }}</span>
+            </div>
           </div>
-          <dl class="patient-meta">
-            <div>
-              <dt>Edad</dt>
-              <dd>{{ pacienteEdad ?? '—' }}</dd>
-            </div>
-            <div>
-              <dt>nro HC</dt>
-              <dd>{{ pacienteHC || '—' }}</dd>
-            </div>
-            <div class="full">
-              <dt>DNI</dt>
-              <dd>{{ pacienteDni || '—' }}</dd>
-            </div>
-          </dl>
         </div>
 
         <nav class="nav">
@@ -109,3 +105,4 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+

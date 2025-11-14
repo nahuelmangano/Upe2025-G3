@@ -37,9 +37,11 @@ export class ResumenPacienteComponent {
     this.evolucionService.listaPorPaciente(this.pacienteId).subscribe({
       next: (data) => {
         if (data.estado) {
-          const ultimas4Evoluciones = data.valor as Evolucion[];
+          const ultimas4Evoluciones = (data.valor as Evolucion[] ?? []).slice();
 
-          this.evoluciones = ultimas4Evoluciones.slice(-4); // toma las ultimas 4
+          this.evoluciones = ultimas4Evoluciones
+            .sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime())
+            .slice(0, 4);
           console.log('Lista de Evoluciones', this.evoluciones);
         } else {
           this._utilidadServicio.mostrarAlerta("No se encontraron registros de evoluciones", "Error");
