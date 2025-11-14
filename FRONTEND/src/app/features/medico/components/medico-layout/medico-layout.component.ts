@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ViewportScroller } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Subscription, Subject, takeUntil } from 'rxjs';
@@ -20,7 +20,7 @@ import { PacienteContextService } from '@core/services/paciente-context.service'
   templateUrl: './medico-layout.component.html',
   styleUrls: ['./medico-layout.component.css']
 })
-export class MedicoLayoutComponent implements OnDestroy {
+export class MedicoLayoutComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
@@ -33,6 +33,7 @@ export class MedicoLayoutComponent implements OnDestroy {
   pacienteDni = '';
   pacienteHC = '';
   pacienteIniciales = '';
+  medicoNombre = '';
   private routerSub?: Subscription;
   private pacienteSub?: Subscription;
 
@@ -44,9 +45,11 @@ export class MedicoLayoutComponent implements OnDestroy {
     private scroller: ViewportScroller
   ) {
     this.updateViewportFlags();
+    this.updateMedicoNombre();
   }
 
   ngOnInit(): void {
+    this.updateMedicoNombre();
     this.pacienteContextService.pacienteId$
       .pipe(takeUntil(this.destroy$))
       .subscribe(id => {
@@ -152,5 +155,10 @@ export class MedicoLayoutComponent implements OnDestroy {
     if (!parts.length) return 'P';
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  private updateMedicoNombre(): void {
+    const nombre = (this.utilidadSrv.obtenerNombreCompletoUsuario() || '').trim();
+    this.medicoNombre = nombre || 'No disponible';
   }
 }

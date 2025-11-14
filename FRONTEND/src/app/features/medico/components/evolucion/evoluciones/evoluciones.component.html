@@ -13,6 +13,7 @@
           <table class="table">
             <thead>
               <tr>
+                <th>Fecha</th>
                 <th>Problema</th>
                 <th>Diagnostico Inicial</th>
                 <th>Diagnostico Final</th>
@@ -26,6 +27,7 @@
             <tbody>
               <ng-container *ngFor="let e of pageItems()">
               <tr>
+                <td>{{ e.fechaTexto || (e.fecha ? (e.fecha | date:'dd/MM/yyyy HH:mm') : '-') }}</td>
                 <td>{{ e.problema }}</td>
                 <td>{{ e.diagnosticoInicial }}</td>
                 <td>{{ e.diagnosticoFinal }}</td>
@@ -55,7 +57,7 @@
                 </td>
               </tr>
               <tr *ngIf="e.mostrarPlanilla && e.tienePlanilla" class="planilla-row visible">
-                  <td colspan="8" style="background:#f9fafb;padding:16px 18px;border-top:1px solid #e5e7eb">
+                  <td colspan="9" style="background:#f9fafb;padding:16px 18px;border-top:1px solid #e5e7eb">
                     <div style="background:#ffffff;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,0.08);display:flex;flex-direction:column;gap:14px">
                       <div style="display:flex;justify-content:space-between;align-items:center">
                         <div style="display:flex;flex-direction:column;gap:6px">
@@ -132,6 +134,33 @@
                 <option *ngFor="let est of estadoOptions" [ngValue]="est.id">{{ est.nombre }}</option>
               </select>
             </label>
+            <div class="full planilla-edit" *ngIf="editTienePlanilla">
+              <div class="planilla-edit__header">
+                <span *ngIf="editPlanillaNombre; else planillaTituloGenerico">{{ editPlanillaNombre }}</span>
+                <ng-template #planillaTituloGenerico>Planilla asociada</ng-template>
+              </div>
+              <div *ngIf="editPlanillaLoading" class="planilla-edit__info">Cargando datos de la planilla...</div>
+              <div *ngIf="!editPlanillaLoading && editPlanillaError" class="planilla-edit__error">{{ editPlanillaError }}</div>
+              <ng-container *ngIf="!editPlanillaLoading && !editPlanillaError">
+                <div *ngIf="editPlanillaCampos.length; else planillaSinCampos" class="planilla-edit__grid">
+                  <div *ngFor="let campo of editPlanillaCampos; let idx = index" class="planilla-edit__field">
+                    <div class="planilla-edit__label">{{ campo.etiqueta || ('Campo ' + (campo.campoId || campo.id)) }}</div>
+                    <ng-container [ngSwitch]="campo.tipo">
+                      <textarea *ngSwitchCase="'textarea'" rows="2" [(ngModel)]="campo.valor" [name]="'planillaCampo' + idx"></textarea>
+                      <input *ngSwitchCase="'number'" type="number" [(ngModel)]="campo.valor" [name]="'planillaCampo' + idx" />
+                      <label *ngSwitchCase="'checkbox'" class="planilla-edit__checkbox">
+                        <input type="checkbox" [checked]="campo.valor === 'true'" (change)="onCheckboxCampoChange(campo, $event)" />
+                        <span>{{ campo.valor === 'true' ? 'Sí' : 'No' }}</span>
+                      </label>
+                      <input *ngSwitchDefault type="text" [(ngModel)]="campo.valor" [name]="'planillaCampo' + idx" />
+                    </ng-container>
+                  </div>
+                </div>
+                <ng-template #planillaSinCampos>
+                  <div class="planilla-edit__info">No hay valores registrados para esta planilla.</div>
+                </ng-template>
+              </ng-container>
+            </div>
           </div>
 
           <div *ngIf="modalError" style="color:#d63031">{{ modalError }}</div>

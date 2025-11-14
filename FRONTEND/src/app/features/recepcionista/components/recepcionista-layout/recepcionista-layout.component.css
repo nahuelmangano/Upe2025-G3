@@ -199,9 +199,47 @@
   flex:1 1 auto;
 }
 
+.medico-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-right:8px;
+  padding:7px 14px;
+  border-radius:999px;
+  background:#ffffff;
+  border:1.5px solid rgba(44,36,94,0.25);
+  color:#2c1e63;
+  font-weight:600;
+  box-shadow:0 6px 14px rgba(31,9,87,0.15);
+}
+
+.medico-pill__label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:#7f6cbf;
+}
+
+.medico-pill__name{
+  font-size:13px;
+  color:#2b1f69;
+}
+
 .logout-btn{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  font-weight:500;
+  font-weight:600;
+  border-radius:999px !important;
+  padding:9px 18px;
+  border:1.5px solid rgba(44,36,94,0.25);
+  background:#ffffff;
+  color:#1e0d66;
+  box-shadow:0 6px 14px rgba(31,9,87,0.15);
+  text-transform:none;
+}
+
+.logout-btn mat-icon{
+  font-size:18px;
+  color:#3f2ea8;
 }

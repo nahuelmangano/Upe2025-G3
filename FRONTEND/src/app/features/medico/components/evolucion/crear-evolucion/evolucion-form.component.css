@@ -180,6 +180,17 @@
   accent-color: #4f46e5;
 }
 
+.form-content{
+  max-width:900px;
+  margin:0 auto;
+}
+
+.form-grid{
+  justify-content:center;
+  grid-template-columns: repeat(6, minmax(0, 140px));
+  column-gap:24px;
+}
+
 @media (max-width: 768px) {
   .preview-card {
     padding: 22px;
@@ -187,5 +198,89 @@
 
   .preview-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.fecha-hora-input{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.seleccionar-fecha-btn{
+  padding:8px 14px;
+  border-radius:8px;
+  border:1px solid #d4dae8;
+  background:#f9fafc;
+  font-size:0.9rem;
+  font-weight:600;
+  color:#1f2937;
+  cursor:pointer;
+  transition:background 0.2s ease,border-color 0.2s ease;
+}
+
+.seleccionar-fecha-btn:hover{
+  background:#ede9ff;
+  border-color:#818cf8;
+}
+
+.fecha-hora-field{
+  max-width:320px;
+  justify-self:flex-start;
+}
+
+.fecha-hora-field .fecha-hora-input{
+  width:100%;
+}
+
+.problema-row{
+  display:flex;
+  align-items:flex-end;
+  gap:12px;
+  justify-content:flex-start;
+}
+
+.problema-field{
+  flex:0 0 auto;
+  width:220px;
+}
+
+.problema-field select{
+  width:100%;
+}
+
+.estado-field{
+  width:200px;
+}
+
+.plantilla-field{
+  width:280px;
+}
+
+.btn-problema{
+  white-space:nowrap;
+  padding:10px 16px;
+}
+
+@media (max-width: 768px) {
+  .fecha-hora-field,
+  .estado-field,
+  .plantilla-field,
+  .problema-field{
+    max-width:100%;
+    width:100%;
+  }
+  .form-grid{
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .problema-row{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .estado-field-wrapper{
+    justify-content:stretch;
+  }
+  .btn-problema{
+    width:100%;
   }
 }

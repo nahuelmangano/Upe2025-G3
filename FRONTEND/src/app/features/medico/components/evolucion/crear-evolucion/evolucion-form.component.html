@@ -1,214 +1,202 @@
 <div class="card">
-      <h3 class="h3" style="margin-bottom:12px">Evolucion</h3>
-      <div style="display:grid;grid-template-columns:300px 1fr;gap:18px">
-        <!-- Lateral problemas -->
-        <div class="side-card" style="background:#f7f7fb;border:1px solid var(--line);border-radius:10px;padding:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <button class="btn" type="button" (click)="nuevoProblema()">+ Problema</button>
-            <select [(ngModel)]="maxMostrar" style="height:34px">
-              <option [ngValue]="10">Mostrar maximo 10</option>
-              <option [ngValue]="25">Mostrar maximo 25</option>
-              <option [ngValue]="100">Mostrar maximo 100</option>
-            </select>
-          </div>
-          <div style="font-weight:600;margin:6px 0">Problema a asociar</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <button
-              *ngFor="let pr of problemas"
-              (click)="selectProblema(pr)"
-              class="btn-outline"
-              [ngStyle]="{borderColor: selectedProblema?.id===pr.id ? 'var(--primary)' : '#cfc7ff', color: selectedProblema?.id===pr.id ? 'var(--primary)' : '#6b7280'}"
-            >
-              {{ pr.titulo }}
-            </button>
-          </div>
-          <div style="margin-top:8px"><small>Mostrando {{ problemas.length }} registros</small></div>
+  <h3 class="h3" style="margin-bottom:12px">Evolucion</h3>
+  <div class="form-content">
+    <div class="modal-grid form-grid">
+      <label class="fecha-hora-field" style="grid-column:1/4">
+        <span>Fecha y hora</span>
+        <div class="fecha-hora-input">
+          <input
+            #fechaHoraInput
+            type="datetime-local"
+            [(ngModel)]="fechaHora"
+            name="fechaHora"
+            [max]="fechaMaxima"
+            (focus)="onFechaHoraFocus()"
+            (change)="onFechaHoraChange()"
+            (input)="onFechaHoraInput()"
+          />
+          <button type="button" class="seleccionar-fecha-btn" (click)="confirmarFechaHora()">Seleccionar</button>
         </div>
+      </label>
 
-        <!-- Form principal -->
-        <div>
-          <div class="modal-grid" style="grid-template-columns: repeat(6, 1fr);align-items:center">
-            <label style="grid-column:1/4">
-              <span>Fecha y hora</span>
-              <input type="datetime-local" [(ngModel)]="fechaHora" name="fechaHora" />
-            </label>
-            <label style="grid-column:4/7">
-              <span>Medico</span>
-              <select [(ngModel)]="medicoId" name="medicoId" (change)="onMedicoChange()">
-                <option [ngValue]="undefined">Seleccione</option>
-                <option *ngFor="let m of medicos" [ngValue]="m.id">{{ m.nombre }}</option>
-              </select>
-            </label>
+      <div class="problema-row" style="grid-column:1/4">
+        <label class="problema-field">
+          <span>Problema</span>
+          <select
+            [(ngModel)]="selectedProblemaId"
+            name="problemaId"
+            (ngModelChange)="onProblemaIdChange($event)"
+          >
+            <option [ngValue]="null">Seleccione un problema</option>
+            <option *ngFor="let pr of problemas" [ngValue]="pr.id">{{ pr.titulo }}</option>
+          </select>
+        </label>
+        <button class="btn btn-problema" type="button" (click)="nuevoProblema()">+ Problema</button>
+      </div>
+      <div class="estado-field-wrapper" style="grid-column:1/4">
+        <label class="estado-field">
+          <span>Estado del problema</span>
+          <select [(ngModel)]="estadoProblemaId" name="estadoProblemaId">
+            <option *ngFor="let e of estados" [ngValue]="e.id">{{ e.nombre }}</option>
+          </select>
+        </label>
+      </div>
 
-            <label style="grid-column:1/7">
-              <span>Problema</span>
-              <input [value]="selectedProblema?.titulo || ''" placeholder="Seleccione desde la izquierda" disabled />
-            </label>
-            <label style="grid-column:1/3">
-              <span>Estado del problema</span>
-              <select [(ngModel)]="estadoProblemaId" name="estadoProblemaId">
-                <option *ngFor="let e of estados" [ngValue]="e.id">{{ e.nombre }}</option>
-              </select>
-            </label>
-            <label style="grid-column:3/5">
-              <span>Plantillas</span>
-              <select [(ngModel)]="plantillaId" (change)="applyTemplate()" name="plantillaId">
-                <option [ngValue]="undefined">Seleccione</option>
-                <option [ngValue]="null">Vacío</option>
-                <option *ngFor="let t of plantillas" [ngValue]="t.id">{{ t.nombre || ('Plantilla ' + t.id) }}</option>
-              </select>
-            </label>
-            <div style="grid-column:1/7" *ngIf="previewLoading">
-              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px">
-                <strong>Previsualización</strong>
-                <p style="margin:8px 0 0;font-size:13px;color:#4b5563">Cargando plantilla…</p>
+      <label class="plantilla-field" style="grid-column:1/4">
+        <span>Plantillas</span>
+        <select [(ngModel)]="plantillaId" (change)="applyTemplate()" name="plantillaId">
+          <option [ngValue]="undefined">Seleccione</option>
+          <option [ngValue]="null">Vacío</option>
+          <option *ngFor="let t of plantillas" [ngValue]="t.id">
+            {{ t.nombre || ('Plantilla ' + t.id) }}
+          </option>
+        </select>
+      </label>
+
+      <div style="grid-column:1/7" *ngIf="previewLoading">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px">
+          <strong>Previsualización</strong>
+          <p style="margin:8px 0 0;font-size:13px;color:#4b5563">Cargando plantilla…</p>
+        </div>
+      </div>
+
+      <div style="grid-column:1/7" *ngIf="previewError && !previewLoading">
+        <div style="background:#fdf2f2;border:1px solid #fecaca;border-radius:8px;padding:14px">
+          <strong>Previsualización</strong>
+          <p style="margin:8px 0 0;font-size:13px;color:#b91c1c">{{ previewError }}</p>
+        </div>
+      </div>
+
+      <div class="plantilla-preview" *ngIf="plantillaPreview && !previewLoading">
+        <div class="preview-card">
+          <div *ngIf="!plantillaPreview.secciones.length" class="preview-empty">
+            Esta plantilla no tiene campos definidos todavía.
+          </div>
+          <ng-container *ngFor="let seccion of plantillaPreview.secciones">
+            <div class="preview-section">
+              <div class="preview-section-pill">
+                <span class="preview-pill-label">Sección</span>
+                <span class="preview-pill-title">{{ seccion.titulo || 'Sin título' }}</span>
               </div>
-            </div>
-            <div style="grid-column:1/7" *ngIf="previewError && !previewLoading">
-              <div style="background:#fdf2f2;border:1px solid #fecaca;border-radius:8px;padding:14px">
-                <strong>Previsualización</strong>
-                <p style="margin:8px 0 0;font-size:13px;color:#b91c1c">{{ previewError }}</p>
-              </div>
-            </div>
-            <div class="plantilla-preview" *ngIf="plantillaPreview && !previewLoading">
-              <div class="preview-card">
-                <div class="preview-header">
-                  <p class="preview-title">Previsualización</p>
-                  <p class="preview-subtitle">Vista previa de la plantilla seleccionada</p>
-                </div>
-                <div class="preview-meta">
-                  <div>
-                    <span class="preview-label">Nombre:</span>
-                    <span class="preview-name">{{ plantillaPreview.nombre || ('Plantilla ' + plantillaPreview.id) }}</span>
-                  </div>
-                  <div *ngIf="plantillaPreview.descripcion">
-                    <span class="preview-label">Descripción:</span>
-                    <span>{{ plantillaPreview.descripcion }}</span>
-                  </div>
-                </div>
-                <div *ngIf="!plantillaPreview.secciones.length" class="preview-empty">
-                  Esta plantilla no tiene campos definidos todavía.
-                </div>
-                <ng-container *ngFor="let seccion of plantillaPreview.secciones">
-                  <div class="preview-section">
-                    <div class="preview-section-pill">
-                      <span class="preview-pill-label">Sección</span>
-                      <span class="preview-pill-title">{{ seccion.titulo || 'Sin título' }}</span>
-                    </div>
-                    <div class="preview-grid">
-                      <ng-container *ngFor="let campo of seccion.campos">
-                        <div class="preview-field">
-                          <span class="preview-field-label">{{ campo.etiqueta }}</span>
-                          <ng-container [ngSwitch]="campo.tipoEntrada">
-                            <input
-                              *ngSwitchCase="'text'"
-                              class="preview-control"
-                              type="text"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            />
-                            <textarea
-                              *ngSwitchCase="'textarea'"
-                              class="preview-control preview-control--textarea"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            ></textarea>
-                            <input
-                              *ngSwitchCase="'number'"
-                              class="preview-control"
-                              type="number"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                              [step]="campo.step || '1'"
-                            />
-                            <input
-                              *ngSwitchCase="'decimal'"
-                              class="preview-control"
-                              type="number"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                              [step]="campo.step || '0.01'"
-                            />
-                            <input
-                              *ngSwitchCase="'datetime-local'"
-                              class="preview-control"
-                              type="datetime-local"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            />
-                            <select
-                              *ngSwitchCase="'select'"
-                              class="preview-control preview-control--select"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            >
-                              <option [ngValue]="''">Seleccione</option>
-                              <option *ngFor="let opt of (campo.opciones || [])" [ngValue]="opt">{{ opt }}</option>
-                            </select>
-                            <select
-                              *ngSwitchCase="'multiselect'"
-                              class="preview-control preview-control--multi"
-                              multiple
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            >
-                              <option *ngFor="let opt of (campo.opciones || [])" [ngValue]="opt">{{ opt }}</option>
-                            </select>
-                            <label *ngSwitchCase="'checkbox'" class="preview-checkbox">
-                              <input type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" />
-                              <span>{{ campo.valor ? 'Seleccionado' : 'No seleccionado' }}</span>
-                            </label>
-                            <input
-                              *ngSwitchCase="'file'"
-                              class="preview-control preview-control--file"
-                              type="file"
-                              disabled
-                            />
-                            <input
-                              *ngSwitchCase="'email'"
-                              class="preview-control"
-                              type="email"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            />
-                            <input
-                              *ngSwitchCase="'tel'"
-                              class="preview-control"
-                              type="tel"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            />
-                            <input
-                              *ngSwitchDefault
-                              class="preview-control"
-                              type="text"
-                              [(ngModel)]="campo.valor"
-                              [ngModelOptions]="{standalone:true}"
-                            />
-                          </ng-container>
-                        </div>
-                      </ng-container>
-                    </div>
+              <div class="preview-grid">
+                <ng-container *ngFor="let campo of seccion.campos">
+                  <div class="preview-field">
+                    <span class="preview-field-label">{{ campo.etiqueta }}</span>
+                    <ng-container [ngSwitch]="campo.tipoEntrada">
+                      <input
+                        *ngSwitchCase="'text'"
+                        class="preview-control"
+                        type="text"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                      <textarea
+                        *ngSwitchCase="'textarea'"
+                        class="preview-control preview-control--textarea"
+                        rows="3"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      ></textarea>
+                      <input
+                        *ngSwitchCase="'number'"
+                        class="preview-control"
+                        type="number"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                      <input
+                        *ngSwitchCase="'decimal'"
+                        class="preview-control"
+                        type="number"
+                        step="0.01"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                      <input
+                        *ngSwitchCase="'datetime-local'"
+                        class="preview-control"
+                        type="datetime-local"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                      <select
+                        *ngSwitchCase="'select'"
+                        class="preview-control preview-control--select"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      >
+                        <option [ngValue]="''">Seleccione</option>
+                        <option *ngFor="let opt of (campo.opciones || [])" [ngValue]="opt">{{ opt }}</option>
+                      </select>
+                      <select
+                        *ngSwitchCase="'multiselect'"
+                        class="preview-control preview-control--multi"
+                        multiple
+                      >
+                        <option
+                          *ngFor="let opt of (campo.opciones || [])"
+                          [selected]="campo.valor?.includes(opt)"
+                          (mousedown)="toggleMultiSelectOption($event, campo, opt)"
+                        >
+                          {{ opt }}
+                        </option>
+                      </select>
+                      <label *ngSwitchCase="'checkbox'" class="preview-checkbox">
+                        <input type="checkbox" [(ngModel)]="campo.valor" [ngModelOptions]="{standalone:true}" />
+                        <span>{{ campo.valor ? 'Seleccionado' : 'No seleccionado' }}</span>
+                      </label>
+                      <input
+                        *ngSwitchCase="'file'"
+                        class="preview-control preview-control--file"
+                        type="file"
+                        disabled
+                      />
+                      <input
+                        *ngSwitchCase="'email'"
+                        class="preview-control"
+                        type="email"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                      <input
+                        *ngSwitchCase="'tel'"
+                        class="preview-control"
+                        type="tel"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                      <input
+                        *ngSwitchDefault
+                        class="preview-control"
+                        type="text"
+                        [(ngModel)]="campo.valor"
+                        [ngModelOptions]="{standalone:true}"
+                      />
+                    </ng-container>
                   </div>
                 </ng-container>
               </div>
             </div>
-            <div style="grid-column:1/7">
-              <span style="display:block;margin-bottom:6px;color:#374151;font-size:14px">Diagnostico Inicial</span>
-              <textarea rows="12" [(ngModel)]="texto" placeholder="Ingrese aqui una evolucion..."></textarea>
-            </div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:10px">
-            <div></div>
-            <div style="display:flex;gap:10px">
-              <button class="btn-outline" type="button" (click)="clear()">Limpiar</button>
-              <button class="btn" type="button" (click)="guardar()">Guardar</button>
-            </div>
-          </div>
-          <div style="text-align:right;margin-top:8px">
-            <small>Evolucionado por <strong>{{ currentMedicoNombre() }}</strong></small>
-          </div>
+          </ng-container>
         </div>
       </div>
+
+      <div style="grid-column:1/7">
+        <span style="display:block;margin-bottom:6px;color:#374151;font-size:14px">Diagnostico Inicial</span>
+        <textarea rows="12" [(ngModel)]="texto" placeholder="Ingrese aqui una evolucion..."></textarea>
+      </div>
     </div>
-  
+
+    <div style="display:flex;justify-content:space-between;margin-top:10px">
+      <div></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-outline" type="button" (click)="clear()">Limpiar</button>
+        <button class="btn" type="button" (click)="guardar()">Guardar</button>
+      </div>
+    </div>
+
+    <div style="text-align:right;margin-top:8px">
+      <small>Evolucionado por <strong>{{ currentMedicoNombre() }}</strong></small>
+    </div>
+  </div>
+</div>

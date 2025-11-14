@@ -24,6 +24,8 @@ interface EvolucionRow {
   medico: string;
   estado: string;
   fecha?: string;
+  fechaTexto?: string;
+  descripcion?: string | null;
   problemaId?: number;
   estadoId?: number;
   medicoId?: number;
@@ -43,6 +45,7 @@ interface PlanillaCampo {
   campoId: number;
   etiqueta: string;
   valor: string;
+  tipo?: 'text' | 'textarea' | 'checkbox' | 'number';
 }
 interface ArchivoRow {
   id: number;
@@ -88,6 +91,11 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   estudiosModal = false;
   estudiosLoading = false;
   estudios: ArchivoRow[] = [];
+  editPlanillaCampos: PlanillaCampo[] = [];
+  editPlanillaLoading = false;
+  editPlanillaError = '';
+  editTienePlanilla = false;
+  editPlanillaNombre = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -160,22 +168,24 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadEvoluciones(): void {
-    this.loading = true; this.error='';
-    this.evolucionSrv.listaPorPaciente(this.pacienteId).subscribe({
-      next: (resp: any) => {
-        const items: any[] = resp?.estado ? (resp.valor || []) : [];
-        this.data = items.map(it => this.mapRow(it));
-        this.loading=false; this.page=0;
-      },
+    private loadEvoluciones(): void {
+      this.loading = true; this.error='';
+      this.evolucionSrv.listaPorPaciente(this.pacienteId).subscribe({
+        next: (resp: any) => {
+          const items: any[] = resp?.estado ? (resp.valor || []) : [];
+          this.data = items
+            .map(it => this.mapRow(it))
+            .sort((a, b) => this.fechaTimestamp(b.fecha) - this.fechaTimestamp(a.fecha));
+          this.loading=false; this.page=0;
+        },
       error: () => { this.loading=false; this.error='No pudimos cargar evoluciones'; }
     });
   }
 
-  filtradas(): EvolucionRow[] {
-    const term = this.q.toLowerCase();
-    return this.data.filter(e => `${e.problema} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado}`.toLowerCase().includes(term));
-  }
+    filtradas(): EvolucionRow[] {
+      const term = this.q.toLowerCase();
+      return this.data.filter(e => `${e.problema} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado} ${e.fechaTexto ?? ''}`.toLowerCase().includes(term));
+    }
   pagesCount(): number { return Math.max(1, Math.ceil(this.filtradas().length / this.pageSize)); }
   pageItems(): EvolucionRow[] { const s = this.page * this.pageSize; return this.filtradas().slice(s, s + this.pageSize); }
   rangeLabel(): string { const t = this.filtradas().length; const s = t ? this.page * this.pageSize + 1 : 0; const e = Math.min(t, (this.page + 1) * this.pageSize); return `${s} - ${e} of ${t}`; }
@@ -187,17 +197,27 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.modalOpen = true;
     this.modalError='';
     this.editId = e.id;
-    this.fecha = e.fecha ? e.fecha.substring(0,10) : '';
+      this.fecha = e.fecha ? e.fecha.substring(0,10) : '';
     const src = e.source || {};
     this.editSource = src;
     this.editProblemaId = this.toNumberOrUndefined(e.problemaId ?? src.problemaId ?? src.ProblemaId, true);
     this.editEstadoId = this.toNumberOrUndefined(e.estadoId ?? src.estadoProblemaId ?? src.EstadoProblemaId, true) ?? this.estadoOptions[0]?.id;
     this.editMedicoId = this.toNumberOrUndefined(e.medicoId ?? src.medicoId ?? src.MedicoId, true);
+    const descripcion = e.descripcion ?? src.descripcion ?? src.Descripcion ?? '';
     this.form = {
       diagnosticoInicial: e.diagnosticoInicial,
       diagnosticoDefinitivo: e.diagnosticoFinal,
-      descripcion: ''
+      descripcion
     };
+    const plantillaId = this.toNumberOrUndefined(e.plantillaId ?? src.plantillaId ?? src.PlantillaId, true);
+    this.editTienePlanilla = !!(e.tienePlanilla || (typeof plantillaId === 'number' && plantillaId > 0));
+    this.editPlanillaNombre = e.plantillaNombre || src.plantillaNombre || src.PlantillaNombre || '';
+    this.editPlanillaCampos = [];
+    this.editPlanillaError = '';
+    this.editPlanillaLoading = false;
+    if (this.editTienePlanilla) {
+      this.loadPlanillaForEdit(e);
+    }
   }
   closeModal(): void {
     if (this.saving) { return; }
@@ -209,6 +229,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.editSource = undefined;
     this.form = { diagnosticoInicial: '' };
     this.fecha = '';
+    this.resetEditPlanillaState();
   }
 
   togglePlanilla(row: EvolucionRow): void {
@@ -299,6 +320,9 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
         if (!resp?.estado) {
           throw new Error(resp?.mensaje || 'El servicio no confirmó la actualización');
         }
+        if (this.editTienePlanilla && this.editPlanillaCampos.length) {
+          await this.savePlanillaValores(this.editId);
+        }
       } else {
         console.log('[Evoluciones] create payload', base);
         await firstValueFrom(this.evolucionesSrv.create(base));
@@ -313,6 +337,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       this.editEstadoId = undefined;
       this.editMedicoId = undefined;
       this.editSource = undefined;
+      this.resetEditPlanillaState();
     } catch (e:any) {
       this.modalError = e?.message || 'No pudimos guardar la evolución';
     } finally { this.saving = false; }
@@ -411,17 +436,61 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       campoInfo?.etiqueta ??
       campoInfo?.Etiqueta ??
       (campoId ? `Campo ${campoId}` : 'Campo');
-    let valor: any = dto?.valor ?? dto?.Valor ?? '';
-    if (Array.isArray(valor)) {
-      valor = valor.join(', ');
+    const rawValor = dto?.valor ?? dto?.Valor;
+    let tipo = this.detectCampoTipo(campoInfo, dto, rawValor);
+    const valorNormalizado = this.normalizeCampoValor(rawValor, tipo);
+    if (tipo === 'text' && (valorNormalizado === 'true' || valorNormalizado === 'false')) {
+      tipo = 'checkbox';
     }
-    valor = valor ?? '';
     return {
       id: Number(dto?.id ?? dto?.Id ?? campoId) || 0,
       campoId,
       etiqueta,
-      valor: valor.toString()
+      valor: valorNormalizado,
+      tipo
     };
+  }
+
+  private detectCampoTipo(campoInfo?: any, dto?: any, valor?: any): 'text' | 'textarea' | 'checkbox' | 'number' {
+    const tipoEntrada = (
+      campoInfo?.tipoEntrada ??
+      campoInfo?.TipoEntrada ??
+      campoInfo?.tipoCampoNombre ??
+      campoInfo?.TipoCampoNombre ??
+      campoInfo?.tipoCampo ??
+      dto?.tipoEntrada ??
+      dto?.TipoEntrada ??
+      dto?.campoTipoEntrada ??
+      dto?.CampoTipoEntrada ??
+      dto?.tipoCampoNombre ??
+      dto?.TipoCampoNombre ??
+      dto?.tipoCampo ??
+      ''
+    ).toString().toLowerCase();
+    if (tipoEntrada.includes('checkbox')) return 'checkbox';
+    if (tipoEntrada.includes('textarea')) return 'textarea';
+    if (tipoEntrada.includes('number') || tipoEntrada.includes('decimal')) return 'number';
+    if (valor === true || valor === false) return 'checkbox';
+    if (typeof valor === 'string') {
+      const trimmed = valor.trim().toLowerCase();
+      if (trimmed === 'true' || trimmed === 'false') { return 'checkbox'; }
+    }
+    return 'text';
+  }
+
+  private normalizeCampoValor(valor: any, tipo: 'text' | 'textarea' | 'checkbox' | 'number'): string {
+    if (tipo === 'checkbox') {
+      return (valor === true || valor === 'true' || valor === 1 || valor === '1') ? 'true' : 'false';
+    }
+    if (valor === null || valor === undefined) return '';
+    if (Array.isArray(valor)) return valor.join(', ');
+    if (typeof valor === 'string') {
+      const trimmed = valor.trim().toLowerCase();
+      if (trimmed === 'true' || trimmed === 'false') {
+        return trimmed === 'true' ? 'true' : 'false';
+      }
+    }
+    return Array.isArray(valor) ? valor.join(', ') : valor.toString();
   }
 
   private mapRow(it: any): EvolucionRow {
@@ -444,6 +513,8 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const estadoNombre = this.sanitizeLabel(it?.estadoProblemaNombre ?? it?.EstadoProblemaNombre ?? it?.estado) ??
       ((Number.isFinite(estadoId) && estadoId >= 0) ? this.estadoMap.get(estadoId) : undefined);
 
+    const fechaIso = this.normalizeFechaValue(it?.fechaConsulta ?? it?.FechaConsulta ?? it?.fecha ?? it?.Fecha);
+
     return {
       id: it?.id ?? 0,
       problema: problemaNombre || '-',
@@ -451,7 +522,9 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       diagnosticoFinal: it?.diagnosticoDefinitivo ?? it?.DiagnosticoDefinitivo ?? it?.diagnosticoFinal ?? '',
       medico: medicoNombre || '-',
       estado: estadoNombre || '-',
-      fecha: it?.fechaConsulta ?? it?.FechaConsulta ?? it?.fecha,
+      fecha: fechaIso,
+      fechaTexto: fechaIso ? this.formatFechaDisplay(fechaIso) : undefined,
+      descripcion: it?.descripcion ?? it?.Descripcion ?? '',
       problemaId: Number.isFinite(problemaId) && problemaId > 0 ? problemaId : undefined,
       estadoId: Number.isFinite(estadoId) && estadoId >= 0 ? estadoId : undefined,
       medicoId: Number.isFinite(medicoId) && medicoId > 0 ? medicoId : undefined,
@@ -465,6 +538,90 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       mostrarPlanilla: false,
       source: it
     };
+  }
+
+  private loadPlanillaForEdit(row: EvolucionRow): void {
+    this.editPlanillaLoading = true;
+    this.editPlanillaError = '';
+    const loadPromise = row.planillaLoaded
+      ? Promise.resolve(row.planillaCampos ?? [])
+      : this.fetchPlanillaValores(row).then(campos => {
+          row.planillaCampos = campos;
+          row.planillaLoaded = true;
+          row.planillaError = '';
+          return campos;
+        });
+    loadPromise
+      .then(campos => {
+        this.editPlanillaCampos = (campos || []).map(c => ({ ...c }));
+        this.editPlanillaLoading = false;
+      })
+      .catch(() => {
+        this.editPlanillaError = 'No pudimos cargar los datos de la planilla.';
+        this.editPlanillaLoading = false;
+      });
+  }
+
+  private async savePlanillaValores(evolucionId: number): Promise<void> {
+    if (!this.editPlanillaCampos.length) { return; }
+    for (const campo of this.editPlanillaCampos) {
+      const payload = {
+        id: campo.id ?? 0,
+        campoId: campo.campoId,
+        evolucionId,
+        valor: campo.valor ?? ''
+      };
+      if (payload.id && payload.id > 0) {
+        const resp = await firstValueFrom(this.campoValorSrv.editar(payload));
+        if (!resp?.estado) {
+          throw new Error(resp?.mensaje || 'No se pudieron actualizar los valores de la planilla');
+        }
+      } else {
+        const resp = await firstValueFrom(this.campoValorSrv.crear(payload));
+        if (!resp?.estado) {
+          throw new Error(resp?.mensaje || 'No se pudieron guardar algunos valores de la planilla');
+        }
+      }
+    }
+  }
+
+  private resetEditPlanillaState(): void {
+    this.editPlanillaCampos = [];
+    this.editPlanillaLoading = false;
+    this.editPlanillaError = '';
+    this.editTienePlanilla = false;
+    this.editPlanillaNombre = '';
+  }
+
+  onCheckboxCampoChange(campo: PlanillaCampo, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    campo.valor = input.checked ? 'true' : 'false';
+  }
+
+  private normalizeFechaValue(value: any): string | undefined {
+    if (!value) { return undefined; }
+    const date = value instanceof Date ? value : new Date(value);
+    const time = date.getTime();
+    if (!Number.isFinite(time)) { return undefined; }
+    return date.toISOString();
+  }
+
+  private fechaTimestamp(fecha?: string): number {
+    if (!fecha) { return 0; }
+    const time = Date.parse(fecha);
+    return Number.isFinite(time) ? time : 0;
+  }
+
+  private formatFechaDisplay(fechaIso: string): string {
+    const time = Date.parse(fechaIso);
+    if (!Number.isFinite(time)) { return ''; }
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(time));
   }
 
   private ensureCatalogs() {
