@@ -19,6 +19,7 @@ import { PacienteContextService } from '@core/services/paciente-context.service'
 export class AdminLayoutComponent  {
   isDesktop = true;
   isExpanded = true;
+  usuarioNombre = '';
 
   constructor(
     private router: Router,
@@ -26,6 +27,7 @@ export class AdminLayoutComponent  {
     private pacienteContextService: PacienteContextService
   ){
     this.updateViewportFlags();
+    this.updateUsuarioNombre();
   }
 
   @HostListener('window:resize')
@@ -53,5 +55,10 @@ export class AdminLayoutComponent  {
       sidenav.close();
       this.isExpanded = false;
     }
+  }
+
+  private updateUsuarioNombre(): void {
+    const nombre = this.utilidadSrv.obtenerNombreCompletoUsuario()?.trim();
+    this.usuarioNombre = nombre && nombre.length ? nombre : 'Usuario';
   }
 }

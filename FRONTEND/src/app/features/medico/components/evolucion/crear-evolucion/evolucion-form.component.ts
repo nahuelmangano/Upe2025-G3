@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -12,6 +12,7 @@ import { MedicoService } from '@features/medico/services/medico.service';
 import { CampoService } from '@features/medico/services/campo.service';
 import { TipoCampoService } from '@features/medico/services/tipo-campo.service';
 import { CampoValorService } from '@features/medico/services/campo-valor.service';
+import { UtilidadService } from '@core/services/utilidad.service';
 
 type VistaCampoEntrada =
   | 'text'
@@ -35,21 +36,23 @@ type VistaCampoEntrada =
   styleUrls: ['./evolucion-form.component.css']
 })
 export class EvolucionFormComponent implements OnInit, OnDestroy {
+  @ViewChild('fechaHoraInput') fechaHoraInput?: ElementRef<HTMLInputElement>;
   pacienteId = 0;
   sub?: Subscription;
 
   problemas: Problema[] = [];
   selectedProblema: Problema | null = null;
+  selectedProblemaId: number | null = null;
   plantillas: Plantilla[] = [];
   plantillaId: number | null | undefined;
   estados: Opcion[] = [];
   estadoProblemaId?: number;
-  medicos: { id: number; nombre: string }[] = [];
+  medicos: { id: number; nombre: string; usuarioId?: number }[] = [];
   medicoId?: number;
 
   fechaHora = '';
+  fechaMaxima = '';
   texto = '';
-  maxMostrar = 10;
 
   plantillaPreview: {
     id: number;
@@ -78,7 +81,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     private medicoSrv: MedicoService,
     private campoSrv: CampoService,
     private tipoCampoSrv: TipoCampoService,
-    private campoValorSrv: CampoValorService
+    private campoValorSrv: CampoValorService,
+    private utilidadSrv: UtilidadService
   ) {}
 
   ngOnInit(): void {
@@ -91,7 +95,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       this.loadEstados();
       this.loadMedicos();
       const now = new Date();
-      this.fechaHora = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      this.fechaHora = this.formatDateTime(now);
+      this.updateFechaMaxima();
     });
   }
   ngOnDestroy(): void {
@@ -99,11 +104,22 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     this.camposSub?.unsubscribe();
   }
 
-  selectProblema(p: Problema): void {
+  selectProblema(p: Problema | null): void {
     this.selectedProblema = p;
-    if (typeof (p as any)?.estadoId === 'number') {
+    this.selectedProblemaId = p?.id ?? null;
+    if (p && typeof (p as any)?.estadoId === 'number') {
       this.estadoProblemaId = (p as any).estadoId;
     }
+  }
+
+  onProblemaIdChange(problemaId: number | null): void {
+    this.selectedProblemaId = problemaId ?? null;
+    if (problemaId == null) {
+      this.selectProblema(null);
+      return;
+    }
+    const encontrado = this.problemas.find(pr => pr.id === problemaId) ?? null;
+    this.selectProblema(encontrado);
   }
   applyTemplate(): void {
     if (!this.plantillaId) {
@@ -130,7 +146,7 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.medicoId) {
-      window.alert('Selecciona un medico antes de guardar.');
+      window.alert('No se pudo determinar el medico actual para la evolucion.');
       return;
     }
     if (this.plantillaId === undefined) {
@@ -173,19 +189,28 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   }
   nuevoProblema(): void { this.router.navigate(['/medico', 'paciente', this.pacienteId, 'problemas', 'nuevo']); }
 
-  onMedicoChange(): void {
-    if (this.medicoId) {
-      this.loadPlantillas(this.medicoId);
-    } else {
-      this.plantillas = [];
-      this.plantillaId = undefined;
-      this.resetPlantillaPreview();
-    }
+  onFechaHoraFocus(): void {
+    this.updateFechaMaxima();
+  }
+
+  onFechaHoraChange(): void {
+    this.enforceMaxFechaHora();
+  }
+
+  onFechaHoraInput(): void {
+    this.enforceMaxFechaHora();
+  }
+
+  confirmarFechaHora(): void {
+    this.updateFechaMaxima();
+    this.enforceMaxFechaHora();
+    const input = this.fechaHoraInput?.nativeElement;
+    input?.blur();
   }
 
   currentMedicoNombre(): string {
     if (!this.medicoId) {
-      return 'Selecciona un medico';
+      return 'Medico no disponible';
     }
     return this.medicos.find(m => m.id === this.medicoId)?.nombre || 'Medico seleccionado';
   }
@@ -209,8 +234,17 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     this.probs.list().subscribe({
       next: lista => {
         this.problemas = lista;
-        if (!this.selectedProblema && lista.length) {
+        if (this.selectedProblemaId != null) {
+          const existente = lista.find(p => p.id === this.selectedProblemaId);
+          if (existente) {
+            this.selectProblema(existente);
+            return;
+          }
+        }
+        if (lista.length) {
           this.selectProblema(lista[0]);
+        } else {
+          this.selectProblema(null);
         }
       },
       error: err => console.error('No se pudo cargar la lista de problemas', err)
@@ -230,11 +264,13 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
   }
 
   private loadMedicos(): void {
+    const usuarioActualId = this.utilidadSrv.obtenerUsuarioId();
     this.medicoSrv.lista().subscribe({
       next: resp => {
         const items: any[] = resp?.estado ? (resp.valor || []) : [];
-        this.medicos = items
-          .map(item => {
+        type MedicoListado = { id: number; nombre: string; usuarioId?: number };
+        const normalizados = items
+          .map<MedicoListado | null>(item => {
             const id = Number(item?.id ?? item?.Id);
             if (!Number.isFinite(id) || id <= 0) {
               return null;
@@ -244,14 +280,36 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
               item?.usuarioApellido ?? item?.UsuarioApellido ?? item?.apellido ?? item?.Apellido ?? ''
             ].filter(Boolean).join(' ').trim();
             const email = item?.usuarioMail ?? item?.UsuarioMail ?? '';
-            const display = nombre || email || `Medico ${id}`;
-            return { id, nombre: display };
+            const display = (nombre || email || `Medico ${id}`).toString();
+            const medico: MedicoListado = { id, nombre: display };
+            const usuarioId = Number(item?.usuarioId ?? item?.UsuarioId);
+            if (Number.isFinite(usuarioId) && usuarioId > 0) {
+              medico.usuarioId = usuarioId;
+            }
+            return medico;
           })
-          .filter((v): v is { id: number; nombre: string } => !!v);
+          .filter((v): v is MedicoListado => !!v);
+        this.medicos = normalizados;
 
-        if (!this.medicoId && this.medicos.length) {
-          this.medicoId = this.medicos[0].id;
-          this.loadPlantillas(this.medicoId);
+        const medicoSeleccionado = usuarioActualId
+          ? this.medicos.find(m => m.usuarioId === usuarioActualId)
+          : undefined;
+
+        const nuevoMedicoId = medicoSeleccionado?.id ??
+          (this.medicos.length === 1 ? this.medicos[0].id : undefined);
+
+        if (nuevoMedicoId) {
+          const cambio = this.medicoId !== nuevoMedicoId;
+          this.medicoId = nuevoMedicoId;
+          if (cambio) {
+            this.loadPlantillas(nuevoMedicoId);
+          }
+        } else {
+          this.medicoId = undefined;
+          this.plantillas = [];
+          this.plantillaId = undefined;
+          this.resetPlantillaPreview();
+          console.warn('No se encontró un medico asociado al usuario actual.');
         }
       },
       error: err => console.error('No se pudo cargar la lista de medicos', err)
@@ -262,7 +320,8 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     this.plantillaSrv.listaPorMedico(medicoId).subscribe({
       next: resp => {
         const items: Plantilla[] = resp?.estado ? (resp.valor || []) : [];
-        this.plantillas = items;
+        const activas = items.filter(p => this.esPlantillaActiva(p));
+        this.plantillas = activas;
         const currentId = typeof this.plantillaId === 'number' ? this.plantillaId : null;
         const usuarioEligioVacio = this.plantillaId === null;
         const exists = currentId != null ? !!this.plantillas.find(p => p.id === currentId) : false;
@@ -282,6 +341,17 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
         this.resetPlantillaPreview();
       }
     });
+  }
+  private esPlantillaActiva(plantilla: Plantilla): boolean {
+    if (!plantilla) return false;
+    const flag = (plantilla as any)?.activo;
+    if (typeof flag === 'number') {
+      return flag === 1;
+    }
+    if (typeof flag === 'string') {
+      return flag === '1' || flag.toLowerCase() === 'true';
+    }
+    return !!flag;
   }
 
   private loadPlantillaCampos(plantilla: Plantilla): void {
@@ -539,6 +609,22 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
       }
     }
     return '';
+  }
+
+  private updateFechaMaxima(): void {
+    this.fechaMaxima = this.formatDateTime(new Date());
+  }
+
+  private enforceMaxFechaHora(): void {
+    if (!this.fechaHora) {
+      this.fechaHora = this.fechaMaxima;
+      return;
+    }
+    const actual = new Date(this.fechaHora);
+    const max = this.fechaMaxima ? new Date(this.fechaMaxima) : new Date();
+    if (actual.getTime() > max.getTime()) {
+      this.fechaHora = this.fechaMaxima;
+    }
   }
 
   private async guardarValoresPlantilla(evolucionId: number): Promise<void> {
