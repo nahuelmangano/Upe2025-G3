@@ -47,14 +47,13 @@
 }
 
 .planilla-edit__field {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
 }
 
 .planilla-edit__label {
-  flex: 0 0 150px;
-  max-width: 45%;
   font-weight: 500;
   color: #374151;
   line-height: 1.25;
@@ -63,8 +62,7 @@
 .planilla-edit__field textarea,
 .planilla-edit__field input,
 .planilla-edit__field select {
-  flex: 1;
-  width: auto;
+  width: 100%;
   box-sizing: border-box;
   border-radius: 8px;
   border: 1px solid #d1d5db;
@@ -76,12 +74,13 @@
 .planilla-edit__checkbox {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 6px 10px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #fff;
-  min-height: 52px;
+  min-height: 40px;
   width: 100%;
   box-sizing: border-box;
   font-weight: 500;
