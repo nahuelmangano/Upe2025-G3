@@ -1,4 +1,4 @@
-/* @import '@angular/material/prebuilt-themes/magenta-violet.css'; */
+﻿/* @import '@angular/material/prebuilt-themes/magenta-violet.css'; */
 
 html, body { 
   height: 100%; 
@@ -31,8 +31,13 @@ body {
 .table thead th{ text-align:left; padding:10px; font-weight:600; color:#374151; border-bottom:1px solid var(--line); background:#f9f9ff; }
 .table tbody td{ padding:10px; border-bottom:1px solid var(--line); color:#374151; }
 
-.modal-backdrop{ position:fixed; inset:0; background:rgba(17,24,39,.5); display:flex; align-items:center; justify-content:center; }
-.modal-card{ width:min(720px, 92vw); background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.modal-backdrop{ position:fixed; inset:0; background:rgba(17,24,39,.5); display:flex; align-items:flex-start; justify-content:center; overflow:auto; padding:96px 16px 32px; }
+.modal-card{ width:min(640px, calc(100vw - 48px)); max-width:100%; background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:0; }
+
+@media (max-width: 768px){
+  .modal-backdrop{ padding:80px 12px 24px; }
+  .modal-card{ width:calc(100vw - 32px); }
+}
 .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
 .modal-grid label{ display:flex; flex-direction:column; gap:6px; }
 .modal-grid input, .modal-grid textarea, .modal-grid select{ width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; }
