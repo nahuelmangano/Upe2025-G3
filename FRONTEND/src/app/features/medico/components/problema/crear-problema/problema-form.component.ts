@@ -36,6 +36,10 @@ export class ProblemaFormComponent implements OnInit, OnDestroy {
 
   cancelar(): void { this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones']); }
 
+  volverAEvolucion(): void {
+    this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones', 'nueva']);
+  }
+
   async crear(): Promise<void> {
     await firstValueFrom(this.problemas.create({ titulo: this.titulo, descripcion: this.descripcion, estadoProblemaId: this.estadoId }));
     this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones']);

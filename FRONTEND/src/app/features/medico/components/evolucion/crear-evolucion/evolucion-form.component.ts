@@ -104,6 +104,14 @@ export class EvolucionFormComponent implements OnInit, OnDestroy {
     this.camposSub?.unsubscribe();
   }
 
+  volverAEvoluciones(): void {
+    if (this.pacienteId) {
+      void this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones']);
+    } else {
+      void this.router.navigate(['/medico', 'evoluciones']);
+    }
+  }
+
   selectProblema(p: Problema | null): void {
     this.selectedProblema = p;
     this.selectedProblemaId = p?.id ?? null;
