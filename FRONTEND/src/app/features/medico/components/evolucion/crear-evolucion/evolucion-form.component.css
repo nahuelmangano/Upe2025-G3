@@ -122,6 +122,7 @@
   grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
   gap: 18px;
   width: 100%;
+  overflow-x:hidden;
 }
 
 .preview-field {
@@ -245,11 +246,20 @@
 
 @media (max-width: 768px) {
   .preview-card {
-    padding: 22px;
+    padding: 18px;
   }
 
   .preview-grid {
     grid-template-columns: 1fr;
+    gap:10px;
+  }
+
+  .preview-field{
+    align-items:flex-start;
+  }
+
+  .preview-checkbox{
+    justify-content:flex-start;
   }
 }
 
