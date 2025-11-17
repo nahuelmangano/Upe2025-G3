@@ -42,7 +42,7 @@
 
 .planilla-edit__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px 16px;
 }
 
@@ -100,6 +100,28 @@
 .planilla-edit__error {
   font-size: 13px;
   color: #b91c1c;
+}
+
+@media (max-width: 768px) {
+  .planilla-edit__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planilla-edit__field {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .planilla-edit__label {
+    text-align:left;
+  }
+
+  .planilla-edit__field textarea,
+  .planilla-edit__field input,
+  .planilla-edit__field select,
+  .planilla-edit__checkbox{
+    min-height:44px;
+  }
 }
 
 /* Rayado de filas: una blanca, una gris */

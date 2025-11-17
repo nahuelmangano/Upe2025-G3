@@ -1,5 +1,40 @@
+.problema-form-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+
 .card-problema-form .h3 {
-  margin-bottom: 12px;
+  margin:0;
+}
+
+.volver-evolucion-btn{
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid #d4dae8;
+  background:#ffffff;
+  color:#4f46e5;
+  font-weight:600;
+  font-size:0.9rem;
+  cursor:pointer;
+  transition:background 0.2s ease,border-color 0.2s ease,color 0.2s ease;
+}
+
+.volver-evolucion-btn:hover{
+  background:#f5f3ff;
+  border-color:#a5b4fc;
+  color:#4338ca;
+}
+
+.volver-evolucion-btn:active{
+  transform:translateY(1px);
+}
+
+.volver-evolucion-btn:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(79,70,229,0.2);
 }
 
 .card-problema-form .modal-grid{
@@ -52,6 +87,12 @@
     row-gap:14px;
   }
 
+  .problema-form-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
   .titulo-field,
   .estado-field,
   .card-problema-form .modal-grid label{
@@ -72,6 +113,11 @@
   .card-problema-form .modal-grid{
     column-gap:12px;
     row-gap:12px;
+  }
+
+  .volver-evolucion-btn{
+    width:100%;
+    text-align:center;
   }
 
   .form-actions{
