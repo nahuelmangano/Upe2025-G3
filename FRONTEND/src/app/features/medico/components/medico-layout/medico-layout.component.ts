@@ -1,6 +1,6 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ViewportScroller } from '@angular/common';
-import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subscription, Subject, takeUntil } from 'rxjs';
 import { PacienteService } from '@features/paciente/services/paciente.service';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -20,13 +20,15 @@ import { PacienteContextService } from '@core/services/paciente-context.service'
   templateUrl: './medico-layout.component.html',
   styleUrls: ['./medico-layout.component.css']
 })
-export class MedicoLayoutComponent implements OnInit, OnDestroy {
+export class MedicoLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private destroy$ = new Subject<void>();
+  private viewInitialized = false;
 
   isDesktop = true;
   isExpanded = true;
   isPacienteCtx = false;
+  toolbarHeight = 64;
   
   pacienteNombre = '';
   pacienteEdad: number | null = null;
@@ -37,12 +39,15 @@ export class MedicoLayoutComponent implements OnInit, OnDestroy {
   private routerSub?: Subscription;
   private pacienteSub?: Subscription;
 
+  @ViewChild('toolbarRef') toolbarRef?: ElementRef<HTMLElement>;
+
   constructor(
     private router: Router,
     private pacientesSrv: PacienteService,
     private utilidadSrv: UtilidadService,
     private pacienteContextService: PacienteContextService,
-    private scroller: ViewportScroller
+    private scroller: ViewportScroller,
+    private cdRef: ChangeDetectorRef
   ) {
     this.updateViewportFlags();
     this.updateMedicoNombre();
@@ -66,11 +71,18 @@ export class MedicoLayoutComponent implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onResize() {
     this.updateViewportFlags();
+    this.updateToolbarHeight();
+  }
+
+  ngAfterViewInit(): void {
+    this.viewInitialized = true;
+    this.updateToolbarHeight();
   }
 
   private updateViewportFlags() {
     this.isDesktop = window.innerWidth >= 960;
     this.isExpanded = this.isDesktop ? true : false;
+    this.updateToolbarHeight();
   }
 
   toggleSidenav() {
@@ -160,5 +172,22 @@ export class MedicoLayoutComponent implements OnInit, OnDestroy {
   private updateMedicoNombre(): void {
     const nombre = (this.utilidadSrv.obtenerNombreCompletoUsuario() || '').trim();
     this.medicoNombre = nombre || 'No disponible';
+  }
+
+  private updateToolbarHeight(): void {
+    if (!this.viewInitialized) {
+      this.toolbarHeight = this.isDesktop ? 64 : 72;
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const newHeight = this.toolbarRef?.nativeElement?.offsetHeight;
+      const fallback = this.isDesktop ? 64 : 72;
+      const heightToUse = newHeight && newHeight > 0 ? newHeight : fallback;
+      if (this.toolbarHeight !== heightToUse) {
+        this.toolbarHeight = heightToUse;
+        this.cdRef.detectChanges();
+      }
+    });
   }
 }
