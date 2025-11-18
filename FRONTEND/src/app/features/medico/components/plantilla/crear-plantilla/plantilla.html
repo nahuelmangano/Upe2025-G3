@@ -12,17 +12,11 @@
         </mat-form-field>
         <mat-form-field appearance="outline" class="descripcion-plantilla">
           <mat-label>Descripción de la Plantilla</mat-label>
-          <textarea
-            matInput
-            formControlName="descripcion"
-            placeholder="Breve descripción de la plantilla"
-            rows="2">
+          <textarea matInput formControlName="descripcion" placeholder="Breve descripción de la plantilla" rows="2">
           </textarea>
           <mat-hint>Explicá para qué sirve la plantilla (opcional)</mat-hint>
         </mat-form-field>
-        <button mat-button matStepperNext [disabled]="formInfoBasica.invalid">
-          Siguiente (Secciones)
-        </button>
+        <button mat-button (click)="irAPaso2()">Siguiente (Secciones)</button>
       </form>
     </mat-step>
     <mat-step [stepControl]="formSecciones">
@@ -42,12 +36,15 @@
               <div *ngIf="secciones.length === 0" class="zona-instruccion">
                 <span>Agregá una sección para comenzar</span>
               </div>
-              <mat-card *ngFor="let seccion of secciones.controls; let i = index" [formGroupName]="i" class="seccion-card">
+              <mat-card *ngFor="let seccion of secciones.controls; let i = index" [formGroupName]="i"
+                class="seccion-card">
                 <div class="seccion-header">
-                  <mat-form-field appearance="outline" class="titulo-seccion">
+                  <mat-form-field appearance="outline" class="titulo-seccion"
+                    [ngClass]="{'mat-form-field-invalid-custom': seccion.get('titulo')?.invalid && (seccion.get('titulo')?.touched || formSecciones.touched)}">
                     <mat-label>Título de la Sección</mat-label>
                     <input matInput formControlName="titulo" required />
-                    <mat-error *ngIf="seccion.get('titulo')?.hasError('required')">
+                    <mat-error
+                      *ngIf="seccion.get('titulo')?.hasError('required') && (seccion.get('titulo')?.touched || formSecciones.touched)">
                       El título de la sección es obligatorio
                     </mat-error>
                   </mat-form-field>
@@ -56,28 +53,31 @@
                   </button>
                 </div>
                 <div class="campo-lista" formArrayName="campos">
-                  <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroupName]="j" class="campo-item">
+                  <div *ngFor="let campo of seccion.get('campos').controls; let j = index" [formGroupName]="j"
+                    class="campo-item">
                     <mat-icon class="tipo-icono" matTooltip="{{ campo.get('tipoCampoNombre')?.value }}">
                       {{ getIconoTipoCampo(campo.get('tipoCampoNombre')?.value) }}
                     </mat-icon>
                     <mat-form-field appearance="outline" class="campo-etiqueta">
-                      <mat-label>Etiqueta</mat-label>
-                      <input matInput formControlName="etiqueta" placeholder="Ej: Apellido, Fecha de Nacimiento" required />
+                      <mat-label>Nombre del campo</mat-label>
+                      <input matInput formControlName="etiqueta" placeholder="Ej: Apellido, Fecha de Nacimiento"
+                        required />
                       <mat-error *ngIf="campo.get('etiqueta')?.hasError('required')">
-                        La etiqueta es obligatoria
+                        El nombre es obligatorio
                       </mat-error>
                     </mat-form-field>
                     <mat-form-field appearance="outline" class="campo-tipo">
                       <mat-label>Tipo de Campo</mat-label>
                       <mat-select formControlName="tipoCampoId"
-                                  (selectionChange)="onTipoCampoChange(i, j, $event.value)" required>
+                        (selectionChange)="onTipoCampoChange(i, j, $event.value)" required>
                         <mat-option *ngFor="let tipo of tiposCampos" [value]="tipo.id">{{ tipo.nombre }}</mat-option>
                       </mat-select>
                       <mat-error *ngIf="campo.get('tipoCampoId')?.hasError('required')">
                         Seleccioná un tipo de campo
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field *ngIf="esCampoConOpciones(campo.get('tipoCampoNombre')?.value)" appearance="outline" class="campo-opciones">
+                    <mat-form-field *ngIf="esCampoConOpciones(campo.get('tipoCampoNombre')?.value)" appearance="outline"
+                      class="campo-opciones">
                       <mat-label>Opciones (separadas por coma)</mat-label>
                       <input matInput formControlName="opciones" placeholder="Ej: Masculino, Femenino, Otro" />
                     </mat-form-field>
@@ -99,12 +99,14 @@
                 </mat-option>
               </mat-select>
             </mat-form-field>
-            <button *ngFor="let tipo of tiposCampos"
-                    mat-stroked-button
-                    class="btn-tipo"
-                    [matTooltip]="getDescripcionTipoCampo(tipo.nombre)"
-                    matTooltipPosition="right"
-                    (click)="agregarCampoASeccionSeleccionada(tipo)">
+            <div class="sugerencia-tipo-campo" *ngIf="seccionSeleccionadaIndex !== null">
+              <ng-container *ngIf="secciones.at(seccionSeleccionadaIndex).get('titulo')?.valid; else pideTitulo">
+                Seleccioná el tipo de dato para agregar un campo a la sección seleccionada
+              </ng-container>
+            </div>
+            <button *ngFor="let tipo of tiposCampos" mat-stroked-button class="btn-tipo"
+              [matTooltip]="getDescripcionTipoCampo(tipo.nombre)" matTooltipPosition="right"
+              (click)="agregarCampoASeccionSeleccionada(tipo)">
               <div class="tipo-contenido">
                 <mat-icon class="tipo-icono-grande">
                   {{ tipo.icono || getIconoTipoCampo(tipo.nombre) || 'widgets' }}
@@ -118,9 +120,7 @@
         </div>
         <div>
           <button mat-button matStepperPrevious>Anterior</button>
-          <button mat-button matStepperNext [disabled]="formSecciones.invalid">
-            Previsualización
-          </button>
+          <button mat-button (click)="irAPaso3()">Previsualización</button>
         </div>
       </form>
     </mat-step>
@@ -145,7 +145,8 @@
             <label class="preview-campo-label">{{ campo.etiqueta }}</label>
             <ng-container [ngSwitch]="getInputType(campo.tipoCampoNombre)">
               <input *ngSwitchCase="'text'" type="text" class="preview-input" placeholder="Escribe aquí..." />
-              <textarea *ngSwitchCase="'textarea'" rows="3" class="preview-textarea" placeholder="Escribe aquí..."></textarea>
+              <textarea *ngSwitchCase="'textarea'" rows="3" class="preview-textarea"
+                placeholder="Escribe aquí..."></textarea>
               <input *ngSwitchCase="'number'" type="number" class="preview-input" placeholder="0" />
               <input *ngSwitchCase="'decimal'" type="number" step="0.01" class="preview-input" placeholder="0.00" />
               <input *ngSwitchCase="'datetime-local'" type="datetime-local" class="preview-input" />
@@ -154,11 +155,13 @@
                   {{ opt.trim() }}
                 </option>
               </select>
-              <select *ngSwitchCase="'multiselect'" class="preview-select" multiple>
-                <option *ngFor="let opt of campo.opciones?.split(',')" [value]="opt.trim()">
+              <div *ngSwitchCase="'multiselect'" class="preview-select preview-select-multiselect-vertical">
+                <div *ngFor="let opt of campo.opciones?.split(',')" class="preview-option"
+                  [class.selected]="campo.valor?.includes(opt.trim())"
+                  (click)="toggleMultiSelectOption($event, campo, opt.trim())">
                   {{ opt.trim() }}
-                </option>
-              </select>
+                </div>
+              </div>
               <label *ngSwitchCase="'checkbox'" class="checkbox-container">
                 <input type="checkbox" class="preview-checkbox" />
                 <span>Seleccionar</span>
@@ -173,7 +176,8 @@
       </div>
       <div>
         <button mat-button matStepperPrevious>Anterior</button>
-        <button mat-flat-button color="primary" (click)="guardar()" [disabled]="formInfoBasica.invalid || formSecciones.invalid">
+        <button mat-flat-button color="primary" (click)="guardar()"
+          [disabled]="formInfoBasica.invalid || formSecciones.invalid">
           Guardar
         </button>
       </div>
