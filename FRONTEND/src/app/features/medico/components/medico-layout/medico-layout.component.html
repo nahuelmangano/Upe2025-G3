@@ -1,4 +1,4 @@
-﻿<mat-toolbar class="panel" color="primary">
+﻿<mat-toolbar #toolbarRef class="panel" color="primary" [style.position]="'fixed'" [style.width]="'100%'">
   <mat-toolbar-row class="toolbar-row">
     <div class="toolbar-left">
       <span class="color-primario mr titulo">SALUD - UPE</span>
@@ -19,9 +19,10 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-sidenav-container class="test">
+<mat-sidenav-container class="test" [style.marginTop.px]="toolbarHeight">
   <mat-sidenav #sidenav [opened]="isExpanded" class="contenedor-marco" [mode]="isDesktop ? 'side' : 'over'"
-    [fixedInViewport]="!isDesktop" [fixedTopGap]="isDesktop ? 64 : 56" (closedStart)="isExpanded=false"
+    [fixedInViewport]="!isDesktop" [fixedTopGap]="toolbarHeight" [style.paddingTop.px]="!isDesktop ? toolbarHeight : 0"
+    (closedStart)="isExpanded=false"
     (openedStart)="isExpanded=true">
     <ng-container *ngIf="isPacienteCtx; else defaultNav">
       <div class="side-panel">

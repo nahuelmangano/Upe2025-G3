@@ -39,9 +39,8 @@
 }
 
 .panel {
-  position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1200;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(4px);
 }
@@ -65,7 +64,17 @@
 }
 
 :host ::ng-deep .contenedor-marco .mat-drawer-inner-container{
-  overflow-y:hidden;
+  overflow-y:auto;
+  max-height:100%;
+  padding-bottom:16px;
+}
+
+:host ::ng-deep .mat-drawer.mat-drawer-over {
+  z-index: 1201;
+}
+
+:host ::ng-deep .mat-drawer-backdrop.mat-drawer-shown {
+  z-index: 1200;
 }
 
 .side-panel{
