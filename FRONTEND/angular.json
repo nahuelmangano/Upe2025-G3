@@ -27,8 +27,7 @@
               "src/styles.css"
             ],
             "scripts": [],
-            "sourceMap": true,
-            "poll": 2000
+            "sourceMap": true
           },
           "configurations": {
             "production": {
@@ -41,8 +40,7 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "buildTarget": "upeclinica-frontend:build",
-            "proxyConfig": "proxy.conf.json",
-            "poll": 2000
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

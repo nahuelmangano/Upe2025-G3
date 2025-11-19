@@ -8,6 +8,7 @@ html, body {
 
 body { 
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  background:#f5f6ff;
 }
 
 /* Global utility styles for simple pages (cards, tables, buttons) */
