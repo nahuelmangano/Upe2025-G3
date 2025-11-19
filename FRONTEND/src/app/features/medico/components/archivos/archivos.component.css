@@ -59,5 +59,19 @@
 .col-evolucion .mdc-label{white-space:normal}
 .col-tipo,.col-fecha{padding:8px 10px}
 
+/* Material table tweaks for consistent look */
+.mat-mdc-table .mat-mdc-header-cell{
+  font-weight:600;
+  color:#374151;
+  background:#f9f9ff;
+}
+.empty-row .mat-cell{
+  text-align:center;
+  color:#6b7280;
+}
+
+/* Rayado de filas como Evoluciones */
+.table tbody tr:nth-child(odd){ background:#ffffff; }
+.table tbody tr:nth-child(even){ background:#f5f6f8; }
 
 

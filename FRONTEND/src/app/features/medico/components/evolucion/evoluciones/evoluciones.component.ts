@@ -8,13 +8,16 @@ import { catchError, map as rxMap, tap } from 'rxjs/operators';
 import { EvolucionesService, EvolucionInput } from '@features/paciente/services/evoluciones.service';
 import { EvolucionService } from '@features/paciente/services/evolucion.service';
 import { EstudioService } from '@features/estudio/services/estudio.service';
+import { TipoEstudioService } from '@features/estudio/services/tipo-estudio.service';
 import { ArchivoAdjuntoService } from '@features/paciente/services/archivo-adjunto.service';
 import { Evolucion as EvolucionModel } from '@features/paciente/interfaces/evolucion';
+import { Estudio } from '@features/estudio/interfaces/estudio';
 import { ProblemaService } from '@features/paciente/services/problema.service';
 import { MedicoService } from '@features/medico/services/medico.service';
 import { EstadoProblemaService } from '@features/medico/services/estado-problema.service';
 import { CampoValorService } from '@features/medico/services/campo-valor.service';
 import { CampoService } from '@features/medico/services/campo.service';
+import { SHARED_IMPORTS } from '@shared/shared-imports';
 
 interface EvolucionRow {
   id: number;
@@ -56,7 +59,7 @@ interface ArchivoRow {
 @Component({
   standalone: true,
   selector: 'app-paciente-evoluciones',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ...SHARED_IMPORTS],
   templateUrl: './evoluciones.component.html',
   styleUrls: ['./evoluciones.component.css']
 })
@@ -91,6 +94,24 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   estudiosModal = false;
   estudiosLoading = false;
   estudios: ArchivoRow[] = [];
+  evolucionEstudiosActual?: { id: number; descripcion?: string } | null = null;
+  estudiosListado: { id: number; tipo: string; tipoId?: number; fecha: string; profesional: string; observaciones?: string | null }[] = [];
+  estudiosTipoOptions: { id: number; nombre: string }[] = [];
+  estudioForm = {
+    tipoEstudioId: null as number | null,
+    fecha: new Date().toISOString().slice(0,10),
+    realizadoPor: '',
+    observaciones: ''
+  };
+  estudiosFiles: File[] = [];
+  savingEstudio = false;
+  editingEstudioId: number | null = null;
+  // Ver archivos (solo lectura)
+  viewingEstudioId: number | null = null;
+  archivosViewing: { id: number; nombre: string }[] = [];
+  // Eliminar archivo (modal confirm)
+  deleteArchivoId: number | null = null;
+  archivosEditing: { id: number; nombre: string; tamano?: number }[] = [];
   editPlanillaCampos: PlanillaCampo[] = [];
   editPlanillaLoading = false;
   editPlanillaError = '';
@@ -102,6 +123,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     private evolucionesSrv: EvolucionesService,
     private evolucionSrv: EvolucionService,
     private estudioSrv: EstudioService,
+    private tipoEstudioSrv: TipoEstudioService,
     private archivoSrv: ArchivoAdjuntoService,
     private problemaSrv: ProblemaService,
     private medicoSrv: MedicoService,
@@ -121,28 +143,25 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
 
   openEstudios(e: EvolucionRow): void {
     this.estudiosModal = true;
-    this.estudiosLoading = true;
+    this.estudiosLoading = false;
     this.estudios = [];
-    this.estudioSrv.listaPorEvolucion(e.id).subscribe({
-      next: (resp: any) => {
-        const estudios: any[] = resp?.estado ? (resp.valor || []) : [];
-        if (!estudios.length) { this.estudiosLoading = false; return; }
-        const calls = estudios.map(es => this.archivoSrv.listaPorEstudio(es.id));
-        forkJoin(calls).subscribe({
-          next: (resps: any[]) => {
-            const all = resps.flatMap(r => (r?.valor || []) as any[]);
-            this.estudios = all.map(a => ({ id: a?.id ?? 0, nombre: a?.nombreArchivo ?? '-', tamano: a?.tamano ?? 0 }));
-            this.estudiosLoading = false;
-          },
-          error: () => { this.estudiosLoading = false; this.estudios = []; }
-        });
-      },
-      error: () => { this.estudiosLoading = false; this.estudios = []; }
-    });
+    this.evolucionEstudiosActual = { id: e.id, descripcion: e.descripcion || undefined };
+    this.estudioForm.realizadoPor = this.util.obtenerNombreCompletoUsuario?.() || '';
+    this.loadTiposEstudio();
+    this.loadEstudiosDeEvolucion(e.id);
   }
 
   closeEstudios(): void {
     this.estudiosModal = false;
+    this.evolucionEstudiosActual = null;
+    this.estudiosListado = [];
+    this.estudiosFiles = [];
+    this.estudioForm = {
+      tipoEstudioId: null,
+      fecha: new Date().toISOString().slice(0,10),
+      realizadoPor: '',
+      observaciones: ''
+    };
   }
 
   download(archivoId: number, ev?: Event): void {
@@ -152,6 +171,238 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     window.open(url, '_blank');
     // Aviso de éxito (inicio de descarga)
     this.util.mostrarAlerta('Descarga iniciada', 'Ok');
+  }
+
+  // ------------------- Estudios (modal) -------------------
+  private loadTiposEstudio(): void {
+    this.estudiosTipoOptions = [];
+    this.tipoEstudioSrv.lista().subscribe({
+      next: (resp: any) => {
+        const items: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.estudiosTipoOptions = items
+          .map(it => ({ id: Number(it?.id ?? it?.Id), nombre: String(it?.nombre ?? it?.Nombre ?? '') }))
+          .filter(x => Number.isFinite(x.id) && x.id > 0 && !!x.nombre);
+      },
+      error: () => { this.estudiosTipoOptions = []; }
+    });
+  }
+
+  private loadEstudiosDeEvolucion(evolucionId: number): void {
+    this.estudiosListado = [];
+    this.estudioSrv.listaPorEvolucion(evolucionId).subscribe({
+      next: (resp: any) => {
+        const items: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.estudiosListado = items.map(it => {
+          const fechaIso = it?.fecha ? new Date(it.fecha).toISOString() : '';
+          return {
+            id: Number(it?.id ?? it?.Id ?? 0),
+            tipo: (() => {
+              const direct = (it?.tipoEstudioNombre ?? it?.TipoEstudioNombre);
+              if (typeof direct === 'string' && direct.trim()) return String(direct);
+              const tipoId = Number(it?.tipoEstudioId ?? it?.TipoEstudioId ?? 0);
+              if (Number.isFinite(tipoId) && tipoId > 0) {
+                const match = this.estudiosTipoOptions.find(t => t.id === tipoId);
+                if (match?.nombre) return match.nombre;
+              }
+              return '—';
+            })(),
+            tipoId: Number(it?.tipoEstudioId ?? it?.TipoEstudioId ?? 0) || undefined,
+            fecha: fechaIso,
+            profesional: String(it?.realizadoPor ?? it?.RealizadoPor ?? '—'),
+            observaciones: (it?.observaciones ?? it?.Observaciones ?? null)
+          };
+        }).sort((a, b) => (Date.parse(b.fecha || '') || 0) - (Date.parse(a.fecha || '') || 0));
+      },
+      error: () => { this.estudiosListado = []; }
+    });
+  }
+
+  onEstudioFiles(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    this.estudiosFiles = input.files ? Array.from(input.files) : [];
+  }
+
+  canUploadEstudio(): boolean {
+    const baseOk = !!this.evolucionEstudiosActual?.id
+      && !!this.estudioForm.tipoEstudioId
+      && !!this.estudioForm.fecha
+      && !!(this.estudioForm.realizadoPor || '').trim();
+    // Si estamos editando, no obligamos a subir archivo
+    if (this.editingEstudioId && this.editingEstudioId > 0) return baseOk;
+    // En creación sí requerimos al menos un archivo
+    return baseOk && this.estudiosFiles.length > 0;
+  }
+
+  uploadEstudio(): void {
+    if (!this.evolucionEstudiosActual?.id || !this.canUploadEstudio() || this.savingEstudio) return;
+    this.savingEstudio = true;
+    if (this.editingEstudioId && this.editingEstudioId > 0) {
+      // Editar existente
+      const payloadEdit: Estudio = {
+        id: this.editingEstudioId,
+        fecha: new Date(this.estudioForm.fecha),
+        realizadoPor: this.estudioForm.realizadoPor,
+        resultado: null,
+        observaciones: this.estudioForm.observaciones,
+        tipoEstudioId: this.estudioForm.tipoEstudioId!,
+        evolucionId: this.evolucionEstudiosActual.id
+      } as any;
+      this.estudioSrv.editar(payloadEdit).subscribe({
+        next: () => {
+          const calls = this.estudiosFiles.map(f => this.archivoSrv.subir(this.editingEstudioId!, f));
+          const after = () => {
+            this.util.mostrarAlerta('Estudio actualizado', 'Ok');
+            this.editingEstudioId = null;
+            this.postUploadRefresh();
+          };
+          if (!calls.length) { after(); return; }
+          forkJoin(calls).subscribe({ next: after, error: after });
+        },
+        error: () => {
+          this.savingEstudio = false;
+          this.util.mostrarAlerta('No pudimos actualizar el estudio', 'Ok');
+        }
+      });
+    } else {
+      // Crear nuevo
+      const payload: Estudio = {
+        id: 0,
+        fecha: new Date(this.estudioForm.fecha),
+        realizadoPor: this.estudioForm.realizadoPor,
+        resultado: null,
+        observaciones: this.estudioForm.observaciones,
+        tipoEstudioId: this.estudioForm.tipoEstudioId!,
+        evolucionId: this.evolucionEstudiosActual.id
+      } as any;
+  
+      this.estudioSrv.crear(payload).subscribe({
+        next: (res: any) => {
+          const creadoId = Number(res?.valor?.id ?? res?.valor?.Id ?? 0);
+          const calls = creadoId > 0 ? this.estudiosFiles.map(f => this.archivoSrv.subir(creadoId, f)) : [];
+          if (!calls.length) {
+            this.util.mostrarAlerta('Estudio creado', 'Ok');
+            this.postUploadRefresh();
+            return;
+          }
+          forkJoin(calls).subscribe({
+            next: () => {
+              this.util.mostrarAlerta('Estudio y archivos cargados con éxito', 'Ok');
+              this.postUploadRefresh();
+            },
+            error: () => {
+              this.util.mostrarAlerta('El estudio se creó, pero algunos archivos fallaron', 'Ok');
+              this.postUploadRefresh();
+            }
+          });
+        },
+        error: () => {
+          this.savingEstudio = false;
+          this.util.mostrarAlerta('No pudimos crear el estudio', 'Ok');
+        }
+      });
+    }
+  }
+
+  private postUploadRefresh(): void {
+    const firmado = this.estudioForm.realizadoPor;
+    this.estudioForm = {
+      tipoEstudioId: null,
+      fecha: new Date().toISOString().slice(0,10),
+      realizadoPor: firmado,
+      observaciones: ''
+    };
+    this.estudiosFiles = [];
+    this.editingEstudioId = null;
+    if (this.evolucionEstudiosActual?.id) {
+      this.loadEstudiosDeEvolucion(this.evolucionEstudiosActual.id);
+    }
+    this.savingEstudio = false;
+  }
+
+  startEditEstudio(item: { id: number; tipoId?: number; fecha: string; observaciones?: string | null }): void {
+    this.editingEstudioId = item.id;
+    this.viewingEstudioId = null; // cerramos vista solo lectura si estaba abierta
+    if (item.tipoId && item.tipoId > 0) {
+      this.estudioForm.tipoEstudioId = item.tipoId;
+    }
+    const d = item.fecha ? new Date(item.fecha) : new Date();
+    this.estudioForm.fecha = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    // conservamos realizadoPor actual
+    this.estudioForm.observaciones = (item.observaciones ?? this.estudioForm.observaciones ?? '') as any;
+    this.estudiosFiles = [];
+    // Cargar archivos existentes del estudio para mostrarlos
+    this.archivosEditing = [];
+    this.archivoSrv.listaPorEstudio(item.id).subscribe({
+      next: (resp: any) => {
+        const archivos: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.archivosEditing = archivos.map(a => ({
+          id: Number(a?.id ?? 0),
+          nombre: String(a?.nombreArchivo ?? a?.NombreArchivo ?? 'archivo')
+        }));
+      },
+      error: () => { this.archivosEditing = []; }
+    });
+  }
+
+  toggleViewEstudio(item: { id: number }): void {
+    if (this.viewingEstudioId === item.id) {
+      this.viewingEstudioId = null;
+      this.archivosViewing = [];
+      return;
+    }
+    this.viewingEstudioId = item.id;
+    this.editingEstudioId = null; // cerramos edición si estuviera
+    this.archivosViewing = [];
+    this.archivoSrv.listaPorEstudio(item.id).subscribe({
+      next: (resp: any) => {
+        const archivos: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.archivosViewing = archivos.map(a => ({
+          id: Number(a?.id ?? 0),
+          nombre: String(a?.nombreArchivo ?? a?.NombreArchivo ?? 'archivo')
+        }));
+      },
+      error: () => { this.archivosViewing = []; }
+    });
+  }
+
+  downloadEstudio(estudioId: number): void {
+    this.archivoSrv.listaPorEstudio(estudioId).subscribe({
+      next: (resp: any) => {
+        const archivos: any[] = resp?.estado ? (resp.valor || []) : [];
+        if (!archivos.length) { this.util.mostrarAlerta('Sin archivos para descargar', 'Ok'); return; }
+        archivos.forEach(a => {
+          const url = this.archivoSrv.descargar(Number(a?.id ?? 0));
+          if (url) window.open(url, '_blank');
+        });
+        this.util.mostrarAlerta('Descarga iniciada', 'Ok');
+      }
+    });
+  }
+
+  openArchivo(archivoId: number): void {
+    const url = this.archivoSrv.descargar(archivoId);
+    window.open(url, '_blank');
+  }
+
+  openDeleteArchivo(archivoId: number): void { this.deleteArchivoId = archivoId; }
+  closeDeleteArchivo(): void { this.deleteArchivoId = null; }
+  confirmEditEstudio(): void { this.uploadEstudio(); }
+  confirmDeleteArchivo(): void {
+    if (!this.deleteArchivoId) return;
+    const id = this.deleteArchivoId;
+    this.archivoSrv.eliminar(id).subscribe({
+      next: () => {
+        // quitar de ambas listas si existiera
+        this.archivosEditing = this.archivosEditing.filter(a => a.id !== id);
+        this.archivosViewing = this.archivosViewing.filter(a => a.id !== id);
+        this.util.mostrarAlerta('Archivo eliminado', 'Ok');
+        this.deleteArchivoId = null;
+      },
+      error: () => {
+        this.util.mostrarAlerta('No se pudo eliminar el archivo', 'Ok');
+        this.deleteArchivoId = null;
+      }
+    });
   }
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
@@ -750,3 +1001,6 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     return single || undefined;
   }
 }
+
+// Nuevas utilidades para estudios en modal
+// (métodos añadidos dentro de la clase EvolucionesComponent)
