@@ -19,7 +19,9 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-sidenav-container class="test" [style.marginTop.px]="toolbarHeight">
+<mat-sidenav-container class="test"
+  [style.marginTop.px]="toolbarHeight"
+  [style.minHeight.px]="layoutHeight">
   <mat-sidenav #sidenav [opened]="isExpanded" class="contenedor-marco" [mode]="isDesktop ? 'side' : 'over'"
     [fixedInViewport]="!isDesktop" [fixedTopGap]="toolbarHeight" [style.paddingTop.px]="!isDesktop ? toolbarHeight : 0"
     (closedStart)="isExpanded=false"
@@ -34,16 +36,22 @@
         </div>
 
         <div class="patient-card">
-          <div class="avatar" aria-hidden="true">{{ pacienteIniciales || 'P' }}</div>
-          <div class="patient-name">{{ pacienteNombre || 'Nombre del paciente' }}</div>
-          <div class="patient-stats">
-            <div class="stat">
-              <span class="label">EDAD</span>
-              <span class="value">{{ pacienteEdad ?? '--' }}</span>
-            </div>
-            <div class="stat">
-              <span class="label">DNI</span>
-              <span class="value">{{ pacienteDni || '--' }}</span>
+          <div class="patient-card-content">
+            <div class="patient-header">
+              <div class="avatar" aria-hidden="true">{{ pacienteIniciales || 'P' }}</div>
+              <div class="patient-info">
+                <div class="patient-name">{{ pacienteNombre || 'Nombre del paciente' }}</div>
+                <div class="patient-stats">
+                  <div class="stat">
+                    <span class="label">EDAD</span>
+                    <span class="value">{{ pacienteEdad ?? '--' }}</span>
+                  </div>
+                  <div class="stat">
+                    <span class="label">DNI</span>
+                    <span class="value">{{ pacienteDni || '--' }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

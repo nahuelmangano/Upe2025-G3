@@ -29,7 +29,15 @@ export class MedicoLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   isExpanded = true;
   isPacienteCtx = false;
   toolbarHeight = 64;
-  
+  viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
+
+  private layoutExtraSpace = 80;
+
+  get layoutHeight(): number {
+    const base = Math.max(this.viewportHeight - this.toolbarHeight, 0);
+    return Math.max(base + this.layoutExtraSpace, this.viewportHeight);
+  }
+
   pacienteNombre = '';
   pacienteEdad: number | null = null;
   pacienteDni = '';
@@ -82,6 +90,7 @@ export class MedicoLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   private updateViewportFlags() {
     this.isDesktop = window.innerWidth >= 960;
     this.isExpanded = this.isDesktop ? true : false;
+    this.viewportHeight = window.innerHeight;
     this.updateToolbarHeight();
   }
 

@@ -52,6 +52,7 @@ export class CrearPacienteFormComponent implements OnInit {
   listaProvincias: Provincia[] = [];
   listaCiudades: string[] = [];
   listaCalles: string[] = [];
+  readonly maxFechaNacimiento = new Date(); // avoid selecting future dates
 
   constructor(
     private fb: FormBuilder,

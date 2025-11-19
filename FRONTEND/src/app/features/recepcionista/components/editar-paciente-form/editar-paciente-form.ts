@@ -70,6 +70,7 @@ export class EditarPacienteFormComponent {
   listaProvincias: Provincia[] = [];
   listaCiudades: string[] = [];
   listaCalles: string[] = [];
+  readonly maxFechaNacimiento = new Date();
 
   constructor(
     private fb: FormBuilder,
@@ -108,9 +109,6 @@ export class EditarPacienteFormComponent {
       obraSocialId: [null],
       numeroAfiliado: [""]
     })
-    this.formularioPaciente.get('dni')?.disable();
-    this.formularioPaciente.get('fechaNac')?.disable();
-    this.formularioPaciente.get('grupoSanguineo')?.disable();
   }
 
   ngOnInit(): void {
@@ -208,8 +206,10 @@ export class EditarPacienteFormComponent {
 
         this.procesarListasDeCalles(listaDomicilios);
 
+        const fechaNacimiento = pacienteData?.fechaNac ? new Date(pacienteData.fechaNac) : null;
+
         if (pacienteData) {
-          this.pacienteCargado = { ...pacienteData, ...domicilioData };
+          this.pacienteCargado = { ...pacienteData, ...domicilioData, fechaNac: fechaNacimiento ?? pacienteData.fechaNac };
         }
 
         const paisSeleccionado = this.listaPaises.find(
@@ -230,6 +230,7 @@ export class EditarPacienteFormComponent {
 
         this.formularioPaciente.patchValue({
           ...pacienteData,
+          fechaNac: fechaNacimiento ?? pacienteData?.fechaNac ?? null,
           pais: paisSeleccionado || null,
           provincia: provinciaSeleccionada || null,
           ciudad: ciudadSeleccionada || null,
@@ -352,7 +353,15 @@ export class EditarPacienteFormComponent {
   private normalizarValor(valor: any): any {
     if (valor === null || valor === undefined) return undefined;
 
-    if (typeof valor === 'string' && valor.trim() === '') return undefined;
+    if (valor instanceof Date) {
+      return valor.toISOString();
+    }
+
+    if (typeof valor === 'string') {
+      const valorNormalizado = valor.trim();
+      if (valorNormalizado === '') return undefined;
+      return valorNormalizado;
+    }
 
     if (valor && typeof valor === 'object') {
       if ('country_name_es' in valor) return valor.country_name_es;
@@ -424,7 +433,7 @@ export class EditarPacienteFormComponent {
   }
 
   guardarRelacionPacienteObraSocial(): void {
-    const formValues = this.formularioPaciente.value;
+    const formValues = this.formularioPaciente.getRawValue();
     const obraSocialSeleccionadaId = formValues.obraSocialId;
     const numeroAfiliado = formValues.numeroAfiliado;
     if (obraSocialSeleccionadaId === this.pacienteCargado.obraSocialId) {
@@ -533,10 +542,10 @@ export class EditarPacienteFormComponent {
               id: this.idPaciente,
               nombre: formValues.nombre,
               apellido: formValues.apellido,
-              dni: this.pacienteCargado.dni!,
+              dni: formValues.dni,
               email: formValues.email,
-              fechaNac: this.pacienteCargado.fechaNac!,
-              grupoSanguineo: this.pacienteCargado.grupoSanguineo!,
+              fechaNac: formValues.fechaNac,
+              grupoSanguineo: formValues.grupoSanguineo,
               nacionalidad: formValues.nacionalidad,
               ocupacion: formValues.ocupacion,
               telefono1: formValues.telefono1,
@@ -566,10 +575,10 @@ export class EditarPacienteFormComponent {
         id: this.idPaciente,
         nombre: formValues.nombre,
         apellido: formValues.apellido,
-        dni: this.pacienteCargado.dni!,
+        dni: formValues.dni,
         email: formValues.email,
-        fechaNac: this.pacienteCargado.fechaNac!,
-        grupoSanguineo: this.pacienteCargado.grupoSanguineo!,
+        fechaNac: formValues.fechaNac,
+        grupoSanguineo: formValues.grupoSanguineo,
         nacionalidad: formValues.nacionalidad,
         ocupacion: formValues.ocupacion,
         telefono1: formValues.telefono1,
