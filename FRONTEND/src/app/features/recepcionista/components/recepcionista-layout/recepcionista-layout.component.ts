@@ -82,19 +82,9 @@ export class RecepcionistaLayoutComponent implements AfterViewInit {
   }
 
   private updateToolbarHeight(): void {
-    if (!this.viewInitialized) {
-      this.toolbarHeight = this.isDesktop ? 64 : 72;
-      return;
-    }
-
-    requestAnimationFrame(() => {
-      const newHeight = this.toolbarRef?.nativeElement?.offsetHeight;
-      const fallback = this.isDesktop ? 64 : 72;
-      const heightToUse = newHeight && newHeight > 0 ? newHeight : fallback;
-      if (this.toolbarHeight !== heightToUse) {
-        this.toolbarHeight = heightToUse;
-        this.cdRef.detectChanges();
-      }
-    });
+    const fallback = this.isDesktop ? 64 : 72;
+    const heightToUse = this.toolbarRef?.nativeElement?.offsetHeight ?? fallback;
+    this.toolbarHeight = heightToUse;
+    document.documentElement.style.setProperty('--recepcion-toolbar-offset', `${heightToUse}px`);
   }
 }
