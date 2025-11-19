@@ -217,6 +217,7 @@
 
 .layout-content {
   padding: 24px;
+  padding-top: calc(24px + var(--toolbar-offset, 0px));
   min-height: calc(100vh - 64px);
   background: #f5f6ff;
 }
