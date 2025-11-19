@@ -7,6 +7,32 @@
   margin-right: 20px;
 }
 
+.toolbar-row{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-height:64px;
+  height:auto;
+}
+
+.toolbar-left,
+.toolbar-right{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.toolbar-left{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+.toolbar-right{
+  flex-shrink:0;
+}
+
 .color-primario {
   color: #352D77;
   font-weight: bold;
@@ -195,10 +221,6 @@
   background: #f5f6ff;
 }
 
-.toolbar-spacer{
-  flex:1 1 auto;
-}
-
 .medico-pill{
   display:inline-flex;
   align-items:center;
@@ -242,4 +264,61 @@
 .logout-btn mat-icon{
   font-size:18px;
   color:#3f2ea8;
+}
+
+@media (max-width: 900px){
+  .titulo{
+    font-size:20px;
+  }
+}
+
+@media (max-width: 768px){
+  .toolbar-row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+    padding-top:8px;
+    padding-bottom:8px;
+  }
+
+  .toolbar-left{
+    width:100%;
+    justify-content:space-between;
+  }
+
+  .toolbar-right{
+    width:100%;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .medico-pill{
+    flex:0 0 auto;
+    margin-right:0;
+  }
+
+  .logout-btn{
+    flex:0 0 auto;
+  }
+
+  .toolbar-right > *{
+    flex:0 0 auto;
+  }
+}
+
+@media (max-width: 520px){
+  .toolbar-right{
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+
+  .medico-pill,
+  .logout-btn{
+    width:auto;
+    justify-content:center;
+    align-self:center;
+    min-width:0;
+  }
 }
