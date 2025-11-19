@@ -40,10 +40,15 @@ export class ModalObraSocialComponent {
     this.tituloAccion = datosObraSocial ? "Editar Obra Social" : "Agregar Obra Social";
     this.botonAccion = datosObraSocial ? "Actualizar" : "Guardar";
 
+    // Convertimos a booleano controlando valores numéricos y strings ("0"/"1")
+    const activoInicial = datosObraSocial?.activo !== undefined
+      ? Number(datosObraSocial.activo) === 1
+      : true;
+
     this.formularioObraSocial = this.fb.group({
       id: [datosObraSocial?.id || 0],
       nombre: [datosObraSocial?.nombre || "", Validators.required],
-      activo: [datosObraSocial?.activo ?? 1] // Activo por defecto
+      activo: [activoInicial] // MatSlideToggle trabaja con booleanos
     });
   }
 
@@ -52,7 +57,12 @@ export class ModalObraSocialComponent {
       return;
     }
 
-    const obraSocial: ObraSocial = this.formularioObraSocial.value;
+    const formValue = this.formularioObraSocial.value;
+    const obraSocial: ObraSocial = {
+      id: formValue.id,
+      nombre: formValue.nombre,
+      activo: formValue.activo ? 1 : 0
+    };
     const accion = this.datosObraSocial ? this._obraSocialServicio.editar(obraSocial) : this._obraSocialServicio.crear(obraSocial);
 
     accion.subscribe({
