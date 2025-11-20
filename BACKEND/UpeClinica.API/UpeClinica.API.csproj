@@ -5,6 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
+    <EnableDefaultRazorComponentItems>false</EnableDefaultRazorComponentItems>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.razor;**/*.cshtml;**/*.resx</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,12 +19,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="**/*.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Controllers/**/*.cs" />
+    <Compile Include="Utilidad/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="appsettings.Development.json" Condition="Exists('appsettings.Development.json')" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Properties/launchSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
