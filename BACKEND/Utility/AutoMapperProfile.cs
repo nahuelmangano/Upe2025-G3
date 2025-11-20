@@ -143,7 +143,7 @@ namespace Utility
             CreateMap<Estudio, EstudioDTO>()
                 .ForMember(destino =>
                 destino.Fecha,
-                opt => opt.MapFrom(origen => origen.Fecha.ToString("dd/MM/yyyy"))
+                opt => opt.MapFrom(origen => origen.Fecha)
                 )
                 .ForMember(destino =>
                 destino.TipoEstudioNombre,
