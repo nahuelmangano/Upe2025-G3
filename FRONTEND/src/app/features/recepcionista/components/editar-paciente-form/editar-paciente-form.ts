@@ -71,6 +71,8 @@ export class EditarPacienteFormComponent {
   listaCiudades: string[] = [];
   listaCalles: string[] = [];
   readonly maxFechaNacimiento = new Date();
+  pacienteObraSocialActualId?: number;
+  pacienteObraSocialActual?: PacienteObraSocial;
 
   constructor(
     private fb: FormBuilder,
@@ -139,10 +141,12 @@ export class EditarPacienteFormComponent {
     );
 
     forkJoin(llamadas).subscribe(resultados => {
-      const relacionValida = resultados.find(r => r.relaciones.length > 0);
+      const relacionValida = resultados.find(r => r.relaciones.some(rel => rel.activo === 1)) || resultados.find(r => r.relaciones.length > 0);
 
       if (relacionValida) {
-        const relacion = relacionValida.relaciones[0];
+        const relacion = relacionValida.relaciones.find(rel => rel.activo === 1) || relacionValida.relaciones[0];
+        this.pacienteObraSocialActualId = relacion.id;
+        this.pacienteObraSocialActual = relacion;
         this.pacienteCargado = {
           ...this.pacienteCargado,
           obraSocialNombre: relacionValida.obra.nombre,
@@ -395,29 +399,38 @@ export class EditarPacienteFormComponent {
   private _editarRelacionPacienteObraSocial(pacienteId: number, obraSocialId: number, numeroAfiliado?: string) {
     this._pacienteObraSocialServicio.listaPorPacienteObraSocial(pacienteId, obraSocialId).subscribe({
       next: (resp: ResponseApi) => {
-        if (resp.estado) {
-          const relacionObtenida: PacienteObraSocial = {
-            ...resp.valor[0]
-          }
-          const relacionEditar: PacienteObraSocial = {
-            id: relacionObtenida.id,
-            vigenteDesde: relacionObtenida.vigenteDesde,
-            activo: relacionObtenida.activo,
-            pacienteId: relacionObtenida.pacienteId,
-            pacienteNombre: relacionObtenida.pacienteNombre,
-            obraSocialId: relacionObtenida.obraSocialId,
-            obraSocialNombre: relacionObtenida.obraSocialNombre,
-            numeroAfiliado: numeroAfiliado
+        if (resp.estado && resp.valor && resp.valor.length > 0) {
+          const relacionActiva = (resp.valor as PacienteObraSocial[]).find(r => r.activo === 1);
+          const relacionObtenida: PacienteObraSocial | undefined = relacionActiva || (resp.valor as PacienteObraSocial[])[0];
+
+          if (!relacionObtenida && !this.pacienteObraSocialActualId) {
+            this._snackBar.open('No se encontró la relación de obra social a editar', 'Error', { duration: 3000 });
+            return;
           }
 
-          this._pacienteObraSocialServicio.editar(relacionEditar).subscribe({
-            next: (resp: ResponseApi) => {
-              if (resp.estado) {
-                this._snackBar.open('Paciente editado con éxito', 'Cerrar', { duration: 3000 });
-                this.formularioPaciente.disable();
-                setTimeout(() => this.router.navigate(['/recepcionista/pacientes']).then(() => {
-                  this.scroller.scrollToPosition([0, 0]);
-                }), 3000);
+          const relacionEditar: PacienteObraSocial = {
+            id: this.pacienteObraSocialActualId ?? relacionObtenida!.id,
+            vigenteDesde: relacionObtenida?.vigenteDesde,
+            activo: relacionObtenida?.activo ?? 1,
+            pacienteId: relacionObtenida?.pacienteId ?? pacienteId,
+            pacienteNombre: relacionObtenida?.pacienteNombre,
+            obraSocialId: relacionObtenida?.obraSocialId ?? obraSocialId,
+            obraSocialNombre: relacionObtenida?.obraSocialNombre,
+            numeroAfiliado: numeroAfiliado?.trim() || null
+          };
+
+          this.pacienteObraSocialActualId = relacionEditar.id;
+      this._pacienteObraSocialServicio.editar(relacionEditar).subscribe({
+        next: (resp: ResponseApi) => {
+          if (resp.estado) {
+            this.pacienteCargado.numeroAfiliado = numeroAfiliado;
+            this.pacienteCargado.obraSocialId = obraSocialId;
+            this.pacienteObraSocialActual = relacionEditar;
+            this._snackBar.open('Paciente editado con éxito', 'Cerrar', { duration: 3000 });
+            this.formularioPaciente.disable();
+            setTimeout(() => this.router.navigate(['/recepcionista/pacientes']).then(() => {
+              this.scroller.scrollToPosition([0, 0]);
+            }), 3000);
               } else {
                 this._snackBar.open('Error al editar la obra social', 'Error', { duration: 3000 });
               }
@@ -436,17 +449,51 @@ export class EditarPacienteFormComponent {
     const formValues = this.formularioPaciente.getRawValue();
     const obraSocialSeleccionadaId = formValues.obraSocialId;
     const numeroAfiliado = formValues.numeroAfiliado;
+    if (obraSocialSeleccionadaId === null) {
+      this._snackBar.open('Debe seleccionar una obra social para agregar el número de afiliado', 'Error', { duration: 3000 });
+      return;
+    }
+    if (numeroAfiliado.trim() === '') {
+      this._snackBar.open('Debe seleccionar agregar el número de afiliado a la obra social', 'Error', { duration: 3000 });
+      return;
+    }
+
+    // Si es la misma obra social, solo actualizamos número
     if (obraSocialSeleccionadaId === this.pacienteCargado.obraSocialId) {
       this._editarRelacionPacienteObraSocial(this.idPaciente!, this.pacienteCargado.obraSocialId!, numeroAfiliado);
+      return;
+    }
+
+    // Cambiando de obra social: reutilizamos la relación existente si la tenemos, de lo contrario creamos
+    if (this.pacienteObraSocialActualId) {
+      const relacionEditar: PacienteObraSocial = {
+        id: this.pacienteObraSocialActualId,
+        pacienteId: this.idPaciente!,
+        obraSocialId: Number(obraSocialSeleccionadaId),
+        numeroAfiliado: numeroAfiliado.trim() || null,
+        activo: 1,
+        vigenteDesde: this.pacienteObraSocialActual?.vigenteDesde ?? new Date(),
+        pacienteNombre: this.pacienteObraSocialActual?.pacienteNombre,
+        obraSocialNombre: this.pacienteObraSocialActual?.obraSocialNombre
+      };
+
+      this._pacienteObraSocialServicio.editar(relacionEditar).subscribe({
+        next: resp => {
+          if (resp.estado) {
+            this.pacienteCargado.obraSocialId = Number(obraSocialSeleccionadaId);
+            this.pacienteCargado.numeroAfiliado = numeroAfiliado.trim() || null;
+            this._snackBar.open('Paciente editado con éxito', 'Cerrar', { duration: 3000 });
+            this.formularioPaciente.disable();
+            setTimeout(() => this.router.navigate(['/recepcionista/pacientes']).then(() => {
+              this.scroller.scrollToPosition([0, 0]);
+            }), 3000);
+          } else {
+            this._snackBar.open('Error al asociar la obra social', 'Error', { duration: 3000 });
+          }
+        },
+        error: () => this._snackBar.open('Error al asociar la obra social', 'Error', { duration: 3000 })
+      });
     } else {
-      if (obraSocialSeleccionadaId === null) {
-        this._snackBar.open('Debe seleccionar una obra social para agregar el número de afiliado', 'Error', { duration: 3000 });
-        return;
-      }
-      if (numeroAfiliado.trim() === '') {
-        this._snackBar.open('Debe seleccionar agregar el número de afiliado a la obra social', 'Error', { duration: 3000 });
-        return;
-      }
       this._crearRelacionPacienteObraSocial(this.idPaciente!, Number(obraSocialSeleccionadaId), numeroAfiliado);
     }
   }
@@ -463,6 +510,11 @@ export class EditarPacienteFormComponent {
     this._pacienteObraSocialServicio.crear(relacion).subscribe({
       next: (resp: ResponseApi) => {
         if (resp.estado) {
+          const nuevaRelacion = resp.valor as PacienteObraSocial | undefined;
+          this.pacienteObraSocialActualId = nuevaRelacion?.id ?? this.pacienteObraSocialActualId;
+          this.pacienteObraSocialActual = nuevaRelacion ?? this.pacienteObraSocialActual;
+          this.pacienteCargado.obraSocialId = obraSocialId;
+          this.pacienteCargado.numeroAfiliado = numeroAfiliado ?? null;
           this._snackBar.open('Paciente editado con éxito', 'Cerrar', { duration: 3000 });
           this.formularioPaciente.disable();
           setTimeout(() => this.router.navigate(['/recepcionista/pacientes']).then(() => {
