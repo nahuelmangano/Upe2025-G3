@@ -367,7 +367,7 @@ namespace Utility
             CreateMap<PacienteObraSocial, PacienteObraSocialDTO>()
                 .ForMember(destino =>
                 destino.VigenteDesde,
-                opt => opt.MapFrom(origen => origen.VigenteDesde.Value.ToString("dd/MM/yyyy"))
+                opt => opt.MapFrom(origen => origen.VigenteDesde)
                 )
                 .ForMember(destino =>
                 destino.Activo,

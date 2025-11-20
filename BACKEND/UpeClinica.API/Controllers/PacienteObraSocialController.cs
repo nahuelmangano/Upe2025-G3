@@ -79,7 +79,7 @@ namespace UpeClinica.API.Controllers
         }
 
         [HttpPut]
-        [Route("Eliminar")]
+        [Route("Eliminar/{id:int}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var rsp = new Response<bool>();

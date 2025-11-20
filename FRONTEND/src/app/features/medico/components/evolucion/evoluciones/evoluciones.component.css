@@ -132,3 +132,27 @@
 .table tbody tr:nth-child(even) {
   background: #f5f6f8;
 }
+
+/* Botón de archivos y ocultar input nativo (para mantener estética Material) */
+.selector-archivos{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.input-file-oculto{ display:none }
+
+/* Estilo legible para campo deshabilitado "Realizado por" */
+:host ::ng-deep .readonly-field .mdc-text-field--disabled{
+  background-color: transparent !important;
+}
+:host ::ng-deep .readonly-field .mdc-text-field--disabled .mdc-text-field__input{
+  color: #111827 !important;           /* mismo color que texto normal */
+  -webkit-text-fill-color: #111827 !important;
+}
+
+/* Alinear acciones (descargar / eliminar) en fila */
+.acciones-archivo{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
