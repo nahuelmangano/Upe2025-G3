@@ -414,6 +414,17 @@
   margin-top: 0 !important;
 }
 
+.d-none {
+  display: none !important;
+}
+.mat-form-field-invalid-custom .mat-form-field-outline {
+  color: #f44336 !important;
+  border-color: #f44336 !important;
+}
+.mat-form-field-invalid-custom .mat-form-field-ripple {
+  background-color: #f44336 !important;
+}
+
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }

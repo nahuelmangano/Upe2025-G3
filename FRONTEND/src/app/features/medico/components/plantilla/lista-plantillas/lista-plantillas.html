@@ -74,13 +74,17 @@
               class="preview-input" readonly />
             <input *ngSwitchCase="'datetime-local'" type="datetime-local"
               [value]="campo.valor ? (campo.valor | date:'yyyy-MM-ddTHH:mm') : ''" class="preview-input" readonly />
-            <select *ngSwitchCase="'select'" class="preview-select"
-              [multiple]="campo.tipoCampoNombre === 'Selección Múltiple'" disabled>
-              <option *ngFor="let opt of campo.opciones?.split(',')"
-                [selected]="esOpcionSeleccionada(opt.trim(), campo.valor)">
+              <select *ngSwitchCase="'select'" class="preview-select">
+                <option *ngFor="let opt of campo.opciones?.split(',')" [value]="opt.trim()">
+                  {{ opt.trim() }}
+                </option>
+              </select>
+            <div *ngSwitchCase="'multiselect'" class="preview-select preview-select-multiselect-vertical">
+              <div *ngFor="let opt of campo.opciones?.split(',')" class="preview-option"
+                [class.selected]="campo.valor?.includes(opt.trim())">
                 {{ opt.trim() }}
-              </option>
-            </select>
+              </div>
+            </div>
             <label *ngSwitchCase="'checkbox'" class="checkbox-container">
               <input type="checkbox" [checked]="campo.valor === true || campo.valor === 'true'" disabled />
               <span>Seleccionado</span>
@@ -105,7 +109,7 @@
 <ng-template #confirmarEliminar let-data>
   <h2 mat-dialog-title>Eliminar plantilla</h2>
   <mat-dialog-content>
-    ¿Seguro que deseas eliminar la plantilla 
+    ¿Seguro que deseas eliminar la plantilla
     <span class="plantilla-destacada">{{ data?.nombre }}</span>?
   </mat-dialog-content>
   <mat-dialog-actions align="end">

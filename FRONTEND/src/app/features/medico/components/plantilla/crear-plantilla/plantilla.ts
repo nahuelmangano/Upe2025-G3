@@ -38,6 +38,8 @@ export class PlantillaComponent implements OnInit {
   plantillaId: number | null = null;
   modoEdicion: boolean = false;
   tipoSeccionId: number | null = null;
+  mostrarErroresInfoBasica = false;
+  mostrarErroresSecciones = false;
 
   constructor(
     private fb: FormBuilder,
@@ -98,17 +100,19 @@ export class PlantillaComponent implements OnInit {
   }
 
   irAPaso2() {
-    this.formInfoBasica.markAllAsTouched();
-    if (this.formInfoBasica.valid) {
-      this.stepper.next();
-    }
+  this.mostrarErroresInfoBasica = true;
+  this.formInfoBasica.markAllAsTouched();
+  if (this.formInfoBasica.valid) {
+    this.stepper.next();
   }
+}
   irAPaso3() {
-    this.formSecciones.markAllAsTouched();
-    if (this.formSecciones.valid) {
-      this.stepper.next();
-    }
+  this.mostrarErroresSecciones = true; 
+  this.formSecciones.markAllAsTouched();
+  if (this.formSecciones.valid) {
+    this.stepper.next();
   }
+}
 
   cargarTiposCampo(): void {
     this.tipoCampoService.lista().subscribe({
@@ -201,6 +205,7 @@ export class PlantillaComponent implements OnInit {
       })
     );
     this.seccionSeleccionadaIndex = this.secciones.length - 1;
+    this.mostrarErroresSecciones = false;
     this.cdRef.detectChanges();
   }
 
