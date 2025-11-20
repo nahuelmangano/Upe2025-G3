@@ -80,7 +80,10 @@ namespace BLL.Servicios
 
                 pacienteEncontrado.Nombre = pacienteModelo.Nombre;
                 pacienteEncontrado.Apellido = pacienteModelo.Apellido;
+                pacienteEncontrado.Dni = pacienteModelo.Dni;
                 pacienteEncontrado.Email = pacienteModelo.Email;
+                pacienteEncontrado.FechaNac = pacienteModelo.FechaNac;
+                pacienteEncontrado.GrupoSanguineo = pacienteModelo.GrupoSanguineo;
                 pacienteEncontrado.Nacionalidad = pacienteModelo.Nacionalidad;
                 pacienteEncontrado.Ocupacion = pacienteModelo.Ocupacion;
                 pacienteEncontrado.Telefono1 = pacienteModelo.Telefono1;
