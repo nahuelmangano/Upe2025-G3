@@ -29,8 +29,13 @@ namespace BLL.Servicios
             {
                 var queryArchivos = await _archivoAdjuntoRepositorio.Consultar(archivo =>
                     archivo.EstudioId == estudioId);
-                // usar include en un futuro para obtneer mas datos del estudio si se requiere
-                return _mapper.Map<List<ArchivoAdjuntoDTO>>(queryArchivos.ToList());
+
+                var archivos = queryArchivos
+                    .Include(archivo => archivo.Estudio)
+                    .ThenInclude(estudio => estudio.TipoEstudio)
+                    .ToList();
+
+                return _mapper.Map<List<ArchivoAdjuntoDTO>>(archivos);
             }
             catch
             {
@@ -53,7 +58,10 @@ namespace BLL.Servicios
                     archivo => archivo.Id == archivoCreado.Id
                 );
 
-                archivoCreado = query.Include(estudio => estudio.Estudio).First();
+                archivoCreado = query
+                    .Include(archivo => archivo.Estudio)
+                    .ThenInclude(estudio => estudio.TipoEstudio)
+                    .First();
 
                 return _mapper.Map<ArchivoAdjuntoDTO>(archivoCreado);
             }
