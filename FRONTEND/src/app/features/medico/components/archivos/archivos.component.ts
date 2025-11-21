@@ -10,6 +10,8 @@ import { Estudio } from '@features/estudio/interfaces/estudio';
 import { PacienteService } from '@features/paciente/services/paciente.service';
 import { Paciente } from '@features/paciente/interfaces/paciente';
 import { UtilidadService } from '@core/services/utilidad.service';
+import { RolPermiso } from '@core/interfaces/rol-permiso';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
 
 type EvolucionItem = { id: number; descripcion?: string };
 type TipoEstudioItem = { id: number; nombre: string };
@@ -17,7 +19,7 @@ type TipoEstudioItem = { id: number; nombre: string };
 @Component({
   standalone: true,
   selector: 'app-paciente-archivos',
-  imports: [ ...SHARED_IMPORTS, RouterModule ],
+  imports: [...SHARED_IMPORTS, RouterModule],
   templateUrl: './archivos.component.html',
   styleUrls: ['./archivos.component.css']
 })
@@ -43,8 +45,9 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     private tipoSvc: TipoEstudioService,
     private pacienteSvc: PacienteService,
     private cdr: ChangeDetectorRef,
-    private util: UtilidadService
-  ) {}
+    private util: UtilidadService,
+    private rolPermisoServicio: RolPermisoService
+  ) { }
 
   ngOnInit(): void {
     // Suscribirse a cambios de ruta por si se navega entre pacientes sin recrear el componente
@@ -54,6 +57,8 @@ export class ArchivosComponent implements OnInit, OnDestroy {
       this.loadAll();
       this.loadPaciente();
     });
+
+    this.cargarRolPermisoServicio();
   }
 
   ngOnDestroy(): void {
@@ -75,6 +80,34 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   private loadPaciente(): void {
     if (!this.pacienteId) return;
     this.pacienteSvc.obtener(this.pacienteId).subscribe(p => this.paciente = p);
+  }
+
+  cargarRolPermisoServicio() {
+    this.rolPermisoServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          this.util.dataListaRolesPermisos = data.valor;
+
+        } else {
+          this.util.mostrarAlerta(data.mensaje, "Opps!");
+        }
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    const boton = document.getElementById('botonArchivo');
+    if (boton) {
+      boton.addEventListener('click', (event) => {
+        if (!this.util.tienePermiso("Subir Archivo", 2)) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          this.util.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
+          return;
+        }
+      }, true); 
+    }
   }
 
   private loadAll(): void {

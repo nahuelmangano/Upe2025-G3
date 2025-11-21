@@ -10,6 +10,7 @@ import { UtilidadService } from '@core/services/utilidad.service';
 import { ResponseApi } from '@core/interfaces/response-api';
 import { MedicoService } from '@features/medico/services/medico.service';
 import { SHARED_IMPORTS } from '@shared/shared-imports';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
 
 
 interface Seccion {
@@ -32,6 +33,7 @@ export class ListaPlantillasComponent implements OnInit {
   private utilidadService = inject(UtilidadService);
   private dialog = inject(MatDialog);
   private router = inject(Router);
+  private rolPermisoServicio = inject(RolPermisoService);
 
   @ViewChild('previsualizacionDialog') previsualizacionDialog!: TemplateRef<any>;
   @ViewChild('confirmarEliminar') confirmarEliminarDialog!: TemplateRef<any>;
@@ -44,7 +46,38 @@ export class ListaPlantillasComponent implements OnInit {
   ngOnInit(): void {
     this.cargarTiposCampo();
     this.cargarPlantillasDelMedico();
+    this.cargarRolPermisoServicio();
   }
+
+  cargarRolPermisoServicio() {
+    this.rolPermisoServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          this.utilidadService.dataListaRolesPermisos = data.valor;
+
+        } else {
+          this.utilidadService.mostrarAlerta(data.mensaje, "Opps!");
+        }
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    const boton = document.getElementById('botonCrearPlantilla');
+    if (boton) {
+      boton.addEventListener('click', (event) => {
+        if (!this.utilidadService.tienePermiso("Crear Plantilla", 2)) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          this.utilidadService.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
+          return;
+        }
+      }, true);
+    }
+  }
+
 
   private cargarTiposCampo(): void {
     this.tipoCampoService.lista().subscribe({

@@ -33,7 +33,7 @@
                 </p>
                 <p class="welcome-text">
                     <mat-icon class="text-icon">lock</mat-icon>
-                    Completa el formulario con tus datos y crea una cuenta
+                    Completa el formulario con los datos proporcionados via mail y completa tu cuenta
                     segura para comenzar a gestionar historias clínicas.
                 </p>
             </div>
@@ -64,14 +64,14 @@
                         </mat-form-field>
 
                         <mat-form-field class="full-width" appearance="outline">
-                            <mat-label>Contraseña Antigua</mat-label>
+                            <mat-label>Contraseña Enviada por Mail</mat-label>
                             <input [type]="ocultarPasswordOld ? 'password' : 'text'" matInput formControlName="passwordHashAntigua"
                                 autocomplete="off" />
                             <button mat-icon-button matSuffix (click)="ocultarPasswordOld = !ocultarPasswordOld" type="button">
                                 <mat-icon>{{ocultarPasswordOld ? 'visibility_off' : 'visibility'}}</mat-icon>
                             </button>
                             <mat-error *ngIf="formularioRegistro.get('passwordOld')?.hasError('required')">
-                                La contraseña antigua es requerida
+                                La contraseña enviada por Mail es requerida
                             </mat-error>
                         </mat-form-field>
 

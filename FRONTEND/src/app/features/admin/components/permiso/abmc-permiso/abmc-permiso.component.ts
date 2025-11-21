@@ -10,38 +10,45 @@ import { Rol } from '@core/interfaces/rol';
 import { PermisoService } from '@core/services/permiso.service';
 import { RolService } from '@core/services/rol.service';
 import { RolPermisoService } from '@core/services/rol-permiso.service';
-import { ModalPermisoComponent } from '@features/admin/modals/modal-permiso/modal-permiso.component';
+import { ModalPermisoMedicoComponent } from '@features/admin/modals/modal-permiso-medico/modal-permiso.component';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import Swal from 'sweetalert2';
+import { ModalPermisoComponent } from '@features/admin/modals/modal-permiso/modal-permiso.component';
 
 @Component({
   selector: 'app-permiso',
   standalone: true,
   imports: [...SHARED_IMPORTS],
-  templateUrl: './permiso.component.html',
-  styleUrl: './permiso.component.css'
+  templateUrl: './abmc-permiso.component.html',
+  styleUrl: './abmc-permiso.component.css',
+  providers: [
+    {
+      provide: MatPaginatorIntl,
+      useFactory: (utilidadService: UtilidadService) => utilidadService.getSpanishPaginatorIntl(),
+      deps: [UtilidadService]
+    }
+  ]
 })
-export class PermisoComponent implements OnInit, AfterViewInit {
-  columnasTabla: string[] = ['rol', 'permiso', 'estado', 'acciones'];
-  dataInicio: RolPermiso[] = [];
-  dataListaPermisos: Permiso[] = [];
-  dataListaRol: Rol[] = [];
+export class ABMCPermisoComponent implements OnInit, AfterViewInit {
+  columnasTabla: string[] = ['nombre', 'descripcion', 'estado', 'acciones'];
+  dataInicio: Permiso[] = [];
 
-  dataListaPermisosRoles = new MatTableDataSource(this.dataInicio);
+  dataListaPermisos = new MatTableDataSource(this.dataInicio);
   @ViewChild(MatPaginator) paginacionTabla!: MatPaginator;
 
   constructor(
     private dialog: MatDialog,
     private _utilidadServicio: UtilidadService,
-    private _permisoServicio: PermisoService,
-    private _rolServicio: RolService,
-    private _rolPermisoServicio: RolPermisoService
+    private _permisoServicio: PermisoService
   ) { }
 
-  cargarRolPermisoServicio() {
-    this._rolPermisoServicio.lista().subscribe({
+  cargarPermiso() {
+    this._permisoServicio.lista().subscribe({
       next: (data) => {
         if (data.estado) {
-          this.dataListaPermisosRoles.data = data.valor;
+          this.dataListaPermisos.data = data.valor;
+          console.log(this.dataListaPermisos.data);
+          
         } else {
           this._utilidadServicio.mostrarAlerta(data.mensaje, "Opps!");
         }
@@ -50,61 +57,61 @@ export class PermisoComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.cargarRolPermisoServicio();
+    this.cargarPermiso();
   }
 
   ngAfterViewInit(): void {
-    this.dataListaPermisosRoles.paginator = this.paginacionTabla;
+    this.dataListaPermisos.paginator = this.paginacionTabla;
   }
 
   aplicarFiltroTabla(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataListaPermisosRoles.filter = filterValue.trim().toLocaleLowerCase();
+    this.dataListaPermisos.filter = filterValue.trim().toLocaleLowerCase();
   }
 
-  nuevoRolPermiso() {
+  nuevoPermiso() {
     this.dialog.open(ModalPermisoComponent, {
-      disableClose: true, // No se puede cerrar haciendo clic fuera del modal
+      disableClose: true
     }).afterClosed().subscribe(resultado => {
       if (resultado === 'true')
-        this.cargarRolPermisoServicio();
+        this.cargarPermiso();
     });
   }
 
-  editarRolPermiso(rolPermiso: RolPermiso) {
+  editarPermiso(permiso: Permiso) {
     this.dialog.open(ModalPermisoComponent, {
-      disableClose: true, // No se puede cerrar haciendo clic fuera del modal
-      data: rolPermiso
+      disableClose: true,
+      data: permiso
     }).afterClosed().subscribe(resultado => {
       if (resultado === 'true')
-        this.cargarRolPermisoServicio();
+        this.cargarPermiso();
     });
   }
 
-  eliminarRolPermiso(rolPermiso: RolPermiso) {
+  eliminarPermiso(permiso: Permiso) {
     Swal.fire({
-      title: '¿Desea desactivar el permiso?',
-      text: rolPermiso.permisoNombre ?? '',
+      title: '¿Desea eliminar el permiso?',
+      text: permiso.nombre ?? '',
       icon: 'warning',
       confirmButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, desactivar',
+      confirmButtonText: 'Sí, eliminar',
       showCancelButton: true,
       cancelButtonColor: '#d33',
       cancelButtonText: 'No, volver'
     })
       .then((resultado) => {
         if (resultado.isConfirmed) {
-          this._rolPermisoServicio.eliminar(rolPermiso.id).subscribe({
+          this._permisoServicio.eliminar(permiso.id).subscribe({
             next: (data) => {
               if (data.estado) {
-                this._utilidadServicio.mostrarAlerta("El permiso asignado fue desactivado", "Listo!");
-                this.cargarRolPermisoServicio();
+                this._utilidadServicio.mostrarAlerta("El permiso fue eliminado", "Listo!");
+                this.cargarPermiso();
               } else {
-                this._utilidadServicio.mostrarAlerta("No se pudo desactivar el permiso", "Error");
+                this._utilidadServicio.mostrarAlerta(data.mensaje, "Error");
               }
             },
             error: () => {
-              this._utilidadServicio.mostrarAlerta("No se pudo desactivar el permiso", "Error");
+              this._utilidadServicio.mostrarAlerta("No se pudo eliminar el permissasso", "Error");
             }
           });
         }

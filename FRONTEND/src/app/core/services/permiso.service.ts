@@ -18,7 +18,7 @@ export class PermisoService {
     return this.http.get<ResponseApi>(`${this.urlApi}Lista`);
   }
 
-  crear(request: PermisoCrear): Observable<ResponseApi> {
+  crear(request: Permiso): Observable<ResponseApi> {
     return this.http.post<ResponseApi>(`${this.urlApi}Crear`, request);
   }
   editar(request: Permiso): Observable<ResponseApi> {

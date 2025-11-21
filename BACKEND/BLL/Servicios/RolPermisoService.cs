@@ -87,7 +87,16 @@ namespace BLL.Servicios
 
                 rolPermisoEncontrado.RolId = rolPermisoModelo.RolId;
                 rolPermisoEncontrado.PermisoId = rolPermisoModelo.PermisoId;
-                // no se me ocurre otra cossA
+
+                var permisoEncontrado = await _permiso.Obtener(
+                    permiso => permiso.Id == rolPermisoEncontrado.PermisoId
+                    );
+
+                if( permisoEncontrado == null)
+                    throw new TaskCanceledException("No se pudo encontrar el permiso");
+                permisoEncontrado.Activo = modelo.Activo;
+
+                await _permiso.Editar( permisoEncontrado );
 
                 bool respuesta = await _rolPermisoRepositorio.Editar(rolPermisoEncontrado);
 
@@ -99,7 +108,7 @@ namespace BLL.Servicios
             }
         }
 
-        public async Task<bool> Desactivar(int id)
+        public async Task<bool> Eliminar(int id)
         {
             try
             {
@@ -109,15 +118,10 @@ namespace BLL.Servicios
                 if (rolPermisoEncontrado == null)
                     throw new TaskCanceledException("No existe el permiso para el rol");
 
-                var permisoEncontrado = await _permiso.Obtener(p =>
-                p.Id == rolPermisoEncontrado.PermisoId);
-
-                permisoEncontrado.Activo = false;
-
-                bool respuesta = await _permiso.Editar(permisoEncontrado);
+                bool respuesta = await _rolPermisoRepositorio.Eliminar(rolPermisoEncontrado);
 
                 if (!respuesta)
-                    throw new TaskCanceledException("No se pudo editar");
+                    throw new TaskCanceledException("No se pudo eliminar");
 
                 return respuesta;
 

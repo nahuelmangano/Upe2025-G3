@@ -18,11 +18,26 @@ export const ADMIN_ROUTES: Routes = [
                     )
             },
             {
-                path: 'permisos',
+                path: 'medico-permiso',
                 loadComponent: () =>
-                    import('./components/permiso/permiso.component').then(
-                        m => m.PermisoComponent
-                    )
+                            import('./components/permiso/medico-permiso/medico-permiso.component').then(
+                                m => m.MedicoPermisoComponent
+                            ),
+            },
+            {
+                path: 'recepcionista-permiso',
+                loadComponent: () =>
+                            import('./components/permiso/recepcionista-permiso/recepcionista-permiso.component').then(
+                                m => m.RecepcionistaPermisoComponent
+                            ),
+            },
+            { path: '', redirectTo: 'usuarios', pathMatch: 'full' }
+            ,{
+                path: 'abmc-permiso',
+                loadComponent: () =>
+                            import('./components/permiso/abmc-permiso/abmc-permiso.component').then(
+                                m => m.ABMCPermisoComponent
+                            ),
             },
             { path: '', redirectTo: 'usuarios', pathMatch: 'full' }
         ]

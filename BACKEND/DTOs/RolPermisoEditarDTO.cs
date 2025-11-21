@@ -17,5 +17,7 @@ namespace DTOs
         public int PermisoId { get; set; }
 
         public string? PermisoNombre { get; set; }
+
+        public bool Activo { get; set; }
     }
 }

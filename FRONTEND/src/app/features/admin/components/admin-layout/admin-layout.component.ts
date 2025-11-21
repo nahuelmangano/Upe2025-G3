@@ -62,6 +62,9 @@ export class AdminLayoutComponent implements AfterViewInit {
   toggleSidenav(){
     this.isExpanded = !this.isExpanded;
   }
+  togglePermisos() {
+  this.permisosOpen = !this.permisosOpen;
+}
 
   logout(): void {
     this.utilidadSrv.eliminarSesionUsuario();
@@ -78,6 +81,8 @@ export class AdminLayoutComponent implements AfterViewInit {
 
   private updateUsuarioNombre(): void {
     const nombre = this.utilidadSrv.obtenerNombreCompletoUsuario()?.trim();
+    console.log(nombre);
+    
     this.usuarioNombre = nombre && nombre.length ? nombre : 'Usuario';
   }
 

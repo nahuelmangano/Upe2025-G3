@@ -33,12 +33,29 @@
           <a class="nav-link" [routerLink]="['/admin', 'usuarios']" routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)"><span
               class="material-icons">person</span>Usuarios</a>
-          <a class="nav-link" [routerLink]="['/admin', 'permisos']" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }" (click)="onNavClick(sidenav)">
+          <!-- PERMISOS - botón que despliega -->
+          <a class="nav-link permisos-toggle" (click)="togglePermisos()">
             <span class="material-icons">admin_panel_settings</span>
             Permisos
+            <mat-icon class="arrow">{{ permisosOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
           </a>
 
+          <div class="submenu" *ngIf="permisosOpen">
+            <a class="submenu-link" [routerLink]="['/admin','medico-permiso']" routerLinkActive="active"
+              (click)="onNavClick(sidenav)">
+                Médico
+            </a>
+
+            <a class="submenu-link" [routerLink]="['/admin', 'recepcionista-permiso']" routerLinkActive="active"
+              (click)="onNavClick(sidenav)">
+                Recepcionista
+            </a>
+
+            <a class="submenu-link" [routerLink]="['/admin', 'abmc-permiso']" routerLinkActive="active"
+              (click)="onNavClick(sidenav)">
+                Permisos
+            </a>
+          </div>
         </nav>
       </div>
     </ng-container>
