@@ -29,7 +29,12 @@ namespace BLL.Servicios
                 estudio => estudio.EvolucionId == evolucionId    
             );
 
-            return _mapper.Map<List<EstudioDTO>>(queryEstudios.ToList());  
+            var estudios = queryEstudios
+                .Include(estudio => estudio.TipoEstudio)
+                .Include(estudio => estudio.Evolucion)
+                .ToList();
+
+            return _mapper.Map<List<EstudioDTO>>(estudios);  
         }
 
         public async Task<EstudioDTO> Crear(EstudioDTO modelo)

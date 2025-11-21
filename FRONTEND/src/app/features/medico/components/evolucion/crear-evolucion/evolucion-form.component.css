@@ -2,6 +2,23 @@
    grid-column: 1 / 7;
  }
 
+.volver-evoluciones-btn:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(79,70,229,0.2);
+}
+
+@media (max-width: 576px) {
+  .evolucion-form-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .volver-evoluciones-btn{
+    width:100%;
+    text-align:center;
+  }
+}
+
 .preview-card {
   margin-top: 12px;
   padding: 26px 30px;
@@ -105,6 +122,7 @@
   grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
   gap: 18px;
   width: 100%;
+  overflow-x:hidden;
 }
 
 .preview-field {
@@ -185,6 +203,41 @@
   margin:0 auto;
 }
 
+.evolucion-form-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+
+.volver-evoluciones-btn{
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid #d4dae8;
+  background:#ffffff;
+  color:#4f46e5;
+  font-weight:600;
+  font-size:0.9rem;
+  cursor:pointer;
+  transition:background 0.2s ease,border-color 0.2s ease,color 0.2s ease;
+}
+
+.volver-evoluciones-btn:hover{
+  background:#f5f3ff;
+  border-color:#a5b4fc;
+  color:#4338ca;
+}
+
+.volver-evoluciones-btn:active{
+  transform:translateY(1px);
+}
+
+.volver-evoluciones-btn:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(79,70,229,0.2);
+}
+
 .form-grid{
   justify-content:center;
   grid-template-columns: repeat(6, minmax(0, 140px));
@@ -193,18 +246,34 @@
 
 @media (max-width: 768px) {
   .preview-card {
-    padding: 22px;
+    padding: 18px;
   }
 
   .preview-grid {
     grid-template-columns: 1fr;
+    gap:10px;
+  }
+
+  .preview-field{
+    align-items:flex-start;
+  }
+
+  .preview-checkbox{
+    justify-content:flex-start;
   }
 }
 
 .fecha-hora-input{
-  display:flex;
-  gap:10px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:24px;
   align-items:center;
+}
+
+.fecha-hora-input input{
+  width:100%;
+  min-width:0;
+  max-width:none;
 }
 
 .seleccionar-fecha-btn{
@@ -217,6 +286,7 @@
   color:#1f2937;
   cursor:pointer;
   transition:background 0.2s ease,border-color 0.2s ease;
+  margin-left:12px;
 }
 
 .seleccionar-fecha-btn:hover{
@@ -225,12 +295,19 @@
 }
 
 .fecha-hora-field{
-  max-width:320px;
+  width:100%;
+  max-width:100%;
   justify-self:flex-start;
 }
 
 .fecha-hora-field .fecha-hora-input{
   width:100%;
+}
+
+@media (min-width: 769px) {
+  .fecha-hora-field{
+    max-width:320px;
+  }
 }
 
 .problema-row{
@@ -282,5 +359,28 @@
   }
   .btn-problema{
     width:100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .fecha-hora-input{
+    gap:16px;
+  }
+
+  .seleccionar-fecha-btn{
+    white-space:nowrap;
+    justify-self:start;
+    padding:8px 12px;
+    margin-left:8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fecha-hora-input{
+    gap:18px;
+  }
+
+  .seleccionar-fecha-btn{
+    margin-left:6px;
   }
 }

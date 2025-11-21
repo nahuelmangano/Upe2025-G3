@@ -12,6 +12,20 @@ namespace Utility
 {
     public class AutoMapperProfile : Profile
     {
+        private static DateTime ParseFechaSubida(string? fecha)
+        {
+            if (string.IsNullOrWhiteSpace(fecha))
+                return DateTime.Now;
+
+            if (DateTime.TryParseExact(fecha, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact))
+                return exact;
+
+            if (DateTime.TryParse(fecha, out var parsed))
+                return parsed;
+
+            return DateTime.Now;
+        }
+
         public AutoMapperProfile()
         {
 
@@ -33,6 +47,10 @@ namespace Utility
                 .ForMember(destino =>
                     destino.Estudio,
                     opt => opt.Ignore()
+                )
+                .ForMember(destino =>
+                    destino.FechaSubida,
+                    opt => opt.MapFrom(origen => ParseFechaSubida(origen.FechaSubida))
                 )
                 .ForMember(destino =>
                 destino.Activo,
@@ -143,7 +161,7 @@ namespace Utility
             CreateMap<Estudio, EstudioDTO>()
                 .ForMember(destino =>
                 destino.Fecha,
-                opt => opt.MapFrom(origen => origen.Fecha.ToString("dd/MM/yyyy"))
+                opt => opt.MapFrom(origen => origen.Fecha)
                 )
                 .ForMember(destino =>
                 destino.TipoEstudioNombre,
@@ -367,7 +385,7 @@ namespace Utility
             CreateMap<PacienteObraSocial, PacienteObraSocialDTO>()
                 .ForMember(destino =>
                 destino.VigenteDesde,
-                opt => opt.MapFrom(origen => origen.VigenteDesde.Value.ToString("dd/MM/yyyy"))
+                opt => opt.MapFrom(origen => origen.VigenteDesde)
                 )
                 .ForMember(destino =>
                 destino.Activo,

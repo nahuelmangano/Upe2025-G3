@@ -30,7 +30,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MomentDateModule } from '@angular/material-moment-adapter';
 
 
 export const CORE_IMPORTS = [
@@ -78,8 +77,7 @@ export const FEEDBACK_IMPORTS = [
 
 export const DATE_IMPORTS = [
   MatDatepickerModule,
-  MatNativeDateModule,
-  MomentDateModule
+  MatNativeDateModule
 ];
 
 export const SHARED_IMPORTS = [

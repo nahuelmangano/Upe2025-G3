@@ -70,6 +70,7 @@ namespace BLL.Servicios
                     throw new TaskCanceledException("La obra social no existe");
 
                 obraSocialEncontrada.Nombre = obraSocialModelo.Nombre;
+                obraSocialEncontrada.Activo = obraSocialModelo.Activo;
 
                 bool respuesta = await _obraSocialRepositorio.Editar(obraSocialEncontrada);
 

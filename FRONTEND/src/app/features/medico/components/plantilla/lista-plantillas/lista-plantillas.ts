@@ -138,12 +138,6 @@ export class ListaPlantillasComponent implements OnInit {
   }
 
   editarPlantilla(plantilla: any): void {
-
-     if (!this.utilidadService.tienePermiso("Modificar Plantilla", 2)) {
-      this.utilidadService.mostrarAlerta("No tienes permiso para editar la plantilla", "Acceso denegado");
-      return;
-    }
-
     this.campoService.lista(plantilla.id).subscribe({
       next: (res: ResponseApi) => {
         if (res.estado && Array.isArray(res.valor)) {
@@ -245,12 +239,6 @@ export class ListaPlantillasComponent implements OnInit {
 
 
   eliminarPlantilla(plantilla: any): void {
-
-     if (!this.utilidadService.tienePermiso("Desactivar Plantilla", 2)) {
-      this.utilidadService.mostrarAlerta("No tienes permiso para eliminar la plantilla", "Acceso denegado");
-      return;
-    }
-
     const dialogRef = this.dialog.open(this.confirmarEliminarDialog, {
       data: plantilla,
       width: '370px'
@@ -316,5 +304,16 @@ export class ListaPlantillasComponent implements OnInit {
     if (!valor) return false;
     if (Array.isArray(valor)) return valor.includes(opcion);
     return valor.toString() === opcion.toString();
+  }
+
+  toggleMultiSelectOption(event: MouseEvent, campo: any, opcion: string): void {
+    event.preventDefault();
+    if (!campo.valor) campo.valor = [];
+    const idx = campo.valor.indexOf(opcion);
+    if (idx >= 0) {
+      campo.valor.splice(idx, 1);
+    } else {
+      campo.valor.push(opcion);
+    }
   }
 }

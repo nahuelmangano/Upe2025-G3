@@ -5,9 +5,9 @@
   <div *ngIf="error" style="color:#d63031">{{ error }}</div>
 
   <ng-container *ngIf="!loading && !error">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div class="resumen-grid">
       <!-- seccion problemas -->
-      <div class="card">
+      <div class="resumen-section">
         <h4 style="margin-bottom:12px;color:#4b5563">Últimos 4 Problemas</h4>
         <div class="table-wrap">
           <table class="table">
@@ -38,7 +38,7 @@
       </div>
 
       <!-- Seccion evoluciones -->
-      <div class="card">
+      <div class="resumen-section">
         <h4 style="margin-bottom:12px;color:#4b5563">Últimas 4 Evoluciones</h4>
         <div class="table-wrap">
           <table class="table">
@@ -65,10 +65,10 @@
     </div>
 
     <!-- Seccion diag def. -->
-    <div class="card">
+    <div class="resumen-section diagnos-grid">
       <h4 style="margin-bottom:12px;color:#4b5563">Últimos 4 Diagnósticos Definitivos</h4>
-      <div style="display:grid;gap:12px">
-        <div *ngFor="let e of evoluciones; let i = index" style="padding:12px;background:#f9fafb;border-radius:8px">
+      <div class="diagnos-grid__list">
+        <div *ngFor="let e of evoluciones; let i = index" class="diagnos-grid__item">
           <div style="font-weight:600;margin-bottom:8px">{{ e.problemaTitulo || '-' }}</div>
           <div style="color:#6b7280;font-size:14px">
             <strong>Diagnóstico Final:</strong> {{ e.diagnosticoDefinitivo || 'No hay diagnositcos definitivos para este problema' }}

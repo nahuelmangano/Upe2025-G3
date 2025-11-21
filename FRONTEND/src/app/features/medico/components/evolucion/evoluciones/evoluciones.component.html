@@ -175,42 +175,184 @@
       </div>
     </div>
 
-    <!-- Modal estudios por evolución -->
+    <!-- Modal estudios por evolución (lista + carga) -->
     <div *ngIf="estudiosModal" class="modal-backdrop">
       <div class="modal-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <h3 class="h3" style="margin:0">Estudios</h3>
+          <h3 class="h3" style="margin:0">Estudios de la evolución</h3>
           <button class="btn-outline" type="button" (click)="closeEstudios()">x</button>
         </div>
-        <div *ngIf="estudiosLoading">Cargando estudios...</div>
-        <div *ngIf="!estudiosLoading">
-          <div class="table-wrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Archivo</th>
-                  <th>Tamaño</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let s of estudios">
-                  <td>{{ s.nombre }}</td>
-                  <td>{{ s.tamano | number }} bytes</td>
-                  <td>
-                    <a [href]="archivoSrv.descargar(s.id)" title="Descargar" target="_blank" (click)="download(s.id, $event)">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <path d="M7 10l5 5 5-5"/>
-                        <path d="M12 15V3"/>
-                      </svg>
-                    </a>
-                  </td>
-                </tr>
-                <tr *ngIf="estudios.length===0"><td colspan="3">Sin archivos</td></tr>
-              </tbody>
-            </table>
+
+        <!-- Listado de estudios (tipo + profesional + fecha + acciones) -->
+        <div class="table-wrap" style="margin-bottom:14px">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tipo de estudio</th>
+                <th>Profesional</th>
+                <th>Fecha de carga</th>
+                <th>Ver</th>
+                <th>Editar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let es of estudiosListado">
+              <tr>
+                <td>{{ es.tipo }}</td>
+                <td>{{ es.profesional }}</td>
+                <td>{{ es.fecha ? (es.fecha | date:'dd/MM/yyyy') : '—' }}</td>
+                <td>
+                  <button class="btn-outline" style="padding:4px 10px;font-size:12px" type="button" (click)="toggleViewEstudio(es)">
+                    {{ viewingEstudioId === es.id ? 'Ocultar' : 'Ver' }}
+                  </button>
+                </td>
+                <td>
+                  <button *ngIf="editingEstudioId !== es.id" class="btn-outline" style="padding:4px 10px;font-size:12px" type="button" (click)="startEditEstudio(es)">Editar</button>
+                  <button *ngIf="editingEstudioId === es.id" class="btn" type="button" (click)="confirmEditEstudio()" style="background:#10b981">✓</button>
+                </td>
+              </tr>
+              <!-- Archivos del estudio en edición -->
+              <tr *ngIf="editingEstudioId === es.id">
+                <td colspan="5" style="background:#f9fafb">
+                  <div class="table-wrap" style="margin:8px 0">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Archivo</th>
+                          <th style="width:160px">Descargar</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let a of archivosEditing">
+                          <td>{{ a.nombre }}</td>
+                          <td>
+                            <div class="acciones-archivo">
+                              <a (click)="openArchivo(a.id)" title="Descargar" style="cursor:pointer;color:#4b5563;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                  <path d="M7 10l5 5 5-5"/>
+                                  <path d="M12 15V3"/>
+                                </svg>
+                              </a>
+                              <a (click)="openDeleteArchivo(a.id)" style="cursor:pointer;color:#b91c1c;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #fca5a5;border-radius:8px;background:#fff5f5" title="Eliminar">×</a>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr *ngIf="!archivosEditing.length">
+                          <td colspan="2">Sin archivos adjuntos</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+              <!-- Archivos del estudio solo lectura -->
+              <tr *ngIf="viewingEstudioId === es.id && editingEstudioId !== es.id">
+                <td colspan="5" style="background:#f9fafb">
+                  <!-- Info del estudio en modo solo lectura -->
+                  <div style="display:grid;grid-template-columns:minmax(220px,1fr);gap:12px;margin:8px 0">
+                    <mat-form-field appearance="outline" class="readonly-field">
+                      <mat-label>Tipo de estudio</mat-label>
+                      <input matInput [disabled]="true" [readOnly]="true" [value]="es.tipo" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="readonly-field">
+                      <mat-label>Observaciones</mat-label>
+                      <textarea matInput rows="2" [disabled]="true" [readOnly]="true">{{ es.observaciones || '—' }}</textarea>
+                    </mat-form-field>
+                  </div>
+                  <div class="table-wrap" style="margin:8px 0">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Archivo</th>
+                          <th style="width:120px">Descargar</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let a of archivosViewing">
+                          <td>{{ a.nombre }}</td>
+                          <td>
+                            <a (click)="openArchivo(a.id)" title="Descargar" style="cursor:pointer;color:#4b5563;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <path d="M7 10l5 5 5-5"/>
+                                <path d="M12 15V3"/>
+                              </svg>
+                            </a>
+                          </td>
+                        </tr>
+                        <tr *ngIf="!archivosViewing.length">
+                          <td colspan="2">Sin archivos adjuntos</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+              </ng-container>
+              <tr *ngIf="!estudiosListado.length">
+                <td colspan="6">Sin estudios</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Carga de estudio (oculta cuando está activo el modo Ver) -->
+        <div *ngIf="!viewingEstudioId" style="display:grid;gap:12px">
+          <div style="display:grid;grid-template-columns:minmax(220px,1fr) minmax(160px,200px);gap:12px">
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de estudio</mat-label>
+              <mat-select [(ngModel)]="estudioForm.tipoEstudioId" name="tipoEstudio">
+                <mat-option [value]="null">Seleccione…</mat-option>
+                <mat-option *ngFor="let t of estudiosTipoOptions" [value]="t.id">{{ t.nombre }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha</mat-label>
+              <input matInput type="date" [(ngModel)]="estudioForm.fecha" name="fechaEstudio" />
+            </mat-form-field>
           </div>
+
+          <mat-form-field appearance="outline" class="full-width readonly-field">
+            <mat-label>Realizado por</mat-label>
+            <input matInput [disabled]="true" [readOnly]="true" [(ngModel)]="estudioForm.realizadoPor" name="realizadoPor" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput rows="3" [(ngModel)]="estudioForm.observaciones" name="observaciones"></textarea>
+          </mat-form-field>
+
+          <div class="selector-archivos">
+            <button mat-raised-button color="primary" type="button" (click)="fileInput.click()">
+              <mat-icon>cloud_upload</mat-icon>
+              Subir archivo/s
+            </button>
+            <input #fileInput class="input-file-oculto" type="file" multiple (change)="onEstudioFiles($event)" accept=".jpg,.jpeg,.png,.pdf,.bmp,.gif" />
+            <small *ngIf="estudiosFiles.length">{{ estudiosFiles.length }} archivo(s) seleccionados</small>
+          </div>
+
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button mat-stroked-button type="button" (click)="closeEstudios()">Cancelar</button>
+            <button mat-flat-button color="primary" type="button" (click)="uploadEstudio()" [disabled]="savingEstudio || !canUploadEstudio()">
+              {{ savingEstudio ? 'Guardando…' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal confirmación eliminar archivo -->
+    <div *ngIf="deleteArchivoId" class="modal-backdrop">
+      <div class="modal-card" style="max-width:420px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 class="h3" style="margin:0">Eliminar archivo</h3>
+        </div>
+        <p style="margin:0 0 12px 0">¿Desea eliminar el archivo?</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn-outline" type="button" (click)="closeDeleteArchivo()">No</button>
+          <button class="btn" type="button" (click)="confirmDeleteArchivo()">Sí</button>
         </div>
       </div>
     </div>

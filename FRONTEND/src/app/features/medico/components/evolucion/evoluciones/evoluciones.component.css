@@ -42,7 +42,7 @@
 
 .planilla-edit__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px 16px;
 }
 
@@ -102,6 +102,28 @@
   color: #b91c1c;
 }
 
+@media (max-width: 768px) {
+  .planilla-edit__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planilla-edit__field {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .planilla-edit__label {
+    text-align:left;
+  }
+
+  .planilla-edit__field textarea,
+  .planilla-edit__field input,
+  .planilla-edit__field select,
+  .planilla-edit__checkbox{
+    min-height:44px;
+  }
+}
+
 /* Rayado de filas: una blanca, una gris */
 .table tbody tr:nth-child(odd) {
   background: #ffffff;
@@ -109,4 +131,28 @@
 
 .table tbody tr:nth-child(even) {
   background: #f5f6f8;
+}
+
+/* Botón de archivos y ocultar input nativo (para mantener estética Material) */
+.selector-archivos{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.input-file-oculto{ display:none }
+
+/* Estilo legible para campo deshabilitado "Realizado por" */
+:host ::ng-deep .readonly-field .mdc-text-field--disabled{
+  background-color: transparent !important;
+}
+:host ::ng-deep .readonly-field .mdc-text-field--disabled .mdc-text-field__input{
+  color: #111827 !important;           /* mismo color que texto normal */
+  -webkit-text-fill-color: #111827 !important;
+}
+
+/* Alinear acciones (descargar / eliminar) en fila */
+.acciones-archivo{
+  display:flex;
+  align-items:center;
+  gap:6px;
 }

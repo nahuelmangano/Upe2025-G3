@@ -13,6 +13,9 @@ import { UtilidadService } from '@core/services/utilidad.service';
 import { MedicoService } from '@features/medico/services/medico.service';
 import { SHARED_IMPORTS } from '@shared/shared-imports';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepper } from '@angular/material/stepper';
+
+
 
 @Component({
   selector: 'app-plantilla',
@@ -20,11 +23,13 @@ import { MatStepperModule } from '@angular/material/stepper';
   templateUrl: './plantilla.html',
   styleUrls: ['./plantilla.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ ...SHARED_IMPORTS, RouterModule, MatStepperModule ],
+  imports: [...SHARED_IMPORTS, RouterModule, MatStepperModule],
   providers: [FormBuilder]
 })
 export class PlantillaComponent implements OnInit {
   @ViewChild('previsualizacionDialog') previsualizacionDialog!: TemplateRef<any>;
+  @ViewChild('stepper') stepper!: MatStepper;
+
 
   formInfoBasica: FormGroup;
   formSecciones: FormGroup;
@@ -33,6 +38,8 @@ export class PlantillaComponent implements OnInit {
   plantillaId: number | null = null;
   modoEdicion: boolean = false;
   tipoSeccionId: number | null = null;
+  mostrarErroresInfoBasica = false;
+  mostrarErroresSecciones = false;
 
   constructor(
     private fb: FormBuilder,
@@ -54,6 +61,8 @@ export class PlantillaComponent implements OnInit {
     this.formSecciones = this.fb.group({
       secciones: this.fb.array([])
     });
+
+
   }
 
   get secciones(): FormArray {
@@ -89,6 +98,21 @@ export class PlantillaComponent implements OnInit {
       }
     });
   }
+
+  irAPaso2() {
+  this.mostrarErroresInfoBasica = true;
+  this.formInfoBasica.markAllAsTouched();
+  if (this.formInfoBasica.valid) {
+    this.stepper.next();
+  }
+}
+  irAPaso3() {
+  this.mostrarErroresSecciones = true; 
+  this.formSecciones.markAllAsTouched();
+  if (this.formSecciones.valid) {
+    this.stepper.next();
+  }
+}
 
   cargarTiposCampo(): void {
     this.tipoCampoService.lista().subscribe({
@@ -181,6 +205,7 @@ export class PlantillaComponent implements OnInit {
       })
     );
     this.seccionSeleccionadaIndex = this.secciones.length - 1;
+    this.mostrarErroresSecciones = false;
     this.cdRef.detectChanges();
   }
 
@@ -403,6 +428,17 @@ export class PlantillaComponent implements OnInit {
       });
     });
     await firstValueFrom(forkJoin(camposGuardar.map(c => this.campoService.crear(c))));
+  }
+
+  toggleMultiSelectOption(event: MouseEvent, campo: any, opcion: string): void {
+    event.preventDefault();
+    if (!campo.valor) campo.valor = [];
+    const idx = campo.valor.indexOf(opcion);
+    if (idx >= 0) {
+      campo.valor.splice(idx, 1);
+    } else {
+      campo.valor.push(opcion);
+    }
   }
 
   deshacer(): void {
