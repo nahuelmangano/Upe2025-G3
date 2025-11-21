@@ -19,6 +19,7 @@ import { PacienteContextService } from '@core/services/paciente-context.service'
 export class AdminLayoutComponent implements AfterViewInit {
   isDesktop = true;
   isExpanded = true;
+  permisosOpen = false;
   usuarioNombre = '';
   toolbarHeight = 64;
   viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
@@ -62,9 +63,10 @@ export class AdminLayoutComponent implements AfterViewInit {
   toggleSidenav(){
     this.isExpanded = !this.isExpanded;
   }
+
   togglePermisos() {
-  this.permisosOpen = !this.permisosOpen;
-}
+    this.permisosOpen = !this.permisosOpen;
+  }
 
   logout(): void {
     this.utilidadSrv.eliminarSesionUsuario();

@@ -18,6 +18,8 @@ import { EstadoProblemaService } from '@features/medico/services/estado-problema
 import { CampoValorService } from '@features/medico/services/campo-valor.service';
 import { CampoService } from '@features/medico/services/campo.service';
 import { SHARED_IMPORTS } from '@shared/shared-imports';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
+import { ResponseApi } from '@core/interfaces/response-api';
 
 interface EvolucionRow {
   id: number;
@@ -459,12 +461,11 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones', 'nueva']);
    }
 
-  cargarRolPermisoServicio() {
+  cargarRolPermisoServicio(): void {
     this.rolPermisoServicio.lista().subscribe({
-      next: (data) => {
+      next: (data: ResponseApi) => {
         if (data.estado) {
           this.util.dataListaRolesPermisos = data.valor;
-
         } else {
           this.util.mostrarAlerta(data.mensaje, "Opps!");
         }
