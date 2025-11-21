@@ -243,3 +243,57 @@
   font-size:18px;
   color:#3f2ea8;
 }
+
+/* Link principal */
+.permisos-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #f0f0f0;              /* texto más claro */
+  font-weight: 500;            /* más presencia */
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.permisos-toggle:hover {
+  background: rgba(255, 255, 255, 0.08); /* leve hover */
+  color: #ffffff;
+}
+
+.arrow {
+  margin-left: auto;
+  font-size: 20px;
+}
+
+/* Contenedor del submenú */
+.submenu {
+  background: #222345;      
+  padding: 6px 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Items dentro del submenú */
+.submenu-link {
+  display: block;
+  padding: 10px 12px;
+  font-size: 14px;             /* un poco más grande */
+  font-weight: 400;
+  color: #d0d0d0;              /* más claro que #c7c7c7 */
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.submenu-link:hover {
+  background: rgba(255, 255, 255, 0.08); /* hover con fondo */
+  color: #ffffff;
+}
+
+/* Estado activo */
+.submenu-link.active {
+  background: #5c5c8ea6;         /* fondo azul claro */
+  color: #fff;                 /* texto oscuro para contraste */
+  font-weight: 500;            /* más marcado */
+}

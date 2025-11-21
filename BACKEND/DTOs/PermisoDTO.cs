@@ -15,5 +15,7 @@ namespace DTOs
         public string Descripcion { get; set; }
 
         public bool Activo { get; set; }
+
+        public string? ActivoNombre { get; set; }
     }
 }

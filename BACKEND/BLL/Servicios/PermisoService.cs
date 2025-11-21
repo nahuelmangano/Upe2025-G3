@@ -15,11 +15,13 @@ namespace BLL.Servicios
     public class PermisoService : IPermisoService
     {
         private readonly IGenericRepository<Permiso> _permisoRepositorio;
+        private readonly IGenericRepository<RolPermiso> _rolPermisoRepositorio;
         private readonly IMapper _mapper;
 
-        public PermisoService(IGenericRepository<Permiso> permisoRepositorio, IMapper mapper)
+        public PermisoService(IGenericRepository<Permiso> permisoRepositorio, IGenericRepository<RolPermiso> rolPermisoRepositorio, IMapper mapper)
         {
             _permisoRepositorio = permisoRepositorio;
+            _rolPermisoRepositorio = rolPermisoRepositorio;
             _mapper = mapper;
         }
 
@@ -39,6 +41,12 @@ namespace BLL.Servicios
 
         public async Task<PermisoDTO>Crear(PermisoDTO modelo)
         {
+            var permisoEncontrado = await _permisoRepositorio.Obtener(
+                p => p.Nombre == modelo.Nombre);
+
+            if( permisoEncontrado != null )
+                throw new TaskCanceledException("El permiso ya existe");
+
             var permisoCreado = await _permisoRepositorio.Crear(_mapper.Map<Permiso>(modelo));
             if(permisoCreado.Id == 0)
             {
@@ -66,6 +74,7 @@ namespace BLL.Servicios
 
                 permisoEncontrado.Nombre = permisoModelo.Nombre;
                 permisoEncontrado.Descripcion = permisoModelo.Descripcion;
+                permisoEncontrado.Activo = permisoModelo.Activo;
 
                 bool respuesta = await _permisoRepositorio.Editar(permisoEncontrado);
 
@@ -93,9 +102,15 @@ namespace BLL.Servicios
                     throw new TaskCanceledException("El permiso no existe");
                 }
 
-                permisoEncontrado.Activo = false;
+                var rolPermisoEncontrado = await _rolPermisoRepositorio.Obtener(
+                    rolPermiso => rolPermiso.PermisoId == permisoEncontrado.Id);
 
-                bool respuesta = await _permisoRepositorio.Editar(permisoEncontrado);
+                if (rolPermisoEncontrado != null)
+                {
+                    throw new TaskCanceledException("El permiso no se puede eliminar porque esta asignado");
+                }
+
+                bool respuesta = await _permisoRepositorio.Eliminar(permisoEncontrado);
 
                 if(!respuesta)
                 {

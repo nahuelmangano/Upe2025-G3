@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { ModalUsuarioComponent } from '@features/admin/modals/modal-usuario/modal-usuario.component';
 import { Usuario } from '@features/admin/interfaces/usuario';
@@ -17,7 +17,14 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [ ...SHARED_IMPORTS ],
   templateUrl: './usuario.component.html',
-  styleUrls: ['./usuario.component.css']
+  styleUrls: ['./usuario.component.css'],
+  providers: [
+    {
+      provide: MatPaginatorIntl,
+      useFactory: (utilidadService: UtilidadService) => utilidadService.getSpanishPaginatorIntl(),
+      deps: [UtilidadService]
+    }
+  ]
 })
 export class UsuarioComponent implements OnInit, AfterViewInit {
 

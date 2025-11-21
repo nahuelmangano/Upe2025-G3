@@ -20,6 +20,7 @@ export class AdminLayoutComponent  {
   isDesktop = true;
   isExpanded = true;
   usuarioNombre = '';
+  permisosOpen = false;
 
   constructor(
     private router: Router,
@@ -43,6 +44,9 @@ export class AdminLayoutComponent  {
   toggleSidenav(){
     this.isExpanded = !this.isExpanded;
   }
+  togglePermisos() {
+  this.permisosOpen = !this.permisosOpen;
+}
 
   logout(): void {
     this.utilidadSrv.eliminarSesionUsuario();
@@ -59,6 +63,8 @@ export class AdminLayoutComponent  {
 
   private updateUsuarioNombre(): void {
     const nombre = this.utilidadSrv.obtenerNombreCompletoUsuario()?.trim();
+    console.log(nombre);
+    
     this.usuarioNombre = nombre && nombre.length ? nombre : 'Usuario';
   }
 }

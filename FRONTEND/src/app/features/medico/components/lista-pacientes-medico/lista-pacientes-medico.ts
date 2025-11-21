@@ -14,6 +14,9 @@ import { ObraSocial } from '@features/maestros/interfaces/obra-social';
 import { PacienteObraSocial } from '@features/paciente/interfaces/paciente-obra-social';
 import { PacienteContextService } from '@core/services/paciente-context.service';
 import { SHARED_IMPORTS } from '@shared/shared-imports';
+import { UtilidadService } from '@core/services/utilidad.service';
+import { RolPermiso } from '@core/interfaces/rol-permiso';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
 
 interface PacienteExtendido extends Paciente {
   obraSocialNombre: string;
@@ -28,7 +31,7 @@ interface RelacionConObra {
 @Component({
   selector: 'app-lista-pacientes-medico',
   standalone: true,
-  imports: [ ...SHARED_IMPORTS, RouterModule ],
+  imports: [...SHARED_IMPORTS, RouterModule],
   templateUrl: './lista-pacientes-medico.html',
   styleUrls: ['./lista-pacientes-medico.css']
 })
@@ -39,19 +42,37 @@ export class ListaPacientesMedicoComponent {
   dataSource: PacienteExtendido[] = [];
   dataListaPacientes = new MatTableDataSource<PacienteExtendido>(this.dataSource);
   pacientesCompletos: any[] = [];
+  dataListaRolesPermisos: RolPermiso[] = [];
   @ViewChild(MatPaginator) paginacionTabla!: MatPaginator;
 
   constructor(
     private pacienteService: PacienteService,
+    private _utilidadServicio: UtilidadService,
     private obraSocialService: ObraSocialService,
     private pacienteObraSocialService: PacienteObraSocialService,
     private router: Router,
     private scroller: ViewportScroller,
-    private pacienteContexto: PacienteContextService
+    private pacienteContexto: PacienteContextService,
+    private rolPermisoServicio: RolPermisoService
   ) { }
 
   ngOnInit(): void {
-    this.cargarPacientes();
+
+    this.cargarRolPermisoServicio();
+  }
+
+  cargarRolPermisoServicio() {
+    this.rolPermisoServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          this._utilidadServicio.dataListaRolesPermisos = data.valor;
+          console.log(this.dataListaRolesPermisos);
+          this.cargarPacientes();
+        } else {
+          this._utilidadServicio.mostrarAlerta(data.mensaje, "Opps!");
+        }
+      }
+    });
   }
 
   cargarObrasSocialesPorPaciente(listaObras: ObraSocial[]): void {
@@ -88,6 +109,9 @@ export class ListaPacientesMedicoComponent {
     }).subscribe(({ pacientes, obras }) => {
       const listaPacientes = pacientes.valor as Paciente[];
       const listaObras = obras.valor as ObraSocial[];
+
+      console.log(listaPacientes);
+
 
       this.dataSource = listaPacientes.map(paciente => ({
         ...paciente,

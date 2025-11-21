@@ -398,6 +398,14 @@ namespace Utility
 
             #region Permiso
             CreateMap<Permiso, PermisoDTO>()
+                .ForMember(destino =>
+                destino.Activo,
+                opt => opt.MapFrom(origen => origen.Activo == true ? 1 : 0)
+                )
+                .ForMember(destino =>
+                destino.ActivoNombre,
+                opt => opt.MapFrom(origen => origen.Activo == true ? "Activo" : "Inactivo")
+                )
                 .ReverseMap()
                 .ForMember(destino =>
                 destino.RolPermisos,

@@ -15,6 +15,7 @@ import { MedicoService } from '@features/medico/services/medico.service';
 import { EstadoProblemaService } from '@features/medico/services/estado-problema.service';
 import { CampoValorService } from '@features/medico/services/campo-valor.service';
 import { CampoService } from '@features/medico/services/campo.service';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
 
 interface EvolucionRow {
   id: number;
@@ -109,10 +110,12 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     private campoValorSrv: CampoValorService,
     private campoSrv: CampoService,
     private router: Router,
-    private util: UtilidadService
-  ) {}
+    private util: UtilidadService,
+    private rolPermisoServicio: RolPermisoService
+  ) { }
 
   ngOnInit(): void {
+    this.cargarRolPermisoServicio();
     this.sub = this.route.paramMap.subscribe(pm => {
       this.pacienteId = Number(pm.get('id')) || 0;
       this.fetchData();
@@ -120,6 +123,12 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   }
 
   openEstudios(e: EvolucionRow): void {
+
+    if (!this.util.tienePermiso("Ver Estudios", 2)) {
+      this.util.mostrarAlerta("No tienes permiso para ver los estudios relacionados", "Acceso denegado");
+      return;
+    }
+
     this.estudiosModal = true;
     this.estudiosLoading = true;
     this.estudios = [];
@@ -159,7 +168,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   }
 
   private fetchData(): void {
-    this.loading = true; this.error='';
+    this.loading = true; this.error = '';
     const catalogs$ = this.ensureCatalogs();
     this.catalogSub?.unsubscribe();
     this.catalogSub = catalogs$.subscribe({
@@ -168,36 +177,62 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     });
   }
 
-    private loadEvoluciones(): void {
-      this.loading = true; this.error='';
-      this.evolucionSrv.listaPorPaciente(this.pacienteId).subscribe({
-        next: (resp: any) => {
-          const items: any[] = resp?.estado ? (resp.valor || []) : [];
-          this.data = items
-            .map(it => this.mapRow(it))
-            .sort((a, b) => this.fechaTimestamp(b.fecha) - this.fechaTimestamp(a.fecha));
-          this.loading=false; this.page=0;
-        },
-      error: () => { this.loading=false; this.error='No pudimos cargar evoluciones'; }
+  private loadEvoluciones(): void {
+    this.loading = true; this.error = '';
+    this.evolucionSrv.listaPorPaciente(this.pacienteId).subscribe({
+      next: (resp: any) => {
+        const items: any[] = resp?.estado ? (resp.valor || []) : [];
+        this.data = items
+          .map(it => this.mapRow(it))
+          .sort((a, b) => this.fechaTimestamp(b.fecha) - this.fechaTimestamp(a.fecha));
+        this.loading = false; this.page = 0;
+      },
+      error: () => { this.loading = false; this.error = 'No pudimos cargar evoluciones'; }
     });
   }
 
-    filtradas(): EvolucionRow[] {
-      const term = this.q.toLowerCase();
-      return this.data.filter(e => `${e.problema} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado} ${e.fechaTexto ?? ''}`.toLowerCase().includes(term));
-    }
+  filtradas(): EvolucionRow[] {
+    const term = this.q.toLowerCase();
+    return this.data.filter(e => `${e.problema} ${e.diagnosticoInicial} ${e.diagnosticoFinal} ${e.medico} ${e.estado} ${e.fechaTexto ?? ''}`.toLowerCase().includes(term));
+  }
   pagesCount(): number { return Math.max(1, Math.ceil(this.filtradas().length / this.pageSize)); }
   pageItems(): EvolucionRow[] { const s = this.page * this.pageSize; return this.filtradas().slice(s, s + this.pageSize); }
   rangeLabel(): string { const t = this.filtradas().length; const s = t ? this.page * this.pageSize + 1 : 0; const e = Math.min(t, (this.page + 1) * this.pageSize); return `${s} - ${e} of ${t}`; }
-  prev(): void { if (this.page>0) this.page--; }
-  next(): void { if ((this.page+1) < this.pagesCount()) this.page++; }
+  prev(): void { if (this.page > 0) this.page--; }
+  next(): void { if ((this.page + 1) < this.pagesCount()) this.page++; }
 
-  openModal(): void { this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones', 'nueva']); }
+  openModal(): void { 
+    if (!this.util.tienePermiso("Crear Evolucion", 2)) {
+      this.util.mostrarAlerta("No tienes permiso para crear la evolucion", "Acceso denegado");
+      return;
+    }
+    this.router.navigate(['/medico', 'paciente', this.pacienteId, 'evoluciones', 'nueva']);
+   }
+
+  cargarRolPermisoServicio() {
+    this.rolPermisoServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          this.util.dataListaRolesPermisos = data.valor;
+
+        } else {
+          this.util.mostrarAlerta(data.mensaje, "Opps!");
+        }
+      }
+    });
+  }
+
   openEdit(e: EvolucionRow): void {
+
+    if (!this.util.tienePermiso("Modificar Evolucion", 2)) {
+      this.util.mostrarAlerta("No tienes permiso para editar evoluciones", "Acceso denegado");
+      return;
+    }
+
     this.modalOpen = true;
-    this.modalError='';
+    this.modalError = '';
     this.editId = e.id;
-      this.fecha = e.fecha ? e.fecha.substring(0,10) : '';
+    this.fecha = e.fecha ? e.fecha.substring(0, 10) : '';
     const src = e.source || {};
     this.editSource = src;
     this.editProblemaId = this.toNumberOrUndefined(e.problemaId ?? src.problemaId ?? src.ProblemaId, true);
@@ -236,6 +271,12 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     if (!row.tienePlanilla) {
       return;
     }
+
+    if (!this.util.tienePermiso("Ver Plantilla", 2)) {
+      this.util.mostrarAlerta("No tienes permiso para ver la plantilla utilizada", "Acceso denegado");
+      return;
+    }
+
     row.mostrarPlanilla = !row.mostrarPlanilla;
     if (row.mostrarPlanilla && !row.planillaLoaded && !row.planillaLoading) {
       this.loadPlanilla(row);
@@ -268,7 +309,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   }
 
   async save(): Promise<void> {
-    if (this.saving) return; this.saving = true; this.modalError='';
+    if (this.saving) return; this.saving = true; this.modalError = '';
     try {
       const currentRow = this.editId ? this.data.find(x => x.id === this.editId) : undefined;
       const src = this.editSource || currentRow?.source || {};
@@ -328,7 +369,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
         await firstValueFrom(this.evolucionesSrv.create(base));
       }
       this.page = 0;
-      this.q='';
+      this.q = '';
       this.modalOpen = false;
       this.loadEvoluciones();
       this.editId = null;
@@ -338,7 +379,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
       this.editMedicoId = undefined;
       this.editSource = undefined;
       this.resetEditPlanillaState();
-    } catch (e:any) {
+    } catch (e: any) {
       this.modalError = e?.message || 'No pudimos guardar la evolución';
     } finally { this.saving = false; }
   }
@@ -546,11 +587,11 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const loadPromise = row.planillaLoaded
       ? Promise.resolve(row.planillaCampos ?? [])
       : this.fetchPlanillaValores(row).then(campos => {
-          row.planillaCampos = campos;
-          row.planillaLoaded = true;
-          row.planillaError = '';
-          return campos;
-        });
+        row.planillaCampos = campos;
+        row.planillaLoaded = true;
+        row.planillaError = '';
+        return campos;
+      });
     loadPromise
       .then(campos => {
         this.editPlanillaCampos = (campos || []).map(c => ({ ...c }));

@@ -10,6 +10,7 @@ import { UtilidadService } from '@core/services/utilidad.service';
 import { ResponseApi } from '@core/interfaces/response-api';
 import { MedicoService } from '@features/medico/services/medico.service';
 import { SHARED_IMPORTS } from '@shared/shared-imports';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
 
 
 interface Seccion {
@@ -22,7 +23,7 @@ interface Seccion {
   standalone: true,
   templateUrl: './lista-plantillas.html',
   styleUrls: ['./lista-plantillas.css'],
-  imports: [ ...SHARED_IMPORTS, RouterModule, DatePipe ]
+  imports: [...SHARED_IMPORTS, RouterModule, DatePipe]
 })
 export class ListaPlantillasComponent implements OnInit {
   private medicoService = inject(MedicoService);
@@ -32,6 +33,7 @@ export class ListaPlantillasComponent implements OnInit {
   private utilidadService = inject(UtilidadService);
   private dialog = inject(MatDialog);
   private router = inject(Router);
+  private rolPermisoServicio = inject(RolPermisoService);
 
   @ViewChild('previsualizacionDialog') previsualizacionDialog!: TemplateRef<any>;
   @ViewChild('confirmarEliminar') confirmarEliminarDialog!: TemplateRef<any>;
@@ -44,7 +46,38 @@ export class ListaPlantillasComponent implements OnInit {
   ngOnInit(): void {
     this.cargarTiposCampo();
     this.cargarPlantillasDelMedico();
+    this.cargarRolPermisoServicio();
   }
+
+  cargarRolPermisoServicio() {
+    this.rolPermisoServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          this.utilidadService.dataListaRolesPermisos = data.valor;
+
+        } else {
+          this.utilidadService.mostrarAlerta(data.mensaje, "Opps!");
+        }
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    const boton = document.getElementById('botonCrearPlantilla');
+    if (boton) {
+      boton.addEventListener('click', (event) => {
+        if (!this.utilidadService.tienePermiso("Crear Plantilla", 2)) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          this.utilidadService.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
+          return;
+        }
+      }, true);
+    }
+  }
+
 
   private cargarTiposCampo(): void {
     this.tipoCampoService.lista().subscribe({
@@ -56,39 +89,39 @@ export class ListaPlantillasComponent implements OnInit {
     });
   }
 
-cargarPlantillasDelMedico(): void {
-  const userId = this.utilidadService.obtenerUsuarioId();
+  cargarPlantillasDelMedico(): void {
+    const userId = this.utilidadService.obtenerUsuarioId();
 
-  this.medicoService.lista().subscribe({
-    next: (medicosResp: ResponseApi) => {
-      if (medicosResp.estado && Array.isArray(medicosResp.valor)) {
-        const medico = medicosResp.valor.find((m: any) => m.usuarioId === userId);
-        if (!medico) {
-          this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
-          return;
-        }
-
-        const medicoId = medico.id;
-
-        this.plantillaService.listaPorMedico(medicoId).subscribe({
-          next: (res: ResponseApi) => {
-            if (res.estado && Array.isArray(res.valor)) {
-              const activas = res.valor.filter(p => p.activo === true);
-              this.dataSource = activas;
-              this.todasPlantillas = activas;
-            }
-          },
-          error: (err) => {
-            this.utilidadService.mostrarAlerta('Error al cargar las plantillas', 'Error');
+    this.medicoService.lista().subscribe({
+      next: (medicosResp: ResponseApi) => {
+        if (medicosResp.estado && Array.isArray(medicosResp.valor)) {
+          const medico = medicosResp.valor.find((m: any) => m.usuarioId === userId);
+          if (!medico) {
+            this.utilidadService.mostrarAlerta('No se encontró el médico correspondiente al usuario', 'Error');
+            return;
           }
-        });
+
+          const medicoId = medico.id;
+
+          this.plantillaService.listaPorMedico(medicoId).subscribe({
+            next: (res: ResponseApi) => {
+              if (res.estado && Array.isArray(res.valor)) {
+                const activas = res.valor.filter(p => p.activo === true);
+                this.dataSource = activas;
+                this.todasPlantillas = activas;
+              }
+            },
+            error: (err) => {
+              this.utilidadService.mostrarAlerta('Error al cargar las plantillas', 'Error');
+            }
+          });
+        }
+      },
+      error: (err) => {
+        this.utilidadService.mostrarAlerta('Error al cargar los médicos', 'Error');
       }
-    },
-    error: (err) => {
-      this.utilidadService.mostrarAlerta('Error al cargar los médicos', 'Error');
-    }
-  });
-}
+    });
+  }
 
 
 
@@ -105,51 +138,57 @@ cargarPlantillasDelMedico(): void {
   }
 
   editarPlantilla(plantilla: any): void {
-  this.campoService.lista(plantilla.id).subscribe({
-    next: (res: ResponseApi) => {
-      if (res.estado && Array.isArray(res.valor)) {
-        const camposFiltrados = res.valor
-          .filter(c => c.activo === 1 || c.activo === true)
-          .sort((a, b) => a.orden - b.orden);
 
-        const SECCION_TIPO_ID = 12;
+     if (!this.utilidadService.tienePermiso("Modificar Plantilla", 2)) {
+      this.utilidadService.mostrarAlerta("No tienes permiso para editar la plantilla", "Acceso denegado");
+      return;
+    }
 
-        const secciones: any[] = [];
-        let seccionActual: any | null = null;
+    this.campoService.lista(plantilla.id).subscribe({
+      next: (res: ResponseApi) => {
+        if (res.estado && Array.isArray(res.valor)) {
+          const camposFiltrados = res.valor
+            .filter(c => c.activo === 1 || c.activo === true)
+            .sort((a, b) => a.orden - b.orden);
 
-        camposFiltrados.forEach((campo) => {
-          if (campo.tipoCampoId === SECCION_TIPO_ID) {
-            seccionActual = {
-              titulo: campo.etiqueta || 'Sección sin título',
-              campos: []
-            };
-            secciones.push(seccionActual);
-          } else if (seccionActual) {
-            seccionActual.campos.push(campo);
-          }
-        });
-        const plantillaCompleta = {
-          ...plantilla,
-          secciones
-        };
-        this.router.navigate(['/medico/plantillas', plantilla.id], {
-          state: { plantilla: plantillaCompleta }
-        });
-      } else {
+          const SECCION_TIPO_ID = 12;
+
+          const secciones: any[] = [];
+          let seccionActual: any | null = null;
+
+          camposFiltrados.forEach((campo) => {
+            if (campo.tipoCampoId === SECCION_TIPO_ID) {
+              seccionActual = {
+                titulo: campo.etiqueta || 'Sección sin título',
+                campos: []
+              };
+              secciones.push(seccionActual);
+            } else if (seccionActual) {
+              seccionActual.campos.push(campo);
+            }
+          });
+          const plantillaCompleta = {
+            ...plantilla,
+            secciones
+          };
+          this.router.navigate(['/medico/plantillas', plantilla.id], {
+            state: { plantilla: plantillaCompleta }
+          });
+        } else {
+          this.utilidadService.mostrarAlerta(
+            'No se encontraron campos para esta plantilla.',
+            'Información'
+          );
+        }
+      },
+      error: (err) => {
         this.utilidadService.mostrarAlerta(
-          'No se encontraron campos para esta plantilla.',
-          'Información'
+          'Error al preparar la plantilla para editar.',
+          'Error'
         );
       }
-    },
-    error: (err) => {
-      this.utilidadService.mostrarAlerta(
-        'Error al preparar la plantilla para editar.',
-        'Error'
-      );
-    }
-  });
-}
+    });
+  }
 
 
 
@@ -205,38 +244,44 @@ cargarPlantillasDelMedico(): void {
 
 
 
-eliminarPlantilla(plantilla: any): void {
-  const dialogRef = this.dialog.open(this.confirmarEliminarDialog, {
-    data: plantilla,
-    width: '370px'
-  });
+  eliminarPlantilla(plantilla: any): void {
 
-  dialogRef.afterClosed().subscribe(confirmado => {
-    if (!confirmado) return;
+     if (!this.utilidadService.tienePermiso("Desactivar Plantilla", 2)) {
+      this.utilidadService.mostrarAlerta("No tienes permiso para eliminar la plantilla", "Acceso denegado");
+      return;
+    }
 
-    const plantillaInactiva = { ...plantilla, activo: false };
-
-    this.plantillaService.editar(plantillaInactiva).subscribe({
-      next: (res: ResponseApi) => {
-        if (res.estado) {
-          this.utilidadService.mostrarAlerta(
-            `La plantilla "${plantilla.nombre}" fue eliminada correctamente.`,
-            'Éxito'
-          );
-          this.dataSource = this.dataSource.filter(p => p.id !== plantilla.id);
-        } else {
-          this.utilidadService.mostrarAlerta(
-            res.mensaje || 'No se pudo eliminar la plantilla.',
-            'Error'
-          );
-        }
-      },
-      error: (err) => {
-        this.utilidadService.mostrarAlerta('Error al eliminar la plantilla.', 'Error');
-      }
+    const dialogRef = this.dialog.open(this.confirmarEliminarDialog, {
+      data: plantilla,
+      width: '370px'
     });
-  });
-}
+
+    dialogRef.afterClosed().subscribe(confirmado => {
+      if (!confirmado) return;
+
+      const plantillaInactiva = { ...plantilla, activo: false };
+
+      this.plantillaService.editar(plantillaInactiva).subscribe({
+        next: (res: ResponseApi) => {
+          if (res.estado) {
+            this.utilidadService.mostrarAlerta(
+              `La plantilla "${plantilla.nombre}" fue eliminada correctamente.`,
+              'Éxito'
+            );
+            this.dataSource = this.dataSource.filter(p => p.id !== plantilla.id);
+          } else {
+            this.utilidadService.mostrarAlerta(
+              res.mensaje || 'No se pudo eliminar la plantilla.',
+              'Error'
+            );
+          }
+        },
+        error: (err) => {
+          this.utilidadService.mostrarAlerta('Error al eliminar la plantilla.', 'Error');
+        }
+      });
+    });
+  }
 
 
   private obtenerNombreTipoCampo(tipoCampoId: number): string {

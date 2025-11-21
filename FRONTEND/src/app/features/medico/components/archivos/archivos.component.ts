@@ -12,6 +12,8 @@ import { Estudio } from '@features/estudio/interfaces/estudio';
 import { PacienteService } from '@features/paciente/services/paciente.service';
 import { Paciente } from '@features/paciente/interfaces/paciente';
 import { UtilidadService } from '@core/services/utilidad.service';
+import { RolPermiso } from '@core/interfaces/rol-permiso';
+import { RolPermisoService } from '@core/services/rol-permiso.service';
 
 type EvolucionItem = { id: number; descripcion?: string };
 type TipoEstudioItem = { id: number; nombre: string };
@@ -19,7 +21,7 @@ type TipoEstudioItem = { id: number; nombre: string };
 @Component({
   standalone: true,
   selector: 'app-paciente-archivos',
-  imports: [ ...SHARED_IMPORTS, RouterModule ],
+  imports: [...SHARED_IMPORTS, RouterModule],
   templateUrl: './archivos.component.html',
   styleUrls: ['./archivos.component.css']
 })
@@ -41,7 +43,7 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   form = {
     evolucionId: null as number | null,
     tipoEstudioId: null as number | null,
-    fecha: new Date().toISOString().slice(0,10),
+    fecha: new Date().toISOString().slice(0, 10),
     realizadoPor: '',
     observaciones: ''
   };
@@ -54,8 +56,9 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     private tipoSvc: TipoEstudioService,
     private pacienteSvc: PacienteService,
     private cdr: ChangeDetectorRef,
-    private util: UtilidadService
-  ) {}
+    private util: UtilidadService,
+    private rolPermisoServicio: RolPermisoService
+  ) { }
 
   ngOnInit(): void {
     // Prefijar "Realizado por" con el nombre del usuario actual y mantenerlo luego de cada carga
@@ -67,6 +70,8 @@ export class ArchivosComponent implements OnInit, OnDestroy {
       this.loadAll();
       this.loadPaciente();
     });
+
+    this.cargarRolPermisoServicio();
   }
 
   ngOnDestroy(): void {
@@ -90,6 +95,34 @@ export class ArchivosComponent implements OnInit, OnDestroy {
     this.pacienteSvc.obtener(this.pacienteId).subscribe(p => this.paciente = p);
   }
 
+  cargarRolPermisoServicio() {
+    this.rolPermisoServicio.lista().subscribe({
+      next: (data) => {
+        if (data.estado) {
+          this.util.dataListaRolesPermisos = data.valor;
+
+        } else {
+          this.util.mostrarAlerta(data.mensaje, "Opps!");
+        }
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    const boton = document.getElementById('botonArchivo');
+    if (boton) {
+      boton.addEventListener('click', (event) => {
+        if (!this.util.tienePermiso("Subir Archivo", 2)) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          this.util.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
+          return;
+        }
+      }, true); 
+    }
+  }
+
   private loadAll(): void {
     this.loading.set(true);
     this.error.set('');
@@ -100,7 +133,7 @@ export class ArchivosComponent implements OnInit, OnDestroy {
         const raw: any = res as any;
         const valor = raw?.estado === true ? (Array.isArray(raw?.valor) ? raw.valor : (Array.isArray(raw?.Valor) ? raw.Valor : [])) : [];
         const arr = Array.isArray(valor) ? valor : [];
-        this.tiposEstudio.set(arr.map((t: any) => ({ id: (t?.id ?? t?.Id), nombre: (t?.nombre ?? t?.Nombre) }))); 
+        this.tiposEstudio.set(arr.map((t: any) => ({ id: (t?.id ?? t?.Id), nombre: (t?.nombre ?? t?.Nombre) })));
         console.log('[Archivos] tipos estudio', this.tiposEstudio());
         this.cdr.detectChanges();
       },
@@ -154,6 +187,7 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   }
 
   onFiles(ev: Event): void {
+
     const input = ev.target as HTMLInputElement;
     const files = input.files ? Array.from(input.files) : [];
     this.selectedFiles.set(files);
@@ -161,7 +195,9 @@ export class ArchivosComponent implements OnInit, OnDestroy {
 
   archivosSeleccionLabel(): string {
     const n = this.selectedFiles().length;
+
     if (n === 0) return 'Ningún archivo seleccionado';
+
     return n === 1 ? '1 archivo seleccionado' : `${n} archivos seleccionados`;
   }
 
@@ -186,7 +222,7 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   resetForm(): void {
     // Mantener el "Realizado por" con el usuario actual para evitar validación en rojo
     const realizadoPor = this.util.obtenerNombreCompletoUsuario() || this.form.realizadoPor || '';
-    this.form = { evolucionId: null, tipoEstudioId: null, fecha: new Date().toISOString().slice(0,10), realizadoPor, observaciones: '' };
+    this.form = { evolucionId: null, tipoEstudioId: null, fecha: new Date().toISOString().slice(0, 10), realizadoPor, observaciones: '' };
     this.selectedFiles.set([]);
     this.evolucionSeleccionadaId.set(null);
   }
