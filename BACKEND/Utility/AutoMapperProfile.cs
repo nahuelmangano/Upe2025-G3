@@ -12,6 +12,20 @@ namespace Utility
 {
     public class AutoMapperProfile : Profile
     {
+        private static DateTime ParseFechaSubida(string? fecha)
+        {
+            if (string.IsNullOrWhiteSpace(fecha))
+                return DateTime.Now;
+
+            if (DateTime.TryParseExact(fecha, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exact))
+                return exact;
+
+            if (DateTime.TryParse(fecha, out var parsed))
+                return parsed;
+
+            return DateTime.Now;
+        }
+
         public AutoMapperProfile()
         {
 
@@ -36,20 +50,7 @@ namespace Utility
                 )
                 .ForMember(destino =>
                     destino.FechaSubida,
-                    opt => opt.MapFrom(origen =>
-                    {
-                        if (string.IsNullOrWhiteSpace(origen.FechaSubida))
-                            return DateTime.Now;
-
-                        // Acepta formatos dd/MM/yyyy o cultura por defecto; si falla, usa fecha actual
-                        if (DateTime.TryParseExact(origen.FechaSubida, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha))
-                            return fecha;
-
-                        if (DateTime.TryParse(origen.FechaSubida, out var parsed))
-                            return parsed;
-
-                        return DateTime.Now;
-                    })
+                    opt => opt.MapFrom(origen => ParseFechaSubida(origen.FechaSubida))
                 )
                 .ForMember(destino =>
                 destino.Activo,
