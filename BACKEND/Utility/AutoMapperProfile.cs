@@ -35,6 +35,14 @@ namespace Utility
                     opt => opt.Ignore()
                 )
                 .ForMember(destino =>
+                    destino.FechaSubida,
+                    opt => opt.MapFrom(origen =>
+                        !string.IsNullOrWhiteSpace(origen.FechaSubida)
+                            ? DateTime.Parse(origen.FechaSubida)
+                            : DateTime.Now
+                    )
+                )
+                .ForMember(destino =>
                 destino.Activo,
                 opt => opt.MapFrom(origen => origen.Activo == 1 ? true : false)
                 );
