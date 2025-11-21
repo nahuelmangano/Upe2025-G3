@@ -37,10 +37,19 @@ namespace Utility
                 .ForMember(destino =>
                     destino.FechaSubida,
                     opt => opt.MapFrom(origen =>
-                        !string.IsNullOrWhiteSpace(origen.FechaSubida)
-                            ? DateTime.Parse(origen.FechaSubida)
-                            : DateTime.Now
-                    )
+                    {
+                        if (string.IsNullOrWhiteSpace(origen.FechaSubida))
+                            return DateTime.Now;
+
+                        // Acepta formatos dd/MM/yyyy o cultura por defecto; si falla, usa fecha actual
+                        if (DateTime.TryParseExact(origen.FechaSubida, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha))
+                            return fecha;
+
+                        if (DateTime.TryParse(origen.FechaSubida, out var parsed))
+                            return parsed;
+
+                        return DateTime.Now;
+                    })
                 )
                 .ForMember(destino =>
                 destino.Activo,
