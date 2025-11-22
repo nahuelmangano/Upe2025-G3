@@ -96,18 +96,18 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    const boton = document.getElementById('botonArchivo');
-    if (boton) {
-      boton.addEventListener('click', (event) => {
-        if (!this.util.tienePermiso("Subir Archivo", 2)) {
-          event.preventDefault();
-          event.stopPropagation();
+    // const boton = document.getElementById('botonArchivo');
+    // if (boton) {
+    //   boton.addEventListener('click', (event) => {
+    //     if (!this.util.tienePermiso("Subir Archivo", 2)) {
+    //       event.preventDefault();
+    //       event.stopPropagation();
 
-          this.util.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
-          return;
-        }
-      }, true); 
-    }
+    //       this.util.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
+    //       return;
+    //     }
+    //   }, true); 
+    // }
   }
 
   private loadAll(): void {

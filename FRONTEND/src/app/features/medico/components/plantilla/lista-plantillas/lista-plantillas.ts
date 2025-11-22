@@ -71,7 +71,7 @@ export class ListaPlantillasComponent implements OnInit {
           event.preventDefault();
           event.stopPropagation();
 
-          this.utilidadService.mostrarAlerta("No tienes permiso para subir archivos", "Acceso denegado");
+          this.utilidadService.mostrarAlerta("No tienes permiso para crear plantillas", "Acceso denegado");
           return;
         }
       }, true);
