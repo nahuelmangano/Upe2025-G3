@@ -10,7 +10,6 @@ import { EvolucionService } from '@features/paciente/services/evolucion.service'
 import { EstudioService } from '@features/estudio/services/estudio.service';
 import { TipoEstudioService } from '@features/estudio/services/tipo-estudio.service';
 import { ArchivoAdjuntoService } from '@features/paciente/services/archivo-adjunto.service';
-import { Evolucion as EvolucionModel } from '@features/paciente/interfaces/evolucion';
 import { Estudio } from '@features/estudio/interfaces/estudio';
 import { ProblemaService } from '@features/paciente/services/problema.service';
 import { MedicoService } from '@features/medico/services/medico.service';
@@ -92,6 +91,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   private editEstadoId?: number;
   private editMedicoId?: number;
   private editSource: any;
+  private diagnosticoInicialOverrides = new Map<number, string>();
 
   estudiosModal = false;
   estudiosLoading = false;
@@ -576,10 +576,12 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
         throw new Error('No encontramos el identificador del paciente para actualizar la evolución');
       }
 
+      const fechaConsultaIso = this.fecha ? new Date(this.fecha).toISOString() : new Date().toISOString();
+      const diagnosticoInicialValue = (this.form.diagnosticoInicial ?? '').toString().trim();
       const base: EvolucionInput = {
         descripcion: this.form.descripcion,
-        fechaConsulta: this.fecha ? new Date(this.fecha).toISOString() : new Date().toISOString(),
-        diagnosticoInicial: this.form.diagnosticoInicial || '',
+        fechaConsulta: fechaConsultaIso,
+        diagnosticoInicial: diagnosticoInicialValue,
         diagnosticoDefinitivo: this.form.diagnosticoDefinitivo,
         pacienteId,
         problemaId,
@@ -590,28 +592,40 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
         const original = { ...(this.editSource || {}), ...(currentRow?.source || {}) } as any;
         const plantillaIdOriginal = this.toNumberOrUndefined(original.plantillaId ?? original.PlantillaId, true);
         const plantillaIdValue = typeof plantillaIdOriginal === 'number' && plantillaIdOriginal > 0 ? plantillaIdOriginal : null;
-        const request: EvolucionModel = {
-          id: this.editId,
-          descripcion: base.descripcion,
-          fechaConsulta: new Date(base.fechaConsulta),
-          diagnosticoInicial: base.diagnosticoInicial,
-          diagnosticoDefinitivo: base.diagnosticoDefinitivo,
-          pacienteId,
-          pacienteNombre: original.pacienteNombre ?? original.PacienteNombre ?? '',
-          plantillaId: plantillaIdValue,
-          plantillaNombre: original.plantillaNombre ?? original.PlantillaNombre,
-          problemaId: problemaId ?? this.toNumberOrUndefined(original.problemaId ?? original.ProblemaId, true) ?? 0,
-          problemaTitulo: original.problemaTitulo ?? original.ProblemaTitulo ?? currentRow?.problema,
-          estadoProblemaId: estadoId ?? this.toNumberOrUndefined(original.estadoProblemaId ?? original.EstadoProblemaId, true) ?? 0,
-          estadoProblemaNombre: original.estadoProblemaNombre ?? original.EstadoProblemaNombre ?? currentRow?.estado,
-          medicoId: medicoId ?? this.toNumberOrUndefined(original.medicoId ?? original.MedicoId, true) ?? 0,
-          medicoNombre: original.medicoNombre ?? original.MedicoNombre ?? currentRow?.medico
+        const problemaIdValue = problemaId ?? this.toNumberOrUndefined(original.problemaId ?? original.ProblemaId, true) ?? 0;
+        const estadoIdValue = estadoId ?? this.toNumberOrUndefined(original.estadoProblemaId ?? original.EstadoProblemaId, true) ?? 0;
+        const medicoIdValue = medicoId ?? this.toNumberOrUndefined(original.medicoId ?? original.MedicoId, true) ?? 0;
+
+        const payload = {
+          Id: this.editId,
+          Descripcion: base.descripcion ?? null,
+          FechaConsulta: fechaConsultaIso,
+          DiagnosticoInicial: (base.diagnosticoInicial || '').toString(),
+          DiagnosticoDefinitivo: base.diagnosticoDefinitivo ?? null,
+          PacienteId: pacienteId,
+          ProblemaId: problemaIdValue,
+          EstadoProblemaId: estadoIdValue,
+          MedicoId: medicoIdValue,
+          PlantillaId: plantillaIdValue ?? null
         };
 
-        const resp = await firstValueFrom(this.evolucionSrv.editar(request));
+        const resp = await firstValueFrom(this.evolucionSrv.editar(payload));
         if (!resp?.estado) {
           throw new Error(resp?.mensaje || 'El servicio no confirmó la actualización');
         }
+        const idx = this.data.findIndex(r => r.id === this.editId);
+        if (idx >= 0) {
+          const updated: EvolucionRow = {
+            ...this.data[idx],
+            diagnosticoInicial: payload.DiagnosticoInicial,
+            diagnosticoFinal: payload.DiagnosticoDefinitivo ?? '',
+            descripcion: payload.Descripcion ?? '',
+            fecha: payload.FechaConsulta,
+            fechaTexto: this.formatFechaDisplay(payload.FechaConsulta)
+          };
+          this.data[idx] = updated;
+        }
+        this.diagnosticoInicialOverrides.set(this.editId, payload.DiagnosticoInicial);
         if (this.editTienePlanilla && this.editPlanillaCampos.length) {
           await this.savePlanillaValores(this.editId);
         }
@@ -810,8 +824,14 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     return {
       id: it?.id ?? 0,
       problema: problemaNombre || '-',
-      diagnosticoInicial: it?.diagnosticoInicial ?? it?.DiagnosticoInicial ?? '',
-      diagnosticoFinal: it?.diagnosticoDefinitivo ?? it?.DiagnosticoDefinitivo ?? it?.diagnosticoFinal ?? '',
+      diagnosticoInicial: (() => {
+        const id = Number(it?.id ?? it?.Id ?? 0);
+        if (id && this.diagnosticoInicialOverrides.has(id)) {
+          return this.diagnosticoInicialOverrides.get(id) || '';
+        }
+        return it?.diagnosticoInicial ?? it?.DiagnosticoInicial ?? it?.diagnostico ?? it?.Diagnostico ?? '';
+      })(),
+      diagnosticoFinal: it?.diagnosticoDefinitivo ?? it?.DiagnosticoDefinitivo ?? it?.diagnosticoFinal ?? it?.DiagnosticoFinal ?? '',
       medico: medicoNombre || '-',
       estado: estadoNombre || '-',
       fecha: fechaIso,

@@ -95,6 +95,8 @@ namespace BLL.Servicios
 
                 evolucionEncontrada.Descripcion = evolucionModelo.Descripcion;
                 evolucionEncontrada.DiagnosticoDefinitivo = evolucionModelo.DiagnosticoDefinitivo;
+                evolucionEncontrada.DiagnosticoInicial = evolucionModelo.DiagnosticoInicial;
+                evolucionEncontrada.FechaConsulta = evolucionModelo.FechaConsulta;
                 if (evolucionModelo.PlantillaId.HasValue && evolucionModelo.PlantillaId.Value <= 0)
                 {
                     evolucionModelo.PlantillaId = null;
