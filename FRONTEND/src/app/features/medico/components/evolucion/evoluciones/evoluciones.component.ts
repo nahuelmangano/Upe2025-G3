@@ -344,7 +344,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.archivosEditing = [];
     this.archivoSrv.listaPorEstudio(item.id).subscribe({
       next: (resp: any) => {
-        const archivos: any[] = resp?.estado ? (resp.valor || []) : [];
+        const archivos: any[] = this.filtrarArchivosActivos(resp?.estado ? (resp.valor || []) : []);
         this.archivosEditing = archivos.map(a => ({
           id: Number(a?.id ?? 0),
           nombre: String(a?.nombreArchivo ?? a?.NombreArchivo ?? 'archivo')
@@ -365,7 +365,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.archivosViewing = [];
     this.archivoSrv.listaPorEstudio(item.id).subscribe({
       next: (resp: any) => {
-        const archivos: any[] = resp?.estado ? (resp.valor || []) : [];
+        const archivos: any[] = this.filtrarArchivosActivos(resp?.estado ? (resp.valor || []) : []);
         this.archivosViewing = archivos.map(a => ({
           id: Number(a?.id ?? 0),
           nombre: String(a?.nombreArchivo ?? a?.NombreArchivo ?? 'archivo')
@@ -378,7 +378,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   downloadEstudio(estudioId: number): void {
     this.archivoSrv.listaPorEstudio(estudioId).subscribe({
       next: (resp: any) => {
-        const archivos: any[] = resp?.estado ? (resp.valor || []) : [];
+        const archivos: any[] = this.filtrarArchivosActivos(resp?.estado ? (resp.valor || []) : []);
         if (!archivos.length) { this.util.mostrarAlerta('Sin archivos para descargar', 'Ok'); return; }
         archivos.forEach(a => {
           const url = this.archivoSrv.descargar(Number(a?.id ?? 0));
@@ -916,6 +916,15 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     const time = date.getTime();
     if (!Number.isFinite(time)) { return undefined; }
     return date.toISOString();
+  }
+
+  private filtrarArchivosActivos(lista: any[]): any[] {
+    if (!Array.isArray(lista)) { return []; }
+    return lista.filter(a => {
+      const valor = Number(a?.activo ?? a?.Activo ?? 1);
+      if (!Number.isFinite(valor)) { return true; }
+      return valor !== 0;
+    });
   }
 
   private fechaTimestamp(fecha?: string): number {
