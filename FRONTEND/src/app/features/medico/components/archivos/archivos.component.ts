@@ -38,6 +38,9 @@ export class ArchivosComponent implements OnInit, OnDestroy {
   page = 0;
   pageSize = 5;
 
+  // filtro por texto (tipo / profesional)
+  filterText = '';
+
   constructor(
     private route: ActivatedRoute,
     private evolSvc: EvolucionService,
@@ -177,22 +180,34 @@ export class ArchivosComponent implements OnInit, OnDestroy {
 
   // Helpers de paginación (mismo comportamiento que Evoluciones)
   pagesCount(): number {
-    const t = this.estudiosPaciente().length;
+    const t = this.filteredData().length;
     return Math.max(1, Math.ceil(t / this.pageSize));
   }
   pageItems(): { id: number; tipo: string; fecha: string; profesional: string }[] {
-    const data = this.estudiosPaciente();
+    const data = this.filteredData();
     const s = this.page * this.pageSize;
     return data.slice(s, s + this.pageSize);
   }
   rangeLabel(): string {
-    const t = this.estudiosPaciente().length;
+    const t = this.filteredData().length;
     const s = t ? this.page * this.pageSize + 1 : 0;
     const e = Math.min(t, (this.page + 1) * this.pageSize);
     return `${s} - ${e} of ${t}`;
   }
   prev(): void { if (this.page > 0) this.page--; }
   next(): void { if ((this.page + 1) < this.pagesCount()) this.page++; }
+
+  private normalize(v: string): string {
+    return (v || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  }
+  private filteredData(): { id: number; tipo: string; fecha: string; profesional: string }[] {
+    const q = this.normalize(this.filterText);
+    if (!q) return this.estudiosPaciente();
+    return this.estudiosPaciente().filter(es =>
+      this.normalize(es.tipo).includes(q) ||
+      this.normalize(es.profesional).includes(q)
+    );
+  }
 }
 
 
