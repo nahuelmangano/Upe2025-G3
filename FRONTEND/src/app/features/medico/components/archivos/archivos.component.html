@@ -1,6 +1,11 @@
 <div class="card" style="margin-bottom:12px">
   <h3 class="h3" style="margin-bottom:12px">Documentos y estudios</h3>
 
+  <!-- Buscador -->
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+    <input [(ngModel)]="filterText" (ngModelChange)="page=0" placeholder="Buscar por tipo o profesional..." style="flex:1" />
+  </div>
+
   <div *ngIf="loading()">Cargando estudios...</div>
   <div *ngIf="error()" style="color:#d63031">{{ error() }}</div>
 
@@ -20,7 +25,7 @@
             <td>{{ es.profesional || '—' }}</td>
             <td>{{ es.fecha ? (es.fecha | date:'dd/MM/yyyy') : '—' }}</td>
           </tr>
-          <tr *ngIf="!estudiosPaciente().length">
+          <tr *ngIf="!pageItems().length">
             <td colspan="3" style="text-align:center;color:#6b7280">Sin estudios</td>
           </tr>
         </tbody>
