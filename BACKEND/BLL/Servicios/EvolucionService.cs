@@ -54,6 +54,13 @@ namespace BLL.Servicios
                 {
                     modelo.PlantillaId = null;
                 }
+                
+                // Convertir la fecha de UTC a zona horaria local
+                if (modelo.FechaConsulta.Kind == DateTimeKind.Utc)
+                {
+                    modelo.FechaConsulta = modelo.FechaConsulta.ToLocalTime();
+                }
+                
                 var evolucionCreada = await _evolucionRepositorio
                     .Crear(_mapper.Map<Evolucion>(modelo));
 
@@ -92,6 +99,12 @@ namespace BLL.Servicios
 
                 if (evolucionEncontrada == null)
                     throw new TaskCanceledException("La evolucion no existe");
+
+                // Convertir la fecha de UTC a zona horaria local
+                if (evolucionModelo.FechaConsulta.Kind == DateTimeKind.Utc)
+                {
+                    evolucionModelo.FechaConsulta = evolucionModelo.FechaConsulta.ToLocalTime();
+                }
 
                 evolucionEncontrada.Descripcion = evolucionModelo.Descripcion;
                 evolucionEncontrada.DiagnosticoDefinitivo = evolucionModelo.DiagnosticoDefinitivo;
