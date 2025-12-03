@@ -86,6 +86,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   modalError = '';
   editId: number | null = null;
   fecha = '';
+  hora = '';
   form: Partial<EvolucionInput> = { diagnosticoInicial: '' };
   private editProblemaId?: number;
   private editEstadoId?: number;
@@ -484,6 +485,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.modalError = '';
     this.editId = e.id;
     this.fecha = e.fecha ? e.fecha.substring(0, 10) : '';
+    this.hora = this.extractHora(e.fecha);
     const src = e.source || {};
     this.editSource = src;
     this.editProblemaId = this.toNumberOrUndefined(e.problemaId ?? src.problemaId ?? src.ProblemaId, true);
@@ -515,6 +517,7 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
     this.editSource = undefined;
     this.form = { diagnosticoInicial: '' };
     this.fecha = '';
+    this.hora = '';
     this.resetEditPlanillaState();
   }
 
@@ -576,7 +579,8 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
         throw new Error('No encontramos el identificador del paciente para actualizar la evolución');
       }
 
-      const fechaConsultaIso = this.fecha ? new Date(this.fecha).toISOString() : new Date().toISOString();
+      const fechaConsultaIso = this.buildFechaHoraIso(this.fecha, this.hora);
+      console.log('[Evoluciones] fechaConsultaIso', fechaConsultaIso);
       const diagnosticoInicialValue = (this.form.diagnosticoInicial ?? '').toString().trim();
       const base: EvolucionInput = {
         descripcion: this.form.descripcion,
@@ -908,6 +912,23 @@ export class EvolucionesComponent implements OnInit, OnDestroy {
   onCheckboxCampoChange(campo: PlanillaCampo, event: Event): void {
     const input = event.target as HTMLInputElement;
     campo.valor = input.checked ? 'true' : 'false';
+  }
+
+  private buildFechaHoraIso(fecha: string, hora: string): string {
+    const f = (fecha || '').trim();
+    const h = (hora || '').trim();
+    if (!f) { return new Date().toISOString(); }
+    const hhmm = /^\d{2}:\d{2}$/.test(h) ? h : '00:00';
+    return `${f}T${hhmm}:00`;
+  }
+
+  private extractHora(fechaIso?: string): string {
+    if (!fechaIso) { return ''; }
+    const d = new Date(fechaIso);
+    if (Number.isNaN(d.getTime())) { return ''; }
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
   }
 
   private normalizeFechaValue(value: any): string | undefined {
